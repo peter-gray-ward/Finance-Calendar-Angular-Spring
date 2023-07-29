@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>desktop-finance-calendar</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="jquery.min.js"></script>
+  <script src="node_modules/moment/min/moment.min.js"></script>
+</head>
+<body>
+  <button id="expand">☰</button>
+  <div id="left-panel">
+    <header id="left"></header>
+  </div>
+  <main id="main"></main>
+  <button id="music">$</button>
+  <div id="right-panel">
+    <footer id="right"></footer>
+  </div>
+<script>
+
+function CheckTime() {
+  if (new Date().getHours() < 6 || new Date().getHours() > 16) {
+    $('html').addClass('dark');
+  }
+  window.requestAnimationFrame(CheckTime);
+}
+
+window.requestAnimationFrame(CheckTime);
+
+var Checking;
+var Savings;
+var Page;
+var Api;
+var Expenses;
+var Debts;
+var currentEvent = {};
+var updatingCSV = false;
+var scrollTop;
+var expanding = false;
+var music_ing = false;
+var typing = false;
+var hasshift = false;
+var editor;
+var widths = {
+  expenses: [40,15,15,15,15],
+  debts: [30,10,10,30,20]};
+var pixabay = '25483695-93658ed46b8876fc2d6419379';
+var totalchange = false;
+
+DOMStringMap.prototype.toObject = function() {
+  return JSON.parse(JSON.stringify(this));}
+
+/**
+ * -------------------------------------------------------
+ * Method - Sync - - - - - - - - - - - - - - - - - - - - -
+ * -------------------------------------------------------
+ * 
+ * Synchronizes backend constants with front-end constants
+ * 
+ **/
+function Sync(callback) {
+  electron.sync().then(constants => {
+    Page = constants.Page;
+    Api = constants.Api;
+    Expenses = constants.Expenses;
+    Debts = constants.Debts;
+    Checking = constants.Checking;
+    updatingCSV = false;
+    render(Page.PRESENTS);
+    if (callback && typeof callback == 'function') {
+      callback();
+    }
+  });
+}
+
+function InitExpenses() {
+  document.getElementById('left').innerHTML = `
+    <h3><div>Regular Expenses</div></h3>
+    <div class="table" id="expenses">
+      ${
+        Expenses.map((line, index) => {
+          return !index ? `<div class="tr">
+              ${
+                line.map((name, index2) => `<div class="th" style="width:${widths.expenses[index2]}%">` + name + '</div>').join('')
+              }
+              <button style="opacity:0" disabled class="delete-tr">( <span>–</span> )</button>
+            </div>`
+          : `<div class="tr data" data-row="${index}">
+              ${
+                line.map((value, index2) => `<input style="width:${widths.expenses[index2]}%" class="td" id="${index}-${index2}" value="${value}" type="text" />`).join('')
+              }
+
+              <button class="delete-tr">( <span>–</span> )</button>
+            </div>`;
+        }).join('')
+      }
+      <div class="tr button-row-right">
+        <button class="add-row">+</button>
+        <button id="refresh-calendar">↺</button>
+      </div>
+    </div> 
+    <h3><div>Debts</div></h3>
+    <div class="table" id="debts">
+      ${
+        Debts.map((line, index) => {
+          return !index ? `<div class="tr">
+              ${
+                line.map((name, index2) => `<div class="th" style="width:${widths.debts[index2]}%">` + name + '</div>').join('')
+              }
+              <button style="opacity:0" disabled class="delete-tr">( <span>–</span> )</button>
+            </div>`
+          : `<div class="tr data" data-row="${index}">
+              ${
+                line.map((value, index2) => `<input style="width:${widths.debts[index2]}%" class="td" id="${index}-${index2}" value="${value}" type="text" />`).join('')
+              }
+              <button class="delete-tr">( <span>–</span> )</button>
+            </div>`;
+        }).join('')
+      }
+      <div class="tr button-row-right">
+        <button class="add-row">+</button>
+      </div>
+    </div>
+  `;
+
+  render(Page.CALENDAR);
+}
+
+Sync(InitExpenses);
+
+var body = () => document.getElementsByTagName('body')[0];
+var main = () => document.getElementById('main');
+var modal = document.createElement('div');
+    modal.classList.add('modal');
+var calendar = () => document.getElementById('calendar');
+var processingScroll = false;
+var scrollMark = document.getElementById('scroll-mark');
+
+function render(which, event, data, offset = 0) {
+  switch (which) {
+    case Page.CALENDAR:
+      electron.render(which, event, data).then(res => {
+        main().innerHTML = res;
+        PostRender();
+        ScrollToFirstOfMonth(offset);
+        processingScroll = false;
+      }); 
+      break;
+    case Page.DAY:
+      electron.render(which, data).then(res => {
+        modal.innerHTML = res;
+        modal.style.top = (event.clientY) + 'px';
+        modal.style.left = event.clientX + 'px';
+        body().appendChild(modal);
+        PostRender();
+        processingScroll = false;
+      });
+      break;
+    case Page.EVENT:
+      electron.render(which, data).then(res => {
+        modal.innerHTML = res;
+
+        modal.style.top = (event.clientY) + 'px';
+        modal.style.left = event.clientX + 'px';
+
+        body().appendChild(modal);
+        PostRender(() => {
+          currentEvent = SerializeEvent();
+          document.querySelectorAll('.date').forEach((el) => {
+            el.addEventListener('change', (event) => {
+              var red = document.getElementById('event-recurrence-end-date');
+              var d = document.getElementById('event-date');
+              if (moment(d.value).isAfter(moment(red.value))) {
+                red.value = d.value;
+              }
+            });
+          });
+          clearTempStyles();
+          var color = document.getElementById(data.id).children[0].classList.contains('negative') ? 'mistyrose' : 'lavender';
+
+          document.getElementById(data.id).classList.add(color);
+
+          addEvents();
+        });
+        processingScroll = false;
+      });
+      break;
+    case Page.PRESENTS:
+      electron.render(which, data).then(res => {
+
+        document.getElementById('right').innerHTML = res;
+        // setTimeout(() => {
+          // render(Page.PRESENTS);
+        // }, 300);
+        PostRender();
+      });
+      break;
+  }
+
+
+  document.body.style.cursor = 'default';
+}
+
+function ScrollToFirstOfMonth(offset = 0) {
+  var fom = document.querySelectorAll('.first-of-month');
+  fom = fom.length == 3 ? fom[1] : fom[0];
+  var fomWeek = fom;
+  while (fomWeek && fomWeek.classList.contains("week") == false) fomWeek = fomWeek.parentElement;
+  var headerHeight = +getComputedStyle(document.getElementById('calendar-month-header')).height.split('px')[0];
+  var weekHeaderHeight = +getComputedStyle(document.getElementById('calendar-week-header')).height.split('px')[0];
+  calendar().scrollTo(0, fomWeek.offsetTop - headerHeight - weekHeaderHeight);
+}
+
+function ScrollToWeek(i) {
+  var fom = document.getElementById('week-' + i);
+  scrollTop = fom.offsetHeight * i;
+  calendar().scrollTo(0, fom.offsetHeight * i);
+}
+
+function PostRender(callback) {
+  addEvents();
+  adjustModal();
+  if (callback && typeof callback == 'function') {
+    callback();
+  }
+}
+
+function DayContextMenu(event) {
+  
+}
+
+var searching_image = false;
+var image_searches = [];
+var page = 1;
+function SearchImage(keyword) {
+  this.keyword = keyword;
+  this.searchResults = document.createElement('div');
+  this.search = () => {
+    if (searching_image) return;
+    if (this == image_searches[image_searches.length - 1]) {
+      searching_image = true;
+      page = 1;
+      image_searches = [];
+      this.searchResults.addEventListener('scroll', event => {
+        //console.log(event);
+      });
+      SearchWord(this.keyword, this.searchResults);
+    }
+  }
+};
+
+function SearchWord(keyword, searchResults) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', `https://pixabay.com/api/?key=${pixabay}&q=${keyword.split(' ').join('+')}&order=popular&page=${page}`);
+  xhr.addEventListener('load', function() {
+    var res = JSON.parse(this.response);
+    console.log(res);
+    ShowSearchResults(res.hits, searchResults);
+    window.addEventListener('resize', () => {
+      ShowSearchResults(res.hits, searchResults);
+    });
+  });
+  xhr.send();
+}
+
+function ShowSearchResults(res, results) {
+  if (document.getElementById('search-results')) {
+    document.getElementById('search-results').remove();
+  }
+  var results;
+  results.id = "search-results";
+  results.dataset.page = page++;
+  var src = document.getElementById('present-image');
+  results.style.width = getComputedStyle(src).width;
+  var offset = $(src).offset();
+  results.style.top = offset.top + (+getComputedStyle(src).height.split('px')[0] + 3) + 'px';
+  results.style.left = offset.left + 'px';
+  for (var i = 0; i < res.length; i++) {
+    var img = document.createElement('img');
+    img.classList.add('result-image');
+    img.src = res[i].previewURL;
+    img.style.width = '90%';
+    img.style.margin = '10px auto';
+    img.addEventListener('click', SelectPresentImage);
+    results.appendChild(img);
+  }
+  document.body.appendChild(results);
+  searching_image = false;
+}
+
+function SelectPresentImage(event) {
+  var url = event.srcElement.src;
+  $('#present-image').val(url);
+  document.getElementById('search-results').remove();
+  $('#add-present').css('background', 'url(' + url + ')');
+}
+
+PointerEvent.prototype.isntRoot = function() {
+  return this.srcElement && this.srcElement.parentElement;
+}
+
+var events = {
+  '#calendar:contextmenu': function(event) {
+    var eventItem = event.srcElement;
+    while (eventItem && eventItem.classList.contains('event') == false) {
+      eventItem = eventItem.parentElement;
+    }
+    if (eventItem) {
+      render(Page.EVENT, event, eventItem.dataset.toObject());
+    } else {
+      var dayblock = event.srcElement;
+      while (dayblock && dayblock.classList.contains('day-block') == false) {
+        dayblock = dayblock.parentElement;
+      }
+      if (!dayblock) return;
+      if (!+dayblock.dataset.date) return;
+      clearTempStyles();
+      document.querySelectorAll('.day-block').forEach(element => {
+        if (element == dayblock) {
+          element.classList.add('selected');
+          
+        } else {
+          element.classList.remove('selected');
+        }
+      });
+      render(Page.DAY, event, dayblock.dataset.toObject());
+    }
+  },
+  '#calendar:dblclick': function(event) {
+    var eventItem = event.srcElement;
+    while (eventItem && eventItem.classList.contains('event') == false) {
+      eventItem = eventItem.parentElement;
+    }
+    if (eventItem) {
+      render(Page.EVENT, event, eventItem.dataset.toObject());
+    } else {
+      var dayblock = event.srcElement;
+      while (dayblock && dayblock.classList.contains('day-block') == false) {
+        dayblock = dayblock.parentElement;
+      }
+      if (!dayblock) return;
+      if (!+dayblock.dataset.date) return;
+      electron.api(Api.CREATEEVENT, dayblock.dataset.toObject()).then(res => {
+        render(Page.CALENDAR);
+      });
+    }
+  },
+  '#go-to-today:click': function(event) {
+    render(Page.CALENDAR, { when: 'today' })
+  },
+  '#prev-month:click': function(event) {
+    var month = document.getElementById('calendar-month-header');
+    var data = month.dataset.toObject()
+        data.year = +data.year;
+        data.month = +data.month;
+        data.month = data.month == 1 ? 12 : data.month - 1;
+        data.year = data.month == 12 ? data.year - 1 : data.year;
+    render(Page.CALENDAR, data)
+  },
+  '#next-month:click': function(event) {
+    var month = document.getElementById('calendar-month-header');
+    var data = month.dataset.toObject()
+    data.year = +data.year;
+    data.month = +data.month;
+    data.month = data.month == 12 ? 1 : data.month + 1;
+    data.year = data.month == 1 ? data.year + 1 : data.year;
+    render(Page.CALENDAR, data);
+  },
+  '#calendar:scroll': function(event) {
+    if (processingScroll) return;
+    processingScroll = true;
+    scrollTop = event.srcElement.scrollTop;
+    var closestRow = ClosestRowToTop();
+    if (closestRow == 1 || closestRow == 7) {
+      var month = document.getElementById('calendar-month-header');
+      var data = month.dataset.toObject()
+          data.year = +data.year;
+          data.month = +data.month;
+      switch (closestRow) {
+        case 1:
+          if (data.month == 1) {
+            data.month = 12;
+            data.year -= 1;
+          } else {
+            data.month -= 1;
+          }
+          render(Page.CALENDAR, data, null, 0)
+          break;
+        case 7:
+          if (data.month == 12) {
+            data.month = 1;
+            data.year += 1;
+          } else {
+            data.month += 1;
+          }
+          render(Page.CALENDAR, data, null, 0)
+          break;
+      }
+    } else {
+      processingScroll = false;
+    }
+    clearTemps();
+  },
+  'body:click': function(event) {
+    if (   event.isntRoot()
+        && (!event.srcElement.classList.contains('present-text') 
+        && !event.srcElement.parentElement.classList.contains('present-text'))
+    ) {
+      
+      typing = false;
+      editor = null;
+      $('.cursor').removeClass('active');
+    }
+
+
+    if (event.srcElement.id !== 'present-image' 
+      && event.srcElement.id !== 'search-results'
+      && event.srcElement.parentElement.id !== 'search-results'
+      && document.getElementById('search-results')) {
+      document.getElementById('search-results').remove();
+    } 
+    var eventItem = event.srcElement;
+    while (eventItem && eventItem.classList.contains('event') == false) {
+      eventItem = eventItem.parentElement;
+    }
+    if (eventItem) {
+      render(Page.EVENT, event, eventItem.dataset.toObject());
+    } else {
+      var target = event.srcElement || event.target;
+      while (target && target.classList.contains('modal') == false && target.tagName !== 'SECTION') {
+        target = target.parentElement;
+      }
+      if (!target) {
+        Save();
+      }
+    }
+
+  },
+  'window:keyup': event => {
+    var target = event.target;
+    if (typing && editor) {
+      $($(editor).find('.cursor')).addClass('active');
+      var val = event.key;
+      Type(editor, val);
+    }
+  },
+  'window:keydown': event => {
+    if (event.keyCode == 32 && event.target.classList.contains('music')) {
+      event.preventDefault();
+    }
+  },
+  'body:mousemove': event => {
+    var dragContainer = document.getElementById('dragContainer');
+    // console.log(event.clientY)
+    if (dragContainer) {
+      dragContainer.style.top = event.clientY + 'px';
+      dragContainer.style.left = event.clientX + 'px';
+    }
+  },
+  'body:mouseup': event => {
+    if (document.getElementById('dragContainer')) {
+      var dayblock = $(event.target).closest('.day-block');
+      if (dayblock.length) {
+        dayblock = dayblock[0];
+        var event = {
+          month: dayblock.dataset.month,
+          year: dayblock.dataset.year,
+          date: dayblock.dataset.date,
+          summary: $('#dragContainer .present-name').val()
+          // ,amount: $('#dragContainer .present-price').val()
+        };
+        electron.api(Api.CREATEEVENT, event).then(res => {
+          render(Page.CALENDAR);
+        });
+      }
+      document.getElementById('dragContainer').remove();
+      document.body.classList.remove('grabbing');
+    }
+  },
+  '#save:click': Save,
+  '#delete-this:click': DeleteThisEvent,
+  '#delete-all:click': DeleteAllTheseEvents,
+  '#clude-this:click': CludeThisEvent,
+  '#clude-all:click': CludeAllTheseEvents,
+  '#expand:click': () => {
+    if (expanding) return;
+    expanding = true;
+    if ($('body').hasClass('complex') == false) {
+      $('header').addClass('visible');
+      $('body').removeClass('music');
+      setTimeout(function() {
+        $('body').addClass('complex');
+        expanding = false;
+      }, 0);
+    } else {
+      $('body').removeClass('complex');
+      setTimeout(function() {
+        $('header').removeClass('visible');
+        expanding = false;
+      }, 100);
+    }
+  },
+  '#music:click': () => {
+    if (music_ing) return;
+    music_ing = true;
+    if ($('body').hasClass('music') == false) {
+      $('footer').addClass('visible');
+      $('body').removeClass('complex');
+      setTimeout(function() {
+        $('body').addClass('music');
+        music_ing = false;
+      }, 0);
+    } else {
+      $('body').removeClass('music');
+      setTimeout(function() {
+        $('footer').removeClass('visible');
+        music_ing = false;
+      }, 100);
+    }
+  },
+  '.td:keyup': UpdateCSV,
+  '.td:paste': UpdateCSV,
+  '.add-row:click': addRow,
+  '#refresh-calendar:click': refreshData,
+  '#todays-date:click': loadBalance,
+  '.delete-tr:click': event => {
+    var row = event.srcElement;
+    while (row.classList.contains('tr') == false) row = row.parentElement;
+    row = +row.dataset.row;
+    var table = $(event.srcElement).closest('.table')[0].id
+    electron.api(Api.CSV, {
+      index: row,
+      value: 'DELETE',
+      table
+    }).then(() => Sync(InitExpenses));
+  },
+  '#think:keyup': event => {
+    if (event.which == 13) {
+      chat();
+    }
+  },
+  '#chat:click': chat,
+  '.summary-textarea.edit:keyup': event => {
+    const summary = event.srcElement.value;
+
+    var modal = document.querySelector('.modal');
+    var summaryReadonly = document.querySelector('#summary-div')
+                                  .querySelector('.summary-textarea.readonly');
+    var summaryEdit = event.srcElement;
+    var ModalContent = event.srcElement.parentElement.children[1];
+
+    var eventPartial = {
+      id: ModalContent.dataset.id,
+      recurrenceid: ModalContent.dataset.recurrenceid,
+      summary
+    };
+    console.log(eventPartial);
+    electron.api(Api.SAVEEVENT, eventPartial).then(res => {
+      
+      summaryReadonly.innerHTML = summary;
+      // summary_div.children[1].innerHTML = event.srcElement.value;
+
+    });
+  },
+  '#add-present:click': event => {
+    electron.api(Api.ADDPRESENT, {
+      name: document.getElementById('present-name').value,
+      // price: +document.getElementById('present-price').value,
+      image: document.getElementById('present-image').value
+    }).then(res => {
+      render(Page.PRESENTS);
+      $('#presents-controller input').each((index, input) => {
+        $(input).val('');
+      });
+      $('#add-present').css('background', 'rgba(255, 255, 255, 0.15)');
+    });
+  },
+  '#present-image:keyup': event => {
+    var sto = new SearchImage(event.srcElement.value);
+    image_searches.push(sto);
+    setTimeout(sto.search, 1500);
+    $('#add-present').css('background', 'rgba(255, 255, 255, 0.15)');
+  },
+  '.present-text:keyup': event => {
+    if (updatingCSV) return;
+    var pc = $(event.srcElement).closest('.present-container');
+    var index = pc.dataset.index;
+    electron.api(Api.PRESENT, name, {
+      index,
+      notes: event.srcElement.value
+    }).then(Sync);
+  },
+  '.present-textarea:click': event => {
+    editor = null;
+    typing = true;
+
+    var target = event.srcElement;
+    if (target.classList.contains('present-text')) {
+      target = target;
+    } else {
+      while (target && !target.classList.contains('present-text')) {
+        target = target.parentElement;
+      }
+    }
+    editor = target;
+
+    var cur;
+    var appended = false;
+    $('.cursor').remove();
+    var cursor = document.createElement('article');
+    cursor.classList.add('cursor');
+    curloop:
+    for (var i = 0; i < editor.children.length; i++) {
+      if (cur && editor.children[i] == event.srcElement) {
+        cur.after(cursor);
+        appended = true;
+      } else {
+        cur = editor.children[i];
+      }
+    }
+    if (!appended && editor) {
+      editor.appendChild(cursor);
+    }
+
+    $(cursor).addClass('active');
+  },
+  '.delete-present:click': event => {
+    var name = event.target.parentElement.getAttribute('name');
+    electron.api(Api.DELETEPRESENT, name).then(() => {
+      event.target.parentElement.remove()
+    });
+  },
+  '.buy-present:click': event => {
+    var name = event.target.parentElement.getAttribute('name');
+    electron.api(Api.BUYPRESENT, name).then(() => {
+      event.target.parentElement.remove()
+    });
+  },
+  '.present-name:keyup': event => {
+    var pc = $(event.srcElement).closest('.present-container')[0];
+    var name = $(event.srcElement).val();
+    var index = pc.dataset.index;
+    electron.api(Api.PRESENT, {
+      index,
+      name
+    }).then();
+  },
+  '.present-price:keyup': event => {
+    var pc = $(event.srcElement).closest('.present-container')[0];
+    var price = $(event.srcElement).val();
+    var index = pc.dataset.index;
+    electron.api(Api.PRESENT, {
+      index,
+      price
+    }).then();
+  },
+  '.present-container:mousedown': event => {
+    var src = event.srcElement;
+    if ($(src).closest('.present-text').length || src.tagName == 'INPUT' || src.classList.contains('buy') || src.classList.contains('delete')) return;
+    document.body.classList.add('grabbing');
+    var dragContent = event.srcElement.classList.contains('present-container') ? event.srcElement.innerHTML : $(event.srcElement).closest('.present-container').html();
+    var dragContainer = document.createElement('div');
+    dragContainer.id = 'dragContainer';
+    dragContainer.classList.add('present-list');
+    dragContainer.innerHTML = dragContent;
+    dragContainer.style.top = event.clientY + 'px';
+    dragContainer.style.left = event.clientX + 'px';
+    $(dragContainer).find('img')[0].setAttribute('draggable', false);
+    document.body.appendChild(dragContainer);  
+  },
+  '#present-search:keyup': event => {
+    var val = $('#present-search').val();
+    var re = new RegExp(val);
+    $('.present-container').each((index, container) => {
+      var tags = container.dataset.tags.split(',');
+      var matches = false;
+      for (var i = 0; i < tags.length; i++) {
+        if (re.test(tags[i])) {
+          matches = true;
+        }
+      }
+      if (!matches) {
+        $(container).addClass('hidden');
+      } else {
+        $(container).removeClass('hidden');
+      }
+    });
+  },
+  '#present-presents-bought:click': event => {
+    $('#present-presents-bought').toggleClass('selected');
+  
+    if (!$('#present-presents-bought').hasClass('selected')) {
+      $('.bought').addClass('hidden');
+      $('.not-bought').removeClass('hidden');
+    } else {
+      $('.bought').removeClass('hidden');
+      $('.not-bought').addClass('hidden');
+    }
+  },
+  '#total-input:keyup': UpdateTotal,
+  '#total-input:paste': UpdateTotal
+}
+
+function UpdateTotal(event) {
+  totalchange = true;
+}
+
+function chat() {
+  var message = document.createElement('div');
+  message.classList.add('message');
+  message.innerHTML = document.getElementById('think').value;
+  document.getElementsByClassName('chat-screen')[0].appendChild(message);
+  var msg = document.getElementById('think').value;
+  document.getElementById('think').value = '';
+  electron.api(Api.CHAT, msg).then(response => {
+    $('#think').val('');
+    var responseTime = Math.floor(Math.random() * 3);
+    setTimeout(() => {
+      var responseMessage = document.createElement('div');
+      responseMessage.classList.add('response-message');
+      responseMessage.innerHTML = response;
+      document.getElementsByClassName('chat-screen')[0].appendChild(responseMessage);
+      setTimeout(() => {
+        $('.chat-screen').scrollTop(+$('.chat-screen').css('height').split('px')[0])
+      }, responseTime + 500);
+    }, responseTime * 300);
+  });
+}
+
+function Type(editor, text) {
+  var token = document.createElement('div');
+  token.classList.add('token');
+  var info = true;
+  switch (text.trim().toLowerCase()) {
+  case '':
+    token.classList.add('space');
+    hashift = false;
+    break;
+  case 'shift':
+    hasshift = true;
+    info = false;
+    break;
+  case 'enter':
+    token.classList.add('newline')
+    token.classList.add('token');
+    text = '';
+    hashift = false;
+    break;
+  case '3':
+    if (hasshift) {
+      text = '#';
+    }
+    break;
+  case 'shift3':
+    text = '#';
+    hashift = false;
+    break;
+  case 'backspace':
+    var cur;
+    curloop:
+    for (var i = 0; i < editor.children.length; i++) {
+      if (cur && editor.children[i].classList.contains('cursor')) {
+        cur.remove();
+        break;
+      } else {
+        cur = editor.children[i];
+      }
+    }
+    hashift = false;
+    info = false;
+    break;
+  default:
+    info = true;
+    hashift = false;
+  }
+  token.innerHTML = hashift ? text.toUpperCase() : text;
+  
+  var cursor = $('.cursor.active')[0];
+  
+  if (info) cursor.before(token);
+
+  $($(editor).find('.token')).removeClass('hashtag');
+  var hashashtag = false;
+  $($(editor).find('.token')).each((index, el) => {
+    if (hashashtag) {
+      $(el).addClass('hashtag');
+    }
+    if (el.innerHTML == ' ' || el.classList.contains('space')) {
+      hashashtag = false;
+    }
+    if (el.innerHTML == '#') {
+      hashashtag = true;
+    }
+  });
+
+  var pc = $(editor).closest('.present-container');
+  var newtext = '';
+  var tagging = false;
+  $($(pc).find('.token')).each((index, el) => {
+    if (el.innerHTML == '#') {
+      tagging = true;
+    } else if (el.classList.contains('space')) {
+      if (tagging) {
+        newtext += ',';
+      }
+      tagging = false;
+    } else if (tagging) {
+      newtext += el.innerHTML;
+    }
+  });
+  pc[0].dataset.tags = newtext;
+
+  UpdatePresents(editor);
+}
+
+function loadBalance() {
+  document.body.style.cursor = 'wait';
+  $('#todays-date').css("cursor", "wait");
+  try {
+    if (totalchange) {
+      var balance = +document.getElementById('total-input').value;
+      electron.api(Api.LOADBALANCE, balance).then(() => {
+        totalchange = false;
+        render(Page.CALENDAR);
+      })
+    } else {
+      electron.api(Api.LOADBALANCE).then(() => {
+        
+        totalchange = false;
+        render(Page.CALENDAR);
+      });
+    }
+  } catch (err) {
+
+  } finally {
+    document.body.style.cursor = 'default';
+    $('#todays-date').css("cursor", "default");
+  }
+}
+
+function UpdateCSV(event) {
+  if (updatingCSV) return;
+  var table = $(event.srcElement).closest('.table')[0].id
+  updatingCSV = true;
+  var index = event.srcElement.id.split('-').map(Number);
+  electron.api(Api.CSV, {
+    index,
+    value: event.srcElement.value,
+    table
+  }).then(Sync);
+}
+
+function UpdatePresents(editor) {
+  var name = editor;
+  while (name.classList.contains('present-container') == false) {
+    name = name.parentElement;
+  }
+  var index = name.dataset.index;
+  name = name.getAttribute('name');
+  var txt = '';
+  $(editor).children().each((index, div) => {
+    txt += div.innerHTML;
+  });
+  electron.api(Api.PRESENT, {
+    index: index,
+    name: name,
+    notes: txt
+  }).then();
+}
+
+function refreshData() {
+  $('#refresh-calendar').addClass('refreshing');
+  setTimeout(() => {
+    $('#refresh-calendar').removeClass('refreshing');
+    electron.api(Api.REFRESHCALENDAR).then(() => Sync(InitExpenses));
+  }, 500);
+  
+}
+
+function addRow() {
+  var table = $(event.srcElement).closest('.table')[0].id
+  electron.api(Api.ADDCSVROW, table).then(() => {
+    Sync(InitExpenses);
+  });
+}
+
+function Save() {
+  var newEvent = SerializeEvent();
+  for (var key in newEvent) {
+    if (!currentEvent.hasOwnProperty(key) || newEvent[key] !== currentEvent[key]) {
+      saveEvent();
+      break;
+    }
+  }
+
+  clearTemps();
+}
+
+function CludeThisEvent(event) {
+  var event = SerializeEvent();
+  event.exclude = !event.exclude;
+  electron.api(Api.EDITSINGLEVENT, event).then(res => {
+    render(Page.CALENDAR);
+    clearTemps();
+  });
+}
+
+function CludeAllTheseEvents(event) {
+  var event = SerializeEvent();
+  event.exclude = !event.exclude;
+  electron.api(Api.SAVEEVENT, event).then(res => {
+    render(Page.CALENDAR);
+    clearTemps();
+  });
+}
+
+function DeleteThisEvent(event) {
+  var event = SerializeEvent();
+  electron.api(Api.DELETETHISEVENT, event).then(res => {
+    render(Page.CALENDAR);
+    clearTemps();
+  });
+}
+
+function DeleteAllTheseEvents(event) {
+  var event = SerializeEvent();
+  electron.api(Api.DELETEALLTHESEEVENTS, event).then(res => {
+    render(Page.CALENDAR);
+    clearTemps();
+  });
+}
+
+function SerializeEvent() {
+  var event = {};
+  var modal = $('.modal-content');
+  if (modal.length && modal[0].id == "event-edit") {
+    $(modal).find('input').each((_, input) => {
+      var name = input.name;
+      var value = /date/.test(name) ? moment(input.value).format('yyyy-MM-DD') : input.value;
+
+      if (input.type == 'number') {
+        value = +value;
+      }
+
+      event[name] = value;
+    });
+    $(modal).find('textarea').each((_, input) => {
+      var name = input.name;
+      event[name] = input.value;
+    });
+    $(modal).find('select').each((_, select) => {
+      var name = select.name;
+      var value = select.value;
+      event[name] = value;
+    });
+    event.id = modal[0].dataset.id;
+    event.recurrenceid = modal[0].dataset.recurrenceid;
+    event.exclude = $('#' + modal[0].dataset.id).hasClass('exclude');
+  }
+  return event;
+}
+
+function saveEvent() {
+  var event = SerializeEvent();
+  if (Object.keys(event).length) {
+    electron.api(Api.SAVEEVENT, event).then(res => {
+      render(Page.CALENDAR);
+    });
+  }
+}
+
+function Position_Modal_Main () {
+  var modal = document.querySelector('.modal');
+
+}
+
+function clearTemps() {
+  modal.remove();
+  clearTempStyles();
+}
+
+function clearTempStyles() {
+  document.querySelectorAll('.day-block').forEach(element => {
+    element.classList.remove('selected');
+  });
+  document.querySelectorAll('.event').forEach(element => {
+    element.classList.remove('mistyrose');
+    element.classList.remove('lavender');
+  });
+}
+
+function ReIndexWeeks(dir) {
+  document.querySelectorAll('.week').forEach((element, index) => {
+    element.id = 'week-' + index;
+  });
+  var thisMonth = +document.getElementById('week-5').children[3].dataset.month;
+  document.querySelectorAll('.day-block').forEach((element, index) => {
+    if (+element.dataset.month == thisMonth) {
+      element.classList.remove('opaque');
+    } else {
+      element.classList.add('opaque');
+    }
+  })
+}
+
+function addEvents() {
+  for (var key in events) {
+    var eventClass = key.split(':')[0].trim();
+    var eventType = key.split(':')[1].trim();
+    var el = eventClass == 'window' ? window : document.querySelectorAll(eventClass);
+    if (el == window) {
+      el.addEventListener(eventType, events[key]);
+    } else {
+      el.forEach(element => {
+        element.addEventListener(eventType, events[key]);
+      });
+    }
+  }
+}
+
+var modalHeight = 250;
+var modalWidth = 400;
+function adjustModal() {
+  var top = +modal.style.top.split('px')[0]
+  var left = +modal.style.left.split('px')[0];
+  var right = left + modalWidth;
+  var bottom = top + modalHeight;
+
+  if (bottom > window.innerHeight) {
+    modal.style.top = top - modalHeight + 'px';
+  }
+
+  if (right > window.innerWidth) {
+    modal.style.left = left - modalWidth + 'px';
+  }
+}
+
+function ClosestRowToTop() {
+  var monthHeader = document.getElementById('calendar-month-header');
+  var weekHeader = document.getElementById('calendar-week-header');
+  var scrollTop = calendar().scrollTop;
+  var weekHeight = +getComputedStyle(document.getElementById('week-0')).height.split('px')[0];
+  var i = 0;
+  var dist = Math.abs((weekHeight * i++) - scrollTop);
+
+  while (Math.abs((weekHeight * i) - scrollTop) < dist) {
+    dist = Math.abs((weekHeight * i++) - scrollTop);
+  }
+
+  return i;
+}
+
+window.addEventListener('resize', function(event) {
+  ScrollToFirstOfMonth(0);
+  clearTemps();
+});
+
+</script>
+
+</body>
+</html>

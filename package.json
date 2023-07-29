@@ -1,0 +1,19 @@
+{
+  "name": "desktop-finance-calendar",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "calendar": "^0.1.1",
+    "moment": "^2.29.4",
+    "rivescript": "^2.2.1",
+    "ws": "^8.11.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "watch": "nodemon --watch . --exec \"electron .\""
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
