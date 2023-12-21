@@ -6,6 +6,7 @@
     "calendar": "^0.1.1",
     "moment": "^2.29.4",
     "rivescript": "^2.2.1",
+    "uuid": "^9.0.0",
     "ws": "^8.11.0"
   },
   "scripts": {
@@ -15,5 +16,5 @@
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "This is an application purposed for the recurrence of bills paid on time."
 }

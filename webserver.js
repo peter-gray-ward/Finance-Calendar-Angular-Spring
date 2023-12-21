@@ -1,9 +1,9 @@
 require('./extensions');
 
-const { app, BrowserWindow, ipcMain, Tray } = require('electron');
+var type = require('./type');
 
-app.dock.setIcon("yuzu-wikipd.png");
-
+const http = require('http');
+const url = require('url');
 const EventEmitter = require('events');
 const path = require('path');
 const fs = require('fs');
@@ -94,6 +94,7 @@ function id() {
 
 var balanceMap = {};
 function CalculateTotals(events) {
+	console.log('CalculateTotals', events.length)
   var account = JSON.parse(fs.readFileSync('./account.json'));
   if (account.addSavings == true) {
     total = GET_TOTAL().checking + GET_TOTAL().saving;
@@ -305,6 +306,8 @@ function PosNegClass(event) {
 }
 
 function RenderMonths(months, account, events) {
+  console.log('RenderMonths: ', months.length);
+
   var account = JSON.parse(fs.readFileSync('./account.json').toString());
   var balance = JSON.parse(fs.readFileSync('./balance.json').toString());
   return months.map((week, weekIndex) => {
@@ -322,12 +325,12 @@ function RenderMonths(months, account, events) {
 
         const total = Math.round(Number(d.events[d.events.length - 1] ? d.events[d.events.length - 1].total : d.total).toFixed(2));
 
-        return `<div class="${firstOfMonth ? 'first-of-month' : ''} day-block${d.day == 'Sunday' || d.day == 'Saturday' ? ' weekend' : ''} ${d.month !== account.month ? ' opaque' : ''}" data-date=${d.date} data-dow=${d.day} data-year=${d.year} data-month=${d.month} data-monthname=${MONTHS[d.month - 1]}>
+        return `<div ${firstOfMonth ? 'id="first-of-month"' : ''} class="${firstOfMonth ? 'first-of-month' : ''} day-block${d.day == 'Sunday' || d.day == 'Saturday' ? ' weekend' : ''} ${d.month !== account.month ? ' opaque' : ''}" data-date=${d.date} data-dow=${d.day} data-year=${d.year} data-month=${d.month} data-monthname=${MONTHS[d.month - 1]}>
           <div class="day-header">
             ${
               (moment(new Date(d.year, d.month - 1, d.date + 1)).isSameOrAfter(moment()) && d.events.length) || isToday ? 
               `<div class="total">
-                ${ isToday ? `<input type="number" value="${total}" id="total-input" />` : total }
+                ${ isToday ? `<button id="add-savings" ${account.addSavings ? `class="active" title="$${balance.saving}"` : ''}>🐖</button> <input type="number" value="${total}" id="total-input" />` : total }
               </div>` 
               : ''
             }
@@ -411,26 +414,29 @@ function DownloadImage(url, objectId) {
 
 async function sync(event) {
   var balance = JSON.parse(fs.readFileSync('./balance.json'));
+  var account = JSON.parse(fs.readFileSync('./account.json'));
   return {
     Page,
     Api,
     Expenses: Expenses(),
     Debts: Debts(),
     Checking: balance.checking,
-    Saving: balance.savings
+    Saving: balance.savings,
+    Account: account
   };
 }
 
 let reqUuid = uuid.v4();
 
-async function api(event, which, data) {
+async function api(data = {}) {
   var events = load('./events.json');
   var account = JSON.parse(fs.readFileSync('./account.json'));
 
-  switch (which) {
+  switch (data.which) {
     case Api.ACCOUNT:
+      console.log('Api.ACCOUNT', data);
       for (var key in data) {
-        if (account[key] = data[key]);
+        account[key] = data[key];
       }
       fs.writeFileSync('./account.json', JSON.stringify(account, null, 2));
       break;
@@ -552,13 +558,19 @@ and this case hasn't yet been implemented:
   return true;
 }
 
-async function render(event, which, data = {}) {
+async function render(data = {}) {
+
+  console.log('render: ', data);
 
   var account = JSON.parse(fs.readFileSync('./account.json'));
   var events = CalculateTotals(load('./events.json'));
 
-  switch (which) {
+  console.log(account, events.length);
+
+  switch (data.which) {
     case Page.CALENDAR:
+
+      console.log(1);
 
       var threeMonthsWeeks = PreviousMonth(account.year, account.month).concat(
         Month(account.year, account.month).concat(
@@ -566,26 +578,33 @@ async function render(event, which, data = {}) {
         )
       );
 
+      console.log(2);
       var months = Months(threeMonthsWeeks);
 
-      for (var i = 0; i < events.length; i++) {
-        var d = moment(events[i].date);
-        var year = d.year();
-        var month = d.month() + 1;
-        var date = d.date();
-        for (var j = 0; j < months.length; j++) {
-          for (var k = 0; k < months[j].length; k++) {
-            var day = months[j][k];
-            if (day.date == date && day.month == month && day.year == year) {
-              months[j][k].events.push(events[i]);
-            }
-          }
-        }
+      console.log(3);
+      try {
+      	for (var i = 0; i < events.length; i++) {
+	        var d = moment(events[i].date);
+	        var year = d.year();
+	        var month = d.month() + 1;
+	        var date = d.date();
+	        for (var j = 0; j < months.length; j++) {
+	          for (var k = 0; k < months[j].length; k++) {
+	            var day = months[j][k];
+	            if (day.date == date && day.month == month && day.year == year) {
+	              months[j][k].events.push(events[i]);
+	            }
+	          }
+	        }
+	    }
+      } catch (err) {
+      	console.log(err);
       }
 
+      console.log(4);
       return `<div id="calendar-month-header" data-year=${account.year} data-month=${account.month}>
         <div>
-          <h1 id="month-name">${MONTHS[account.month - 1]}</h1>&nbsp;&nbsp;
+          <h1 id="month-name" data-monthIndex="${account.month}">${MONTHS[account.month - 1]}</h1>&nbsp;&nbsp;
           <h1 id="year-name" style="font-weight:100">${account.year}</h1>
         </div>
         <div id="data" class="search">
@@ -780,27 +799,101 @@ if (process.argv[2] == 'init') {
   Refresh();
 }
 
-app.whenReady().then(() => {
-  ipcMain.handle('sync', sync); // #hbd
-  ipcMain.handle('render', render);
+function parseReqBody(reqBody) {
+	var res = {};
+	try {
+		res = JSON.parse(reqBody);
+	} catch {
+		res.data = reqBody;
+	}
+	return res;
+}
+
+http.createServer(async function(req, res) {
+	var reqUrl = url.parse(req.url);
+	var reqQuery = qs.parse(reqUrl.query);
+	var reqBody = '';
+	var resBody = '';
+	var resContentType = 'text/plain';
+	var pathname = reqUrl.pathname;
+	var isAsync = false;
+
+	switch (pathname) {
+	case type.path.FAVICON:
+		resContentType = 'image/ico';
+		resBody = fs.readFileSync(type.file.FAVICON);
+		break;
+	case type.path.SYNC:
+		resContentType = 'application/json';
+		resBody = await sync();
+		break;
+	case type.path.API:
+		isAsync = true;
+		req.on('data', chunk => reqBody += chunk);
+		req.on('end', async function() {
+			reqBody = parseReqBody(reqBody);
+			resContentType = 'application/json';
+			resBody = await api(reqBody);
+			SendResponse(res, resContentType, resBody);
+		});
+		break;
+	case type.path.RENDER:
+		isAsync = true;
+		req.on('data', chunk => reqBody += chunk);
+		req.on('end', async function() {
+			reqBody = parseReqBody(reqBody);
+			resContentType = 'text/plain';
+			resBody = await render(reqBody);
+			SendResponse(res, resContentType, resBody);
+		});
+		break;
+	case '/':
+		resContentType = 'text/html';
+		resBody = fs.readFileSync(type.file.MAIN);
+		break;
+	case type.path.STYLE:
+		resContentType = 'text/css';
+		resBody = fs.readFileSync(type.file.STYLE);
+	default:
+		if (fs.existsSync('.' + pathname)) {
+			resBody = fs.readFileSync('.' + pathname);
+			if (/\.(js|css)/.test(pathname)) {
+				switch (pathname.match(/\.(js|css)/)[1]) {
+					case type.JS:
+						resContentType = 'application/javascript';
+						break;
+					case type.CSS:
+						resContentTyupe = 'text/css';
+						break;
+					default:
+						resBody = resBody.toString('utf-8');
+						break;
+				}
+			}
+		}
+		break;
+	}
+
+	if (!isAsync) {
+		SendResponse(res, resContentType, resBody);
+	}
+
+}).listen(5000);
 
 
+function SendResponse(res, resContentType, resBody) {
+	if (typeof resBody == 'object' && !(resBody instanceof Buffer)) {
+		try {
+			resBody = JSON.stringify(resBody);
+		} catch {
+			resBody = resBody.toString();
+		}
+	} else if (typeof resBody !== 'string') {
+		resBody = resBody.toString('utf-8')
+	}
 
-
-
-
-  ipcMain.handle('api', (event, which, data) => {
-    var res = api(event, which, data);
-    if (typeof res == Promise) {
-      res.then();
-    }
-  });
-
-
-
-
-
-
-  // ipcMain.handle('stream', (which, data) => Streamer.ReturnStream(which, data));
-  createWindow()
-});
+	res.writeHead(200, {
+		'Content-Type': resContentType
+	});
+	res.end(resBody);
+}

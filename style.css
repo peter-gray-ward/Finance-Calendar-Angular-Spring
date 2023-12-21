@@ -1,5 +1,15 @@
 #calendar * {
-	font-family: system-ui !important;
+	font-family: system-ui;
+}
+
+.desc {
+	background: black;
+    padding: 0.6rem;
+    font-weight: 100;
+    color: white;
+    font-family: Helvetica;
+    font-size: 2.3rem;
+    text-align: justify;
 }
 
 /* width */
@@ -57,7 +67,6 @@ body footer iframe {
 	display: none;
 }
 
-
 body.music footer {
 	display: flex;
 	flex-direction: column;
@@ -70,7 +79,6 @@ body.music footer iframe {
 	width: calc(100% - 2rem);
 	transition: var(--panel-transition-speed) linear all;
 }
-
 
 body.music footer iframe:first-of-type {
 	margin-top: 1.25rem;
@@ -117,11 +125,8 @@ body.complex #left-panel {
 }
 
 #left {
-/*	background: url(background.png);*/
-/*	display: none;*/
 	backdrop-filter: blur(10px);
 	z-index: 1;
-
     background: var(--background);
     color: var(--color);
 	position: absolute;
@@ -130,8 +135,6 @@ body.complex #left-panel {
 	box-sizing: border-box;
 	padding: 0.5rem;
 	flex-direction: column;
-	
-/*	transform: translateX(-100%);*/
 	transition: var(--panel-transition-speed) linear all;
 }
 
@@ -158,6 +161,7 @@ body.complex #left-panel {
 #right-panel {
 	width: 40%;
     position: absolute;
+    left: 60%;
     height: 100%;
     float: right;
     background-size: contain;
@@ -174,6 +178,12 @@ body.complex #left-panel {
 	height: 100%;
 	box-sizing: border-box;
 	padding: 0.5rem;
+}
+
+#top {
+	position: absolute;
+	left: 5px;
+	top: 5px;
 }
 
 #presents-controller {
@@ -452,7 +462,6 @@ body.grabbing .day-block:hover {
 	background: rgba(0, 255, 0, 0.15);
 	transform: translate(0, -1.25rem);
 }
-
 
 .present-container .delete, .present-container .buy {
     width: 2rem;
@@ -823,6 +832,10 @@ header button:hover {
 	overflow-x: hidden;
 }
 
+.day-block:hover {
+	
+}
+
 .day-block.opaque .day-date {
 
     color: lightgray;
@@ -848,6 +861,8 @@ header button:hover {
     width: 100%;
     justify-content: flex-end;
     display: flex;
+    transform-style: preserve-3d;
+/*    perspective: 1000px;*/
 }
 
 .day-date {
@@ -1092,12 +1107,15 @@ header button:hover {
 }
 
 .total {
+	display: flex;
+	justify-content: space-around;
 	flex-grow: 1;
     text-align: center;
     padding: 0.25rem 0;
     font-weight: 700;
     font-size: 1.25rem;
     width: 50%;
+/*    transform: translateZ(390px) rotateY(22deg) skew(21deg, 0deg);*/
 }
 
 .total input {
@@ -1338,3 +1356,85 @@ html.dark #total-input {
 	font-size: 1.25rem;
 	background: transparent;
 }
+
+@keyframes waveAnimation {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 100% 0%;
+    }
+}
+
+
+#left.pinstripe.wave {
+	background: repeating-linear-gradient(
+        90deg,
+        #ffffff,
+        #ffffff 1px,
+        #000000 1px,
+        #000000 2px
+    );
+	animation: waveAnimation 5s infinite; /* Adjust the duration (5s here) as needed */
+    background-size: 200% 100%; /* Stretching the background to make the wave animation visible */
+}
+
+#left.pinstripe {
+    background: repeating-linear-gradient(
+        90deg,
+        #ffffff,
+        #ffffff 1px,
+        #000000 1px,
+        #000000 2px
+    );
+}
+
+#left.floral {
+    background: radial-gradient(circle at 25% 25%, #f06, #fff 4px, transparent 4px) 0 0,
+                radial-gradient(circle at 75% 75%, #f06, #fff 4px, transparent 4px) 50% 50%;
+    background-size: 50% 50%;
+}
+
+.combined {
+    position: relative;
+    z-index: 1;
+    /* Pinstripe background */
+    background: repeating-linear-gradient(
+        90deg,
+        #ffffff,
+        #ffffff 1px,
+        #000000 1px,
+        #000000 2px
+    );
+}
+
+.combined::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    /* Floral background */
+    background: radial-gradient(circle at 25% 25%, #f06, #fff 4px, transparent 4px) 0 0,
+                radial-gradient(circle at 75% 75%, #f06, #fff 4px, transparent 4px) 50% 50%;
+    background-size: 50% 50%;
+}
+
+
+
+#add-savings {
+	opacity: 0.25;
+	border: none;
+	background: none;
+}
+
+#add-savings.active {
+	opacity: 1;
+}
+
+
+
+
+

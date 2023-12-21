@@ -1,4 +1,15 @@
 {
-
-  "addSavings": false
+  "addSavings": false,
+  "baseUrl": "api.wellsfargo.com/treasury/balance-reporting/v1",
+  "balancePath": "/balances/report",
+  "consumerKey": "BPLFjgPRzBLCKtDtDcMKMaAydgHGnqga",
+  "consumerSecret": "O43GEVCW43aCTBrA",
+  "apiKey": "Coeo2kAtYEahTFADU2yPC4AsWpEu",
+  "gatewayCompanyId": "2245227474",
+  "gatewayEntityId": "2245227474-56ac0-8ac34",
+  "accountNumber": "8794216484",
+  "pexelApiKey": "pxTkSCNq9BcdLESmmSSdKPH8SjYg0yxa0HpF31QkRw2BucCAFS8vmDwc",
+  "year": 2024,
+  "month": 1,
+  "which": 17
 }

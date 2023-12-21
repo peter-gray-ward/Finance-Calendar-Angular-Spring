@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css" />
+  <script src="jquery.min.js"></script>
+  <title>Finance Calendar</title>
+  <script src="node_modules/moment/min/moment.min.js"></script>
+</head>
+<body>  
+  <button id="expand">☰</button>
+  <div id="left-panel"></div>
+  <main id="main"></main>
+  <button id="music">$</button>
+  <div id="right-panel">
+    <style>
+
+      * {
+        --width: 1000px;
+        --height: 1000px;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+      align-items: center;
+      justify-content: center;
+        background: repeating-linear-gradient(90deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 10px), repeating-linear-gradient(0deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 10px);
+      }
+
+      body {
+        transform-style: preserve-3d;
+      }
+
+
+      main {
+        position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100vh;
+          box-shadow: 0 0 25px 0;
+          padding: 0;
+          transform-style: preserve-3d;
+          perspective: 1200px;
+          overflow: hidden;
+      }
+
+
+      #container {
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transform: rotateX(-15deg);
+      }
+
+      #x-axis, #y-axis, #z-axis {
+        position: absolute;
+        background: blue;
+      }
+
+      #x-axis {
+        width: 100vw;
+        height: 1px;
+        left: 0px;
+        top: calc(50% - 0.5px);
+      }
+
+      #y-axis {
+        height: 100vh;
+        width: 1px;
+        left: calc(50% - 0.5px);
+        top: 0px;
+      }
+
+      .cube {
+        position: absolute;
+        transform-style: preserve-3d;
+      }
+
+      .cube > div {
+        position: absolute;
+      }
+
+      .cube > div:hover {
+        cursor: pointer;
+        background: lawngreen !important;
+      }
+
+
+      #Peter {
+          width: 40px;
+          height: 65px;
+        background: lightblue;
+        border: 1px dotted navyblue;
+        position: absolute;
+        top: calc(50% - 32.5px);
+        left: calc(50% - 20px);
+        transform-style: preserve-3d;
+      }
+    </style>
+    <main id="right-main">
+      <div id="x-axis"></div>
+      <div id="y-axis"></div>
+      <div id="z-axis"></div>
+      <div id="container">
+          <div id="Peter">
+              <div class="face front"></div>
+              <div class="face back"></div>
+              <div class="face left"></div>
+              <div class="face right"></div>
+              <div class="face top"></div>
+              <div class="face bottom"></div>
+          </div>
+      </div>
+    </main>
+
+    <script>
+      var EL = [];
+
+
+      String.prototype.getObjectTransform = function() {
+          const transformObject = {};
+          const regex = /([a-zA-Z0-9]+)\(([^\)]+)\)/g;
+          let match;
+
+          while ((match = regex.exec(this)) !== null) {
+              const [, propertyName, value] = match;
+              if (propertyName === 'scale3d') {
+                  const [x, y, z] = value.split(',').map(v => parseFloat(v));
+                  transformObject.scale = x;
+              } else {
+                  transformObject[propertyName] = parseFloat(value);
+              }
+          }
+
+          return transformObject;
+      };
+
+
+      var width = 1000;
+      var height = 1000;
+      var depth = 1000;
+      var groundLevel = 500;
+      var g = 5;
+      var wInc = width / g;
+      var hInc = height / g;
+      var zInc = depth / g;
+      var main = document.getElementById('right-main');
+      var container = document.getElementById('container');
+
+      for (var x = -g; x < g; x++) {
+        for (var y = 0; y < g; y++) {
+          for (var z = 0; z > -g - 11; z--) {
+            var seaLevel = y * hInc;
+
+
+            var cube = document.createElement('div');
+            cube.classList.add('cube');
+            cube.style.width = wInc + 'px';
+            cube.style.height = hInc + 'px';
+            cube.style.left = x * wInc + 'px';
+            cube.style.top = seaLevel + 'px';
+            cube.classList.add('cube');
+            cube.style.transform = `translateZ(${z * zInc}px)`;
+            // cube.style.perspective = +(width / z) + 'px'
+
+            ['front', 'back', 'left', 'right', 'top', 'bottom'].forEach(function(side) {
+              var e = document.createElement('div');
+              e.style.width = wInc + 'px';
+              e.style.height = hInc + 'px';
+              e.classList.add(side);
+
+              cube.appendChild(e);
+              var tz = wInc / 2;
+
+              if (side == 'front') {
+                e.style.transform = `translateZ(${tz}px)`;
+
+              } else if (side == 'back') {
+                e.style.transform = `rotateY(180deg) translateZ(${tz}px)`;
+
+              } else if (side == 'left') {
+                e.style.transform = `rotateY(-90deg) translateZ(${tz}px)`;
+              } else if (side == 'right') {
+                e.style.transform = `rotateY(90deg) translateZ(${tz}px)`;
+              } else if (side == 'bottom') {
+                e.style.transform = `rotateX(-90deg) translateZ(${tz}px)`;
+
+              } else if (side == 'top') {
+                e.style.transform = `rotateX(90deg) translateZ(${tz}px)`;
+              }
+
+              if (seaLevel >= groundLevel) {
+                e.style.border = '1px dotted';
+                if (side == 'top') {
+                  e.style.background = 'rgba(0,200,200,0.5)'
+                } else if (side == 'bottom') {
+                  e.style.background = 'black';
+                  e.style.border = '2px solid white'
+                } else if (side == 'front') {
+                  e.style.background = 'rgba(211,122,0,0.5)';
+                } else if (side == 'left') {
+                  e.style.background = 'rgba(0,122,255,0.5)';
+                } else if (side == 'right') {
+                  e.style.background = 'rgba(255,0,0,0.5)';
+                }
+                container.appendChild(cube);
+              }
+
+            });
+
+          }
+        }
+      }
+
+      document.querySelectorAll('.top').forEach(function(e) {
+        var z = e.parentElement.style.transform.getObjectTransform();
+        e.innerHTML = `<pre>
+        ${e.parentElement.offsetLeft}, ${e.parentElement.offsetTop}, ${JSON.stringify(z, null, 1)}
+      </pre>`
+      })
+
+      let box = document.getElementById("Peter");
+
+      container.addEventListener('mousemove', (e) => {
+          let x = (e.clientX / window.innerWidth) * 2 - 1;
+          let y = (e.clientY / window.innerHeight) * 2 - 1;
+
+          box.style.transform = `rotateX(${y * 20}deg) rotateY(${x * 20}deg)`;
+      });
+
+
+
+
+
+
+      function AddPeterEvents() {
+        for (var i = 0; i < EL.length; i++) {
+          window.removeEventListener(EL[i].listener, EL[i].function);
+        }
+
+        function keydown(event) {
+          let left = +(box.style.left.split('px')[0]);
+          var top = +(box.style.top.split('px')[0]);
+
+          switch (event.key) {
+          case 'ArrowLeft':
+            box.style.left = `${left - 1}px`;
+            break;
+          case 'ArrowRight':
+            box.style.left = `${left + 1}px`;
+            break;
+          case 'ArrowUp':
+            box.style.top = `${top - 1}px`;
+            break;
+          case 'ArrowDown':
+            box.style.top = `${top + 1}px`;
+            break;
+          }
+        }
+
+        window.addEventListener('keydown', keydown);
+
+        EL.push({
+          listener: 'keydown',
+          function: keydown
+        })
+      }
+
+
+
+
+
+      window.addEventListener('click', function() {
+        AddPeterEvents();
+      });
+    </script>
+
+  </div>
+<script>
+
+var financecalendar = {
+  sync: () => {
+    return new Promise(resolve => {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/sync');
+      xhr.addEventListener('load', function() {
+        var res = JSON.parse(this.response);
+        resolve(res);
+      });
+      xhr.send();
+    });
+  },
+  api: (which, data = {}) => {
+    if (typeof data !== 'object') data = {};
+    data.which = which;
+    return new Promise(resolve => {
+      var xhr = new XMLHttpRequest();
+      xhr.open('PUT', '/api');
+      xhr.addEventListener('load', function() {
+        var res = JSON.parse(this.response);
+        resolve(res);
+      });
+      var req = data;
+      try {
+        req = JSON.stringify(data);
+      } catch {
+        throw new Error("invalid request body");
+      }
+      xhr.send(req);
+    });
+  },
+  render: (which, data = {}) => {
+    console.log('render: ' + which, data)
+    if (typeof data !== 'object') data = {};
+    data.which = which;
+    return new Promise(resolve => {
+      var xhr = new XMLHttpRequest();
+      xhr.open('PUT', '/render');
+      xhr.addEventListener('load', function() {
+        resolve(this.response);
+      });
+      xhr.send(JSON.stringify(data));
+    });
+  }
+};
+
+function CheckTime() {
+  if (new Date().getHours() < 6 || new Date().getHours() > 16) {
+    $('html').addClass('dark');
+  }
+  window.requestAnimationFrame(CheckTime);
+}
+
+window.requestAnimationFrame(CheckTime);
+
+var Checking;
+var Savings;
+var Page;
+var Api;
+var Expenses;
+var Account;
+var Debts;
+var currentEvent = {};
+var updatingCSV = false;
+var scrollTop;
+var expanding = false;
+var music_ing = false;
+var typing = false;
+var hasshift = false;
+var editor;
+var pixabay = '25483695-93658ed46b8876fc2d6419379';
+
+
+
+
+var totalchange = false;
+
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 800;
+}
+
+
+DOMStringMap.prototype.toObject = function() {
+  return JSON.parse(JSON.stringify(this));}
+
+/**
+ * -------------------------------------------------------
+ * Method - Sync - - - - - - - - - - - - - - - - - - - - -
+ * -------------------------------------------------------
+ * 
+ * Synchronizes backend constants with front-end constants
+ * This application should stream its view in { real-time }
+ * 
+ **/
+function Sync(callback) {
+  console.log('Syncing...');
+  financecalendar.sync().then(constants => {
+    console.log(constants)
+    Page = constants.Page;
+    Api = constants.Api;
+    Expenses = constants.Expenses;
+    Debts = constants.Debts;
+    Checking = constants.Checking;
+    Account = constants.Account;
+    updatingCSV = false;
+    render(Page.PRESENTS);
+    render(Page.CALENDAR);
+    if (callback && typeof callback == 'function') {
+      callback();
+    }
+  });
+}
+
+function Left() {
+  financecalendar.render(Page.LEFTPANEL).then(html => {
+    document.getElementById('left-panel').innerHTML = html;
+    addEvents();
+  });
+}
+
+Sync(Left);
+
+function replaceHash(newValue) {
+    // Get the URL without any hash values
+    const baseUrl = window.location.href.split("#")[0];
+    
+    // Append the new hash value
+    const newUrl = baseUrl + "#" + newValue;
+    
+    // Replace the URL in the browser history
+    window.history.replaceState(null, null, newUrl);
+
+    scrollToHash();
+}
+
+function scrollToHash() {
+    // Get the current hash value
+    const hash = window.location.hash;
+
+    if (hash) {
+        // Find the element with a matching id attribute
+        const element = document.querySelector(hash);
+        if (element) {
+            // Scroll the element into view
+            element.scrollIntoView({
+                behavior: 'auto'
+            });
+        }
+    }
+}
+
+var body = () => document.getElementsByTagName('body')[0];
+var main = () => document.getElementById('main');
+var modal = document.createElement('div');
+    modal.classList.add('modal');
+var calendar = () => document.getElementById('calendar');
+var processingScroll = false;
+var scrollMark = document.getElementById('scroll-mark');
+
+function render(which, event, data, offset = 0) {
+  console.log('render: ', data)
+
+  switch (which) {
+    case Page.CALENDAR:
+      financecalendar.render(which, event, data).then(res => {
+        main().innerHTML = res;
+        PostRender();
+        ScrollToFirstOfMonth();
+        processingScroll = false;
+      }); 
+      break;
+    case Page.DAY:
+      financecalendar.render(which, data).then(res => {
+        modal.innerHTML = res;
+        modal.style.top = (event.clientY) + 'px';
+        modal.style.left = event.clientX + 'px';
+        body().appendChild(modal);
+        PostRender();
+        processingScroll = false;
+      });
+      break;
+    case Page.EVENT:
+      financecalendar.render(which, data).then(res => {
+        modal.innerHTML = res;
+
+        modal.style.top = (event.clientY) + 'px';
+        modal.style.left = event.clientX + 'px';
+
+        body().appendChild(modal);
+        PostRender(() => {
+          currentEvent = SerializeEvent();
+          document.querySelectorAll('.date').forEach((el) => {
+            el.addEventListener('change', (event) => {
+              var red = document.getElementById('event-recurrence-end-date');
+              var d = document.getElementById('event-date');
+              if (moment(d.value).isAfter(moment(red.value))) {
+                red.value = d.value;
+              }
+            });
+          });
+          clearTempStyles();
+          var color = document.getElementById(data.id).children[0].classList.contains('negative') ? 'mistyrose' : 'lavender';
+
+          document.getElementById(data.id).classList.add(color);
+
+          addEvents();
+        });
+        processingScroll = false;
+      });
+      break;
+    case Page.PRESENTS:
+      financecalendar.render(which, data).then(res => {
+
+        // document.getElementById('right').innerHTML = res;
+        // setTimeout(() => {
+          // render(Page.PRESENTS);
+        // }, 300);
+        PostRender();
+      });
+      break;
+  }
+
+
+  document.body.style.cursor = 'default';
+}
+
+function ScrollToFirstOfMonth() {
+  setTimeout(function() {
+
+    if (isMobile() && document.getElementById('todays-date') && document.getElementById('month-name').dataset.monthindex == Account.month) {
+      replaceHash("todays-date");
+    } else {
+      replaceHash("first-of-month");
+    }
+  });
+  // var fom = document.querySelectorAll('.first-of-month');
+  // fom = fom.length == 3 ? fom[1] : fom[0];
+  // var fomWeek = fom;
+  // while (fomWeek && fomWeek.classList.contains("week") == false) fomWeek = fomWeek.parentElement;
+  // var headerHeight = +getComputedStyle(document.getElementById('calendar-month-header')).height.split('px')[0];
+  // var weekHeaderHeight = +getComputedStyle(document.getElementById('calendar-week-header')).height.split('px')[0];
+  // calendar().scrollTo(0, fomWeek.offsetTop - headerHeight - weekHeaderHeight);
+}
+
+function ScrollToWeek(i) {
+  var fom = document.getElementById('week-' + i);
+  scrollTop = fom.offsetHeight * i;
+  calendar().scrollTo(0, fom.offsetHeight * i);
+}
+
+function PostRender(callback) {
+  addEvents();
+  adjustModal();
+  if (callback && typeof callback == 'function') {
+    callback();
+  }
+}
+
+function DayContextMenu(event) { 
+}
+
+function ImageSearchComponent() {
+  this.concept = 'atom';
+}
+
+var searching_image = false;
+var image_searches = [];
+var page = 1;
+function SearchImage(keyword) {
+  this.keyword = keyword;
+  this.searchResults = document.createElement('div');
+  this.search = () => {
+    if (searching_image) return;
+    if (this == image_searches[image_searches.length - 1]) {
+      searching_image = true;
+      page = 1;
+      image_searches = [];
+      this.searchResults.addEventListener('scroll', event => {
+        //console.log(event);
+      });
+      SearchWord(this.keyword, this.searchResults);
+    }
+  }
+};
+
+function SearchWord(keyword, searchResults) {
+  var xhr = new XMLHttpRequest();
+  //xhr.open('GET', `https://pixabay.com/api/?key=${pixabay}&q=${keyword.split(' ').join('+')}&order=popular&page=${page}`);
+  xhr.open('GET', `https://api.pexels.com/v1/search?query=${keyword.split(' ').join('+')}`)
+  xhr.setRequestHeader('Authorization', 'pxTkSCNq9BcdLESmmSSdKPH8SjYg0yxa0HpF31QkRw2BucCAFS8vmDwc');
+  xhr.addEventListener('load', function() {
+    var res = JSON.parse(this.response);
+    ShowSearchResults(res.hits, searchResults);
+    window.addEventListener('resize', () => {
+      ShowSearchResults(res.hits, searchResults);
+    });
+  });
+  xhr.send();
+}
+
+function ShowSearchResults(res, results) {
+  if (document.getElementById('search-results')) {
+    document.getElementById('search-results').remove();
+  }
+  var results;
+  results.id = "search-results";
+  results.dataset.page = page++;
+  var src = document.getElementById('present-image');
+  results.style.width = getComputedStyle(src).width;
+  var offset = $(src).offset();
+  results.style.top = offset.top + (+getComputedStyle(src).height.split('px')[0] + 3) + 'px';
+  results.style.left = offset.left + 'px';
+  for (var i = 0; i < res.length; i++) {
+    var img = document.createElement('img');
+    img.classList.add('result-image');
+    img.src = res[i].previewURL;
+    img.style.width = '90%';
+    img.style.margin = '10px auto';
+    img.addEventListener('click', SelectPresentImage);
+    results.appendChild(img);
+  }
+  document.body.appendChild(results);
+  searching_image = false;
+}
+
+function SelectPresentImage(event) {
+  var url = event.srcElement.src;
+  $('#present-image').val(url);
+  document.getElementById('search-results').remove();
+  $('#add-present').css('background', 'url(' + url + ')');
+}
+
+PointerEvent.prototype.isntRoot = function() {
+  return this.srcElement && this.srcElement.parentElement;
+}
+
+var events = {
+  '#calendar:contextmenu': function(event) {
+    var eventItem = event.srcElement;
+    while (eventItem && eventItem.classList.contains('event') == false) {
+      eventItem = eventItem.parentElement;
+    }
+    if (eventItem) {
+      render(Page.EVENT, event, eventItem.dataset.toObject());
+    } else {
+      var dayblock = event.srcElement;
+      while (dayblock && dayblock.classList.contains('day-block') == false) {
+        dayblock = dayblock.parentElement;
+      }
+      if (!dayblock) return;
+      if (!+dayblock.dataset.date) return;
+      clearTempStyles();
+      document.querySelectorAll('.day-block').forEach(element => {
+        if (element == dayblock) {
+          element.classList.add('selected');
+          
+        } else {
+          element.classList.remove('selected');
+        }
+      });
+      render(Page.DAY, event, dayblock.dataset.toObject());
+    }
+  },
+  '#calendar:dblclick': function(event) {
+    if (event.target.id && (event.target.id == 'total-input' || event.target.id == 'add-savings')) return;
+    var eventItem = event.srcElement;
+    while (eventItem && eventItem.classList.contains('event') == false) {
+      eventItem = eventItem.parentElement;
+    }
+    if (eventItem) {
+      render(Page.EVENT, event, eventItem.dataset.toObject());
+    } else {
+      var dayblock = event.srcElement;
+      while (dayblock && dayblock.classList.contains('day-block') == false) {
+        dayblock = dayblock.parentElement;
+      }
+      if (!dayblock) return;
+      if (!+dayblock.dataset.date) return;
+      financecalendar.api(Api.CREATEEVENT, dayblock.dataset.toObject()).then(res => {
+        render(Page.CALENDAR);
+      });
+    }
+  },
+  '#go-to-today:click': function(event) {
+    financecalendar.api(Api.ACCOUNT, {
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear()
+    }).then(() => {
+      render(Page.CALENDAR);
+    });
+  },
+  '#prev-month:click': function(event) {
+    var month = document.getElementById('calendar-month-header');
+    var data = month.dataset.toObject();
+    data.year = +data.year;
+    data.month = +data.month;
+    data.month = data.month == 1 ? 12 : data.month - 1;
+    data.year = data.month == 12 ? data.year - 1 : data.year;
+    financecalendar.api(Api.ACCOUNT, data).then(() => {
+      render(Page.CALENDAR);
+    });
+  },
+  '#next-month:click': function(event) {
+    var month = document.getElementById('calendar-month-header');
+    var data = month.dataset.toObject();
+    data.year = +data.year;
+    data.month = +data.month;
+    data.month = data.month == 12 ? 1 : data.month + 1;
+    data.year = data.month == 1 ? data.year + 1 : data.year;
+    financecalendar.api(Api.ACCOUNT, data).then(() => {
+      render(Page.CALENDAR);
+    });
+  },
+  // '#calendar:scroll': function(event) {
+  //   if (isMobile() || processingScroll) return;
+  //   processingScroll = true;
+  //   scrollTop = event.srcElement.scrollTop;
+  //   var closestRow = ClosestRowToTop();
+  //   if (closestRow == 1 || closestRow == 7) {
+  //     var month = document.getElementById('calendar-month-header');
+  //     var data = month.dataset.toObject()
+  //         data.year = +data.year;
+  //         data.month = +data.month;
+  //     switch (closestRow) {
+  //       case 1:
+  //         if (data.month == 1) {
+  //           data.month = 12;
+  //           data.year -= 1;
+  //         } else {
+  //           data.month -= 1;
+  //         }
+  //         render(Page.CALENDAR, data, null, 0)
+  //         break;
+  //       case 7:
+  //         if (data.month == 12) {
+  //           data.month = 1;
+  //           data.year += 1;
+  //         } else {
+  //           data.month += 1;
+  //         }
+  //         render(Page.CALENDAR, data, null, 0)
+  //         break;
+  //     }
+  //   } else {
+  //     processingScroll = false;
+  //   }
+  //   clearTemps();
+  // },
+  'body:click': function(event) {
+    if (event.isntRoot()
+        && (!event.srcElement.classList.contains('present-text') 
+        && !event.srcElement.parentElement.classList.contains('present-text'))
+    ) {
+      
+      typing = false;
+      editor = null;
+      $('.cursor').removeClass('active');
+    }
+
+
+    if (event.srcElement.id !== 'present-image' 
+      && event.srcElement.id !== 'search-results'
+      && event.srcElement.parentElement.id !== 'search-results'
+      && document.getElementById('search-results')) {
+      document.getElementById('search-results').remove();
+    } 
+    var eventItem = event.srcElement;
+    while (eventItem && eventItem.classList.contains('event') == false) {
+      eventItem = eventItem.parentElement;
+    }
+    if (eventItem) {
+      render(Page.EVENT, event, eventItem.dataset.toObject());
+    } else {
+      var target = event.srcElement || event.target;
+      while (target && target.classList.contains('modal') == false && target.tagName !== 'SECTION') {
+        target = target.parentElement;
+      }
+      if (!target) {
+        Save();
+      }
+    }
+
+  },
+  'window:keyup': event => {
+    var target = event.target;
+    if (typing && editor) {
+      $($(editor).find('.cursor')).addClass('active');
+      var val = event.key;
+      Type(editor, val);
+    }
+  },
+  'window:keydown': event => {
+    if (event.keyCode == 32 && event.target.classList.contains('music')) {
+      event.preventDefault();
+    }
+  },
+  'body:mousemove': event => {
+    var dragContainer = document.getElementById('dragContainer');
+    // console.log(event.clientY)
+    if (dragContainer) {
+      dragContainer.style.top = event.clientY + 'px';
+      dragContainer.style.left = event.clientX + 'px';
+    }
+  },
+  'body:mouseup': event => {
+    if (document.getElementById('dragContainer')) {
+      var dayblock = $(event.target).closest('.day-block');
+      if (dayblock.length) {
+        dayblock = dayblock[0];
+        var event = {
+          month: dayblock.dataset.month,
+          year: dayblock.dataset.year,
+          date: dayblock.dataset.date,
+          summary: $('#dragContainer .present-name').val()
+          // ,amount: $('#dragContainer .present-price').val()
+        };
+        financecalendar.api(Api.CREATEEVENT, event).then(res => {
+          render(Page.CALENDAR);
+        });
+      }
+      document.getElementById('dragContainer').remove();
+      document.body.classList.remove('grabbing');
+    }
+  },
+  '#save:click': Save,
+  '#delete-this:click': DeleteThisEvent,
+  '#delete-all:click': DeleteAllTheseEvents,
+  '#clude-this:click': CludeThisEvent,
+  '#clude-all:click': CludeAllTheseEvents,
+  '#expand:click': () => {
+    if (expanding) return;
+    expanding = true;
+    if ($('body').hasClass('complex') == false) {
+      $('header').addClass('visible');
+      $('body').removeClass('music');
+      setTimeout(function() {
+        $('body').addClass('complex');
+        expanding = false;
+      }, 0);
+    } else {
+      $('body').removeClass('complex');
+      setTimeout(function() {
+        $('header').removeClass('visible');
+        expanding = false;
+      }, 100);
+    }
+  },
+  '#music:click': () => {
+    if (music_ing) return;
+    music_ing = true;
+    if ($('body').hasClass('music') == false) {
+      $('footer').addClass('visible');
+      $('body').removeClass('complex');
+      setTimeout(function() {
+        $('body').addClass('music');
+        music_ing = false;
+      }, 0);
+    } else {
+      $('body').removeClass('music');
+      setTimeout(function() {
+        $('footer').removeClass('visible');
+        music_ing = false;
+      }, 100);
+    }
+  },
+  '.td:keyup': UpdateCSV,
+  '.td:paste': UpdateCSV,
+  '.add-row:click': addRow,
+  '#refresh-calendar:click': refreshData,
+  '#todays-date:click': loadBalance,
+  '.delete-tr:click': event => {
+    var row = event.srcElement;
+    while (row.classList.contains('tr') == false) row = row.parentElement;
+    row = +row.dataset.row;
+    var table = $(event.srcElement).closest('.table')[0].id
+    financecalendar.api(Api.CSV, {
+      index: row,
+      value: 'DELETE',
+      table
+    }).then(() => Sync(Left));
+  },
+  '#think:keyup': event => {
+    if (event.which == 13) {
+      chat();
+    }
+  },
+  '#chat:click': chat,
+  '.summary-textarea.edit:keyup': event => {
+    const summary = event.srcElement.value;
+
+    var modal = document.querySelector('.modal');
+    var summaryReadonly = document.querySelector('#summary-div')
+                                  .querySelector('.summary-textarea.readonly');
+    var summaryEdit = event.srcElement;
+    var ModalContent = event.srcElement.parentElement.children[1];
+
+    var eventPartial = {
+      id: ModalContent.dataset.id,
+      recurrenceid: ModalContent.dataset.recurrenceid,
+      summary
+    };
+
+    financecalendar.api(Api.SAVEEVENT, eventPartial).then(res => {
+      
+      summaryReadonly.innerHTML = summary;
+      // summary_div.children[1].innerHTML = event.srcElement.value;
+
+    });
+  },
+  '#add-present:click': event => {
+    financecalendar.api(Api.ADDPRESENT, {
+      name: document.getElementById('present-name').value,
+      // price: +document.getElementById('present-price').value,
+      image: document.getElementById('present-image').value
+    }).then(res => {
+      render(Page.PRESENTS);
+      $('#presents-controller input').each((index, input) => {
+        $(input).val('');
+      });
+      $('#add-present').css('background', 'rgba(255, 255, 255, 0.15)');
+    });
+  },
+  '#present-image:keyup': event => {
+    var sto = new SearchImage(event.srcElement.value);
+    image_searches.push(sto);
+    setTimeout(sto.search, 1500);
+    $('#add-present').css('background', 'rgba(255, 255, 255, 0.15)');
+  },
+  '.present-text:keyup': event => {
+    if (updatingCSV) return;
+    var pc = $(event.srcElement).closest('.present-container');
+    var index = pc.dataset.index;
+    financecalendar.api(Api.PRESENT, name, {
+      index,
+      notes: event.srcElement.value
+    }).then(Sync);
+  },
+  '.present-textarea:click': event => {
+    editor = null;
+    typing = true;
+
+    var target = event.srcElement;
+    if (target.classList.contains('present-text')) {
+      target = target;
+    } else {
+      while (target && !target.classList.contains('present-text')) {
+        target = target.parentElement;
+      }
+    }
+    editor = target;
+
+    var cur;
+    var appended = false;
+    $('.cursor').remove();
+    var cursor = document.createElement('article');
+    cursor.classList.add('cursor');
+    curloop:
+    for (var i = 0; i < editor.children.length; i++) {
+      if (cur && editor.children[i] == event.srcElement) {
+        cur.after(cursor);
+        appended = true;
+      } else {
+        cur = editor.children[i];
+      }
+    }
+    if (!appended && editor) {
+      editor.appendChild(cursor);
+    }
+
+    $(cursor).addClass('active');
+  },
+  '.delete-present:click': event => {
+    var name = event.target.parentElement.getAttribute('name');
+    financecalendar.api(Api.DELETEPRESENT, name).then(() => {
+      event.target.parentElement.remove()
+    });
+  },
+  '.buy-present:click': event => {
+    var name = event.target.parentElement.getAttribute('name');
+    financecalendar.api(Api.BUYPRESENT, name).then(() => {
+      event.target.parentElement.remove()
+    });
+  },
+  '.present-name:keyup': event => {
+    var pc = $(event.srcElement).closest('.present-container')[0];
+    var name = $(event.srcElement).val();
+    var index = pc.dataset.index;
+    financecalendar.api(Api.PRESENT, {
+      index,
+      name
+    }).then();
+  },
+  '.present-price:keyup': event => {
+    var pc = $(event.srcElement).closest('.present-container')[0];
+    var price = $(event.srcElement).val();
+    var index = pc.dataset.index;
+    financecalendar.api(Api.PRESENT, {
+      index,
+      price
+    }).then();
+  },
+  '.present-container:mousedown': event => {
+    var src = event.srcElement;
+    if ($(src).closest('.present-text').length || src.tagName == 'INPUT' || src.classList.contains('buy') || src.classList.contains('delete')) return;
+    document.body.classList.add('grabbing');
+    var dragContent = event.srcElement.classList.contains('present-container') ? event.srcElement.innerHTML : $(event.srcElement).closest('.present-container').html();
+    var dragContainer = document.createElement('div');
+    dragContainer.id = 'dragContainer';
+    dragContainer.classList.add('present-list');
+    dragContainer.innerHTML = dragContent;
+    dragContainer.style.top = event.clientY + 'px';
+    dragContainer.style.left = event.clientX + 'px';
+    $(dragContainer).find('img')[0].setAttribute('draggable', false);
+    document.body.appendChild(dragContainer);  
+  },
+  '#present-search:keyup': event => {
+    var val = $('#present-search').val();
+    var re = new RegExp(val);
+    $('.present-container').each((index, container) => {
+      var tags = container.dataset.tags.split(',');
+      var matches = false;
+      for (var i = 0; i < tags.length; i++) {
+        if (re.test(tags[i])) {
+          matches = true;
+        }
+      }
+      if (!matches) {
+        $(container).addClass('hidden');
+      } else {
+        $(container).removeClass('hidden');
+      }
+    });
+  },
+  '#present-presents-bought:click': event => {
+    $('#present-presents-bought').toggleClass('selected');
+  
+    if (!$('#present-presents-bought').hasClass('selected')) {
+      $('.bought').addClass('hidden');
+      $('.not-bought').removeClass('hidden');
+    } else {
+      $('.bought').removeClass('hidden');
+      $('.not-bought').addClass('hidden');
+    }
+  },
+  '#total-input:keyup': UpdateTotal,
+  '#total-input:paste': UpdateTotal,
+  '#add-savings:click': event => {
+    financecalendar.api(Api.TOGGLESAVINGS).then(res => {
+      render(Page.CALENDAR);
+    });
+  }
+}
+
+function UpdateTotal(event) {
+  totalchange = true;
+}
+
+function chat() {
+  var message = document.createElement('div');
+  message.classList.add('message');
+  message.innerHTML = document.getElementById('think').value;
+  document.getElementsByClassName('chat-screen')[0].appendChild(message);
+  var msg = document.getElementById('think').value;
+  document.getElementById('think').value = '';
+  financecalendar.api(Api.CHAT, msg).then(response => {
+    $('#think').val('');
+    var responseTime = Math.floor(Math.random() * 3);
+    setTimeout(() => {
+      var responseMessage = document.createElement('div');
+      responseMessage.classList.add('response-message');
+      responseMessage.innerHTML = response;
+      document.getElementsByClassName('chat-screen')[0].appendChild(responseMessage);
+      setTimeout(() => {
+        $('.chat-screen').scrollTop(+$('.chat-screen').css('height').split('px')[0])
+      }, responseTime + 500);
+    }, responseTime * 300);
+  });
+}
+
+function Type(editor, text) {
+  var token = document.createElement('div');
+  token.classList.add('token');
+  var info = true;
+  switch (text.trim().toLowerCase()) {
+  case '':
+    token.classList.add('space');
+    hashift = false;
+    break;
+  case 'shift':
+    hasshift = true;
+    info = false;
+    break;
+  case 'enter':
+    token.classList.add('newline')
+    token.classList.add('token');
+    text = '';
+    hashift = false;
+    break;
+  case '3':
+    if (hasshift) {
+      text = '#';
+    }
+    break;
+  case 'shift3':
+    text = '#';
+    hashift = false;
+    break;
+  case 'backspace':
+    var cur;
+    curloop:
+    for (var i = 0; i < editor.children.length; i++) {
+      if (cur && editor.children[i].classList.contains('cursor')) {
+        cur.remove();
+        break;
+      } else {
+        cur = editor.children[i];
+      }
+    }
+    hashift = false;
+    info = false;
+    break;
+  default:
+    info = true;
+    hashift = false;
+  }
+  token.innerHTML = hashift ? text.toUpperCase() : text;
+  
+  var cursor = $('.cursor.active')[0];
+  
+  if (info) cursor.before(token);
+
+  $($(editor).find('.token')).removeClass('hashtag');
+  var hashashtag = false;
+  $($(editor).find('.token')).each((index, el) => {
+    if (hashashtag) {
+      $(el).addClass('hashtag');
+    }
+    if (el.innerHTML == ' ' || el.classList.contains('space')) {
+      hashashtag = false;
+    }
+    if (el.innerHTML == '#') {
+      hashashtag = true;
+    }
+  });
+
+  var pc = $(editor).closest('.present-container');
+  var newtext = '';
+  var tagging = false;
+  $($(pc).find('.token')).each((index, el) => {
+    if (el.innerHTML == '#') {
+      tagging = true;
+    } else if (el.classList.contains('space')) {
+      if (tagging) {
+        newtext += ',';
+      }
+      tagging = false;
+    } else if (tagging) {
+      newtext += el.innerHTML;
+    }
+  });
+  pc[0].dataset.tags = newtext;
+
+  UpdatePresents(editor);
+}
+
+function loadBalance() {
+  document.body.style.cursor = 'wait';
+  $('#todays-date').css("cursor", "wait");
+  if (totalchange) {
+    var balance = +document.getElementById('total-input').value;
+    financecalendar.api(Api.LOADBALANCE, {
+      checking: balance
+    }).then(() => {
+      totalchange = false;
+      document.body.style.cursor = 'default';
+      $('#todays-date').css("cursor", "default");
+      render(Page.CALENDAR);
+    })
+  } else {
+    financecalendar.api(Api.LOADBALANCE).then(() => {
+      totalchange = false;
+      document.body.style.cursor = 'default';
+      $('#todays-date').css("cursor", "default");
+      render(Page.CALENDAR);
+    });
+  }
+  
+}
+
+function UpdateCSV(event) {
+  if (updatingCSV) return;
+  var table = $(event.srcElement).closest('.table')[0].id
+  updatingCSV = true;
+  var index = event.srcElement.id.split('-').map(Number);
+  financecalendar.api(Api.CSV, {
+    index,
+    value: event.srcElement.value,
+    table
+  }).then(Sync);
+}
+
+function UpdatePresents(editor) {
+  var name = editor;
+  while (name.classList.contains('present-container') == false) {
+    name = name.parentElement;
+  }
+  var index = name.dataset.index;
+  name = name.getAttribute('name');
+  var txt = '';
+  $(editor).children().each((index, div) => {
+    txt += div.innerHTML;
+  });
+  financecalendar.api(Api.PRESENT, {
+    index: index,
+    name: name,
+    notes: txt
+  }).then();
+}
+
+function refreshData() {
+  $('#refresh-calendar').addClass('refreshing');
+  setTimeout(() => {
+    $('#refresh-calendar').removeClass('refreshing');
+    financecalendar.api(Api.REFRESHCALENDAR).then(() => Sync(Left));
+  }, 500);
+  
+}
+
+function addRow() {
+  var table = $(event.srcElement).closest('.table')[0].id
+  financecalendar.api(Api.ADDCSVROW, table).then(() => {
+    Sync(Left);
+  });
+}
+
+function Save() {
+  var newEvent = SerializeEvent();
+  for (var key in newEvent) {
+    if (!currentEvent.hasOwnProperty(key) || newEvent[key] !== currentEvent[key]) {
+      saveEvent();
+      break;
+    }
+  }
+
+  clearTemps();
+}
+
+function CludeThisEvent(event) {
+  var event = SerializeEvent();
+  event.exclude = !event.exclude;
+  financecalendar.api(Api.EDITSINGLEVENT, event).then(res => {
+    render(Page.CALENDAR);
+    clearTemps();
+  });
+}
+
+function CludeAllTheseEvents(event) {
+  var event = SerializeEvent();
+  event.exclude = !event.exclude;
+  financecalendar.api(Api.SAVEEVENT, event).then(res => {
+    render(Page.CALENDAR);
+    clearTemps();
+  });
+}
+
+function DeleteThisEvent(event) {
+  var event = SerializeEvent();
+  financecalendar.api(Api.DELETETHISEVENT, event).then(res => {
+    render(Page.CALENDAR);
+    clearTemps();
+  });
+}
+
+function DeleteAllTheseEvents(event) {
+  var event = SerializeEvent();
+  financecalendar.api(Api.DELETEALLTHESEEVENTS, event).then(res => {
+    render(Page.CALENDAR);
+    clearTemps();
+  });
+}
+
+function SerializeEvent() {
+  var event = {};
+  var modal = $('.modal-content');
+  if (modal.length && modal[0].id == "event-edit") {
+    $(modal).find('input').each((_, input) => {
+      var name = input.name;
+      var value = /date/.test(name) ? moment(input.value).format('yyyy-MM-DD') : input.value;
+
+      if (input.type == 'number') {
+        value = +value;
+      }
+
+      event[name] = value;
+    });
+    $(modal).find('textarea').each((_, input) => {
+      var name = input.name;
+      event[name] = input.value;
+    });
+    $(modal).find('select').each((_, select) => {
+      var name = select.name;
+      var value = select.value;
+      event[name] = value;
+    });
+    event.id = modal[0].dataset.id;
+    event.recurrenceid = modal[0].dataset.recurrenceid;
+    event.exclude = $('#' + modal[0].dataset.id).hasClass('exclude');
+  }
+  return event;
+}
+
+function saveEvent() {
+  var event = SerializeEvent();
+  if (Object.keys(event).length) {
+    financecalendar.api(Api.SAVEEVENT, event).then(res => {
+      render(Page.CALENDAR);
+    });
+  }
+}
+
+function Position_Modal_Main () {
+  var modal = document.querySelector('.modal');
+
+}
+
+function clearTemps() {
+  modal.remove();
+  clearTempStyles();
+}
+
+function clearTempStyles() {
+  document.querySelectorAll('.day-block').forEach(element => {
+    element.classList.remove('selected');
+  });
+  document.querySelectorAll('.event').forEach(element => {
+    element.classList.remove('mistyrose');
+    element.classList.remove('lavender');
+  });
+}
+
+function ReIndexWeeks(dir) {
+  document.querySelectorAll('.week').forEach((element, index) => {
+    element.id = 'week-' + index;
+  });
+  var thisMonth = +document.getElementById('week-5').children[3].dataset.month;
+  document.querySelectorAll('.day-block').forEach((element, index) => {
+    if (+element.dataset.month == thisMonth) {
+      element.classList.remove('opaque');
+    } else {
+      element.classList.add('opaque');
+    }
+  })
+}
+
+function addEvents() {
+  for (var key in events) {
+    var eventClass = key.split(':')[0].trim();
+    var eventType = key.split(':')[1].trim();
+    var el = eventClass == 'window' ? window : document.querySelectorAll(eventClass);
+    if (el == window) {
+      el.addEventListener(eventType, events[key]);
+    } else {
+      el.forEach(element => {
+        element.addEventListener(eventType, events[key]);
+      });
+    }
+  }
+}
+
+var modalHeight = 250;
+var modalWidth = 400;
+function adjustModal() {
+  var top = +modal.style.top.split('px')[0]
+  var left = +modal.style.left.split('px')[0];
+  var right = left + modalWidth;
+  var bottom = top + modalHeight;
+
+  if (bottom > window.innerHeight) {
+    modal.style.top = top - modalHeight + 'px';
+  }
+
+  if (right > window.innerWidth) {
+    modal.style.left = left - modalWidth + 'px';
+  }
+}
+
+function ClosestRowToTop() {
+  var monthHeader = document.getElementById('calendar-month-header');
+  var weekHeader = document.getElementById('calendar-week-header');
+  var scrollTop = calendar().scrollTop;
+  var weekHeight = +getComputedStyle(document.getElementById('week-0')).height.split('px')[0];
+  var i = 0;
+  var dist = Math.abs((weekHeight * i++) - scrollTop);
+
+  while (Math.abs((weekHeight * i) - scrollTop) < dist) {
+    dist = Math.abs((weekHeight * i++) - scrollTop);
+  }
+
+  return i;
+}
+
+window.addEventListener('resize', function(event) {
+  ScrollToFirstOfMonth();
+  clearTemps();
+});
+
+</script>
+
+</body>
+</html>
