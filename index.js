@@ -38,6 +38,7 @@ const Api = {
   SAVEEVENT: 2,
   DELETETHISEVENT: 3,
   DELETEALLTHESEEVENTS: 4,
+  DELETETHISANDFUTUREEVENTS: 4.5,
   CSV: 5,
   ADDEXPENSE: 6,
   REFRESHCALENDAR: 7,
@@ -50,7 +51,8 @@ const Api = {
   EDITSINGLEVENT: 14,
   SUMMARIZE: 15,
   TOGGLESAVINGS: 16,
-  ACCOUNT: 17
+  ACCOUNT: 17,
+  SAVEEVENTINSTANCE: 18
 };
 
 const Expenses = () => loadCsv('expenses');
@@ -145,8 +147,7 @@ function CalculateTotals(events) {
       events[i].total = +total;
     }
   }
-  if (account.addSavings
-    ) {
+  if (account.addSavings) {
     total = GET_TOTAL().checking + GET_TOTAL().saving;
   } else {
     total = GET_TOTAL().checking;
@@ -463,6 +464,18 @@ async function api(event, which, data) {
       events = CalculateTotals(events);
       fs.writeFileSync('./events.json', JSON.stringify(events, null, 2));
       break;
+    case Api.SAVEEVENTINSTANCE:
+      for (var i = 0; i < events.length; i++) {
+        if (events[i].id == data.id) {
+          console.log("JUST THIS", events[i])
+          for (var key in data) {
+            events[i][key] = data[key];
+          }
+        }
+      }
+      events = CalculateTotals(events);
+      fs.writeFileSync('./events.json', JSON.stringify(events, null, 2));
+      break;
     case Api.DELETETHISEVENT:
       // e.id & data.id
       events = events.filter(e => {
@@ -477,11 +490,18 @@ async function api(event, which, data) {
       events = events.filter(e => {
         var condition = (
           e.recurrenceid !== data.recurrenceid 
-        ) || (
-            moment(e.date).isBefore(moment(data.date))
         );
         return condition;
       });
+      fs.writeFileSync('./events.json', JSON.stringify(events, null, 2));
+      break;
+    case Api.DELETETHISANDFUTUREEVENTS:
+      for (var i = 0; i < events.length; i++) {
+        if (events[i].recurrenceid == data.recurrenceid && moment(events[i].date).isSameOrAfter(data.date)) {
+          events[i] = null;
+        }
+      }
+      events = events.filter(e => e);
       fs.writeFileSync('./events.json', JSON.stringify(events, null, 2));
       break;
     case Api.CSV:
@@ -653,15 +673,15 @@ async function render(event, which, data = {}) {
         <div id="modal-event">
           <div id="summary-div">
               <label>Summary</label>
-              <input name="summary" type="text" value="${event.summary}" />
+              <input class="this" name="summary" type="text" value="${event.summary}" />
             </div>
             <div>
               <label>Amount</label>
-              <input type="number" id="event-amount" name="amount" value="${event.amount}" />
+              <input class="this" type="number" id="event-amount" name="amount" value="${event.amount}" />
             </div>
             <div>
               <label>Frequency</label>
-              <select id="event-frequency" name="frequency">
+              <select class="that" id="event-frequency" name="frequency">
                 ${
                   ['Monthly', 'Biweekly', 'Weekly'].map(t => `
                       <option value="${t}" ${event.frequency == t ? 'selected' : ''}>${t}</option>
@@ -671,11 +691,11 @@ async function render(event, which, data = {}) {
             </div>
           <div>
               <label>Date</label>
-              <input class="date" name="date" type="date" id="event-date" value="${moment(event.date).format('yyyy-MM-DD')}" />
+              <input class="date that" name="date" type="date" id="event-date" value="${moment(event.date).format('yyyy-MM-DD')}" />
             </div>
             <div>
               <label>End Date</label>
-              <input class="date" name="recurrenceenddate" type="date" id="event-recurrence-end-date" value="${moment(event.recurrenceenddate).format('yyyy-MM-DD')}" />
+              <input class="date that" name="recurrenceenddate" type="date" id="event-recurrence-end-date" value="${moment(event.recurrenceenddate).format('yyyy-MM-DD')}" />
             </div>
         </div>
         <div class="button-footer">
@@ -684,6 +704,7 @@ async function render(event, which, data = {}) {
           <button id="clude-all">${event.exclude ? 'include' : 'exclude'} all</button>
           <button id="delete-this">delete</button>
           <button id="delete-all">delete all</button>
+          <button id="delete-tafe">delete tafe</div>
         </div>
       </div>`;
     case Page.PRESENTS:

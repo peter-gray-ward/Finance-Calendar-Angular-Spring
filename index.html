@@ -33,8 +33,8 @@
         margin: 0;
         padding: 0;
         display: flex;
-      align-items: center;
-      justify-content: center;
+        align-items: center;
+        justify-content: center;
         background: repeating-linear-gradient(90deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 10px),
               repeating-linear-gradient(0deg, rgba(0,0,0,0.05), rgba(0,0,0,0.05) 1px, transparent 1px, transparent 10px);
       }
@@ -54,7 +54,7 @@
           padding: 0;
           transform-style: preserve-3d;
           perspective: 1200px;
-          overflow: hidden;
+          overflow: auto;
       }
 
 
@@ -111,6 +111,7 @@
         left: calc(50% - 20px);
         transform-style: preserve-3d;
       }
+
     </style>
     <main id="right-main">
       <div id="x-axis"></div>
@@ -758,6 +759,8 @@
           }
         },
         '#save:click': Save,
+        // '.this:keyup': SaveThis,
+        // '.that:change': SaveThis,
         '#delete-this:click': DeleteThisEvent,
         '#delete-all:click': DeleteAllTheseEvents,
         '#clude-this:click': CludeThisEvent,
@@ -1180,6 +1183,19 @@
         clearTemps();
       }
 
+
+      function SaveThis(event) {
+        
+        var eventId = undefined
+        var eventEdit = event.srcElement
+        while (eventEdit.id !== "event-edit") {
+          eventEdit = eventEdit.parentElement;
+        }
+        eventId = eventEdit.dataset.id;
+
+        electron.api(Api.SAVEEVENTINSTANCE, eventId)
+      }
+
       function CludeThisEvent(event) {
         var event = SerializeEvent();
         event.exclude = !event.exclude;
@@ -1340,65 +1356,6 @@
       });
     </script>
 
-    <script by="CGPT">
-      var CSSTemplate = {
-        animation: (
-          animation_duration,
-          animation_name,
-          animation_interation_count, 
-          duration
-        ) => `${animation_duration}s ${animation_name} ${animation_direction} ${animation_interation_count}`
-      };
-      var AnimationFrameCache = {
-        change_interval_sec: 0.01
-      };
-
-      Object.defineProperty(Array.prototype, 'asObject', {
-        enumerable: false,
-        value: function() {
-          var res = {};
-          for (var i = 0; i < this.length; i++) {
-            res[i] = this[i];
-          }
-          return res;
-        },
-        enumerable: false
-      });
-
-      Object.defineProperty(String.prototype, 'cssAnimation', {
-        enumerable: false,
-        value: function() {
-          var o = this.split(' ').asObject();
-          var keys = {
-            "0": "animation-duration",
-            "1": "animation-timing-function",
-            "2": "animation-delay",
-            "3": "animation-iteration-count",
-            "4": "animation-direction",
-            "5": "animation-fill-mode",
-            "6": "animation-play-state",
-            "7": "animation-name"
-          };
-          for (var key in keys) {
-            o[key] = keys[key];
-            delete keys[key];
-          }
-          return o;
-        }
-      });
-
-
-
-
-      var LeftPinstripeWaveAnimationFrame = function() {
-        var element = document.querySelector('#left.pinstripe.wave');
-        var element_style = getComputedStyle(element);
-
-        // repeat
-      };
-
-      // window.requestAnimationFrame(LeftPinstripeWaveAnimationFrame);
-    </script>
 
   </body>
 </html>

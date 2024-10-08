@@ -121,6 +121,15 @@
     </main>
 
     <script>
+
+function LoanPaymentPlan(
+  currentBalance,
+  interestRate
+) {
+  
+}
+
+
       var EL = [];
 
 
@@ -809,9 +818,11 @@ var events = {
       document.body.classList.remove('grabbing');
     }
   },
+  '#save-this:click': SaveThis,
   '#save:click': Save,
   '#delete-this:click': DeleteThisEvent,
   '#delete-all:click': DeleteAllTheseEvents,
+  '#delete-tafe:click': DeleteThisAndFutureEvents,
   '#clude-this:click': CludeThisEvent,
   '#clude-all:click': CludeAllTheseEvents,
   '#expand:click': () => {
@@ -871,6 +882,8 @@ var events = {
       chat();
     }
   },
+  '.this:keyup': SaveThis,
+  '.that:change': SaveThis,
   '#chat:click': chat,
   '.summary-textarea.edit:keyup': event => {
     const summary = event.srcElement.value;
@@ -1220,16 +1233,28 @@ function addRow() {
   });
 }
 
-function Save() {
+function Save(saveType = Api.SAVEEVENT, eventId) {
   var newEvent = SerializeEvent();
   for (var key in newEvent) {
     if (!currentEvent.hasOwnProperty(key) || newEvent[key] !== currentEvent[key]) {
-      saveEvent();
+      saveEvent(saveType);
       break;
     }
   }
 
   clearTemps();
+}
+
+function SaveThis(event) {
+  debugger
+  var eventId = undefined
+  var eventEdit = event.srcElement
+  while (eventEdit.id !== "event-edit") {
+    eventEdit = eventEdit.parentElement;
+  }
+  eventId = eventEdit.dataset.id;
+
+  Save(Api.SAVEEVENTINSTANCE, eventId)
 }
 
 function CludeThisEvent(event) {
@@ -1266,6 +1291,14 @@ function DeleteAllTheseEvents(event) {
   });
 }
 
+function DeleteThisAndFutureEvents(event) {
+  var event = SerializeEvent();
+  financecalendar.api(Api.DELETETHISANDFUTUREEVENTS, event).then(res => {
+    render(Page.CALENDAR);
+    clearTemps();
+  });
+}
+
 function SerializeEvent() {
   var event = {};
   var modal = $('.modal-content');
@@ -1273,11 +1306,9 @@ function SerializeEvent() {
     $(modal).find('input').each((_, input) => {
       var name = input.name;
       var value = /date/.test(name) ? moment(input.value).format('yyyy-MM-DD') : input.value;
-
       if (input.type == 'number') {
         value = +value;
       }
-
       event[name] = value;
     });
     $(modal).find('textarea').each((_, input) => {
@@ -1296,10 +1327,10 @@ function SerializeEvent() {
   return event;
 }
 
-function saveEvent() {
+function saveEvent(saveType) {
   var event = SerializeEvent();
   if (Object.keys(event).length) {
-    financecalendar.api(Api.SAVEEVENT, event).then(res => {
+    financecalendar.api(saveType, event).then(res => {
       render(Page.CALENDAR);
     });
   }

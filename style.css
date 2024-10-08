@@ -595,7 +595,8 @@ body.grabbing .day-block:hover {
 
 #month-name, #year-name {
 	font-family: system-ui;
-	font-weight: 700;
+	font-weight: 400;
+	font-size: 2.05rem;
 }
 
 #year-name {
