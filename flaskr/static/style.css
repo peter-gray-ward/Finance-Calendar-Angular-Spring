@@ -630,24 +630,24 @@ body.grabbing .day-block:hover {
 	white-space: pre;
 }
 
-#expenses .tr .th:nth-of-type(1),
-#expenses .tr .td:nth-of-type(1) {
+#expenses .tr .th:nth-child(1),
+#expenses .tr .td:nth-child(1) {
 	width: 40%;
 }
-#expenses .tr .th:nth-of-type(2),
-#expenses .tr .td:nth-of-type(2) {
+#expenses .tr .th:nth-child(2),
+#expenses .tr .td:nth-child(2) {
 	width: 15%;
 }
-#expenses .tr .th:nth-of-type(3),
-#expenses .tr .td:nth-of-type(3) {
+#expenses .tr .th:nth-child(3),
+#expenses .tr .td:nth-child(3) {
 	width: 15%;
 }
-#expenses .tr .th:nth-of-type(4),
-#expenses .tr .td:nth-of-type(4) {
+#expenses .tr .th:nth-child(4),
+#expenses .tr .td:nth-child(4) {
 	width: 15%;
 }
-#expenses .tr .th:nth-of-type(5),
-#expenses .tr .td:nth-of-type(5) {
+#expenses .tr .th:nth-child(5),
+#expenses .tr .td:nth-child(5) {
 	width: 15%;
 }
 
@@ -1475,6 +1475,32 @@ html.dark #total-input {
 }
 
 
+.select-container {
+	overflow: visible;
+	max-height: 1rem;
+}
 
+.select {
+	width: 100%;
+	padding: 0;
+	box-sizing: border-box;
+}
 
+input.select:focus, input.select:active {
+	outline: none;
+}
 
+.select-container .option {
+	background: whitesmoke;
+	color: black;
+	padding: 0.1rem;
+}
+
+.select-container .option:hover {
+	cursor: pointer;
+	background: #EBEDEF;
+}
+
+.select .option.selected {
+	display: flex;
+}

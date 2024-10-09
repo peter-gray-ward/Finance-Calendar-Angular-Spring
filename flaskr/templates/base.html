@@ -6,6 +6,7 @@
     <title>{% block title %}Flaskr{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='lib/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='lib/moment.min.js') }}"></script>
 </head>
 <body>
     {% block content %}{% endblock %}

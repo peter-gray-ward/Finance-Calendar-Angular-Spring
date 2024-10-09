@@ -2,7 +2,7 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
 from werkzeug.exceptions import abort
-
+from datetime import datetime
 from flaskr.auth import login_required
 from flaskr.db import get_db
 from . import enums
@@ -30,7 +30,7 @@ def index():
     user_id = session.get('user_id')
     data = load_user_info(user_id)
 
-    return render_template('calendar/index.html', data=data)
+    return render_template('calendar/index.html', data = data, datetime = datetime)
 
 def load_user_info(user_id):
     sync_data = {
@@ -96,14 +96,6 @@ def sync():
     sync_data = load_user_info(user_id)
     return jsonify(sync_data)
 
-
-@bp.route('/render', methods=('POST',))
-@login_required
-def render():
-    form = request.get_json()
-    page = form['page']
-    error = None
-
 @bp.route('/api/add-expense', methods=('POST',))
 @login_required
 def add_expense():
@@ -132,7 +124,7 @@ def add_expense():
     else:
         expense = real_dict_row_to_dict(inserted_row)
         print(f'making a row for expense {expense}')
-        rendered_row = render_template('calendar/expense.html', expense = expense, data = { 'frequency': enums.frequency })
+        rendered_row = render_template('calendar/expense.html', expense = expense, data = { 'frequency': enums.frequency }, datetime = datetime)
         return jsonify({ 'status': 'success', 'html': rendered_row }), 201
 
 @bp.route('/api/delete-expense/<expense_id>', methods=('DELETE',))
@@ -152,6 +144,64 @@ def delete_expense(expense_id):
         db.commit()
     except Exception as e:
         return jsonify({ 'status': 'error', 'error': f'Error deleting expense: {e}' }), 500
+    else:
+        return jsonify({ 'status': 'success' }), 200
+
+@bp.route('/api/update-expense/<expense_id>', methods=('POST',))
+@login_required
+def update_expense(expense_id):
+    user_id = session.get('user_id')
+    error = None
+    body = request.get_json()
+
+    name = body.get('name')
+    amount = body.get('amount')
+    startdate = body.get('startdate')
+    recurrenceenddate = body.get('recurrenceenddate')
+    frequency = body.get('frequency')
+    expense_id = body.get('id')
+
+    # Validation
+    if not name or len(name) > 255:
+        return jsonify({'status': 'error', 'error': 'Name is required and should not exceed 255 characters.'}), 400
+
+    if amount is None or not isinstance(amount, (int, float)) or amount <= 0:
+        return jsonify({'status': 'error', 'error': 'Amount is required and must be a positive number.'}), 400
+
+    # Validate the start date format (YYYY-MM-DD)
+    try:
+        startdate = datetime.strptime(startdate, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({'status': 'error', 'error': 'Start date must be in the format YYYY-MM-DD.'}), 400
+
+    # Validate the recurrence end date format (if provided)
+    if recurrenceenddate:
+        try:
+            recurrenceenddate = datetime.strptime(recurrenceenddate, '%Y-%m-%d')
+        except ValueError:
+            return jsonify({'status': 'error', 'error': 'Recurrence end date must be in the format YYYY-MM-DD.'}), 400
+
+    # Validate frequency (assume predefined options like 'daily', 'weekly', 'monthly')
+    valid_frequencies = ['daily', 'weekly', 'bi-weekly', 'monthly', 'yearly']
+    if frequency not in valid_frequencies:
+        return jsonify({'status': 'error', 'error': f'Frequency must be one of {valid_frequencies}.'}), 400
+
+
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            '''
+            UPDATE "expense"
+            SET name = %s, amount = %s, startdate = %s, recurrenceenddate = %s, frequency = %s
+            WHERE id = %s
+            AND user_id = %s
+            ''',
+            (name, amount, startdate, recurrenceenddate, frequency, expense_id, user_id,)
+        )
+        db.commit()
+    except Exception as e:
+        return jsonify({ 'status': 'error', 'error': f'Error updating expense: {e}' }), 500
     else:
         return jsonify({ 'status': 'success' }), 200
 
