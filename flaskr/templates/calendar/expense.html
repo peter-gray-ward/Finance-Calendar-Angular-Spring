@@ -1,0 +1,13 @@
+<div class="tr data" data-id="{{ expense.id }}">
+	<input class="td" type="text">
+	<select class="td" type="selec">
+		<option>Frequency</option>
+		{% for frequency in data.frequency %}
+			<option value="{{ frequency }}">{{ frequency }}</option>
+		{% endfor %}
+	</select>
+	<input class="td" type="number" value="{{ expense.amount }}">
+	<input class="td" type="date" value="{{ expense.startdate }}">
+	<input class="td" type="date" value="{{ expense.recurrenceenddate }}">
+	<button class="delete-expense">-</button>
+</div>

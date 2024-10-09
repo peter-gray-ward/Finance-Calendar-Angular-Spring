@@ -1,7 +1,43 @@
 {% extends 'base.html' %}
 
-{% block header %}
-	<h1>{% block title %}Finance Calendar{% endblock %}</h1>
+{% block content %}
+	<button id="expand">☰</button>
+	<div id="left-panel">
+		<header id="left" style="background:url({{ url_for('static', filename='wallpaper01.webp') }})">
+			<h3>
+				<div>Regular Expenses</div>
+			</h3>
+			<div class="table" id="expenses">
+				<div class="tr">
+					<div class="th">Expense</div>
+					<div class="th">Frequency</div>
+					<div class="th">Amount</div>
+					<div class="th">Start Date</div>
+					<div class="th">End Date</div>
+				</div>
+				{% for expense in data.account.expenses %}
+					{% include 'calendar/expense.html' %}
+				{% endfor %}
+			</div>
+			<div class="tr button-row-right">
+				<button class="add-expense">+</button>
+				<button id="refresh-calendar">↺</button>
+			</div>
+		</header>
+	</div>
+	<main id="right-main">
+		<div id="x-axis"></div>
+		<div id="y-axis"></div>
+		<div id="z-axis"></div>
+		<div id="container">
+			<div id="Peter">
+				<div class="face front"></div>
+				<div class="face back"></div>
+				<div class="face left"></div>
+				<div class="face right"></div>
+				<div class="face top"></div>
+				<div class="face bottom"></div>
+			</div>
+		</div>
+	</main>
 {% endblock %}
-
-hello world
