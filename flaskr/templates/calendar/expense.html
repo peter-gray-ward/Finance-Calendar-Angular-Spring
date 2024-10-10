@@ -1,10 +1,16 @@
 <div class="tr data" id="{{ expense.id }}">
-	<input class="td" type="text">
+	<input value="{{ expense.name }}" name="name" class="td" type="text">
 	<div class="td select-container">
-		<input class="select" type="text" placeholder="frequency" data-option="" data-options="{{ data.frequency }}">
+		<input name="frequency" 
+			   value="{{ expense.frequency }}"
+			   class="select" 
+			   type="text" 
+			   placeholder="frequency" 
+			   data-option="" 
+			   data-options="{{ data.frequency }}">
 	</div>
-	<input class="td" type="number" value="{{ expense.amount }}">
-	<input class="td" type="date" value="{{ datetime.now().strftime('%Y-%m-%d') if expense.startdate == None else expense.startdate }}">
-	<input class="td" type="date" value="{{ datetime.now().strftime('%Y-%m-%d') if expense.recurrenceenddate == None else expense.recurrenceenddate }}">
+	<input name="amount" class="td" type="number" value="{{ expense.amount }}">
+	<input name="startdate" class="td" type="date" value="{{ datetime.now().strftime('%Y-%m-%d') if expense.startdate == None else expense.startdate }}">
+	<input name="recurrenceenddate" class="td" type="date" value="{{ datetime.now().strftime('%Y-%m-%d') if expense.recurrenceenddate == None else expense.recurrenceenddate }}">
 	<button class="delete-expense">-</button>
 </div>

@@ -57,24 +57,34 @@ var fc = {
 var SerializeAndSave = undefined;
 
 
-function SerializeExpense(id) {
+function SerializeAndSaveExpense(id) {
   var row = document.getElementById(id);
-  console.log($(row.children[3]).val())
-  return JSON.stringify({
+  var json = JSON.stringify({
     name: row.children[0].value,
     frequency: row.children[1].children[0].value,
     amount: row.children[2].value,
     startdate: moment(row.children[3].value).format('yyyy-MM-DD'),
     recurrenceenddate: moment(row.children[4].value).format('yyyy-MM-DD'),
     expense_id: row.id,
-  })
+  });
+  fc.api(Api.UPDATE_EXPENSE + '/' + id, json);
 }
 
 var events = {
+  '.td:keyup': function(event) {
+    var id = $(event.srcElement).closest('.tr')[0].id;
+    clearTimeout(SerializeAndSave)
+    SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 2000);
+  },
+  '.td:change': function(event) {
+    var id = $(event.srcElement).closest('.tr')[0].id;
+    clearTimeout(SerializeAndSave)
+    SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 2000);
+  },
   '.select:focus': function(event) {
     var input = event.srcElement;
-    if (!input.classList.contains('active')) {
-      input.classList.add('active');
+    if (!input.parentElement.classList.contains('active')) {
+      input.parentElement.classList.add('active');
       var options = eval(input.dataset.options);
       for (var option of options) {
         var el = document.createElement('div');
@@ -87,17 +97,15 @@ var events = {
   },
   '.select:blur': function(event) {
     var input = event.srcElement;
-    input.classList.remove('active');
+    input.parentElement.classList.remove('active');
     input.parentElement.querySelectorAll('.option').forEach(el => el.remove());
   },
   '.option:mousedown': function(event) {
     var id = $(event.srcElement).closest('.tr')[0].id
     var input = event.srcElement.parentElement.querySelector('input.select');
     $(input).val(event.srcElement.innerHTML);
-    SerializeAndSave = setTimeout(function(id) {
-      const expense = SerializeExpense(id);
-      console.log(".... saving", expense)
-    }.bind(null, id), 700);
+    clearTimeout(SerializeAndSave)
+    SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 2000);
   },
   '.add-expense:click': function(event) {
     var expenses = $($(event.srcElement).closest('#left')).find('#expenses')[0]
@@ -127,6 +135,21 @@ fc.sync().then(res => {
   Page = res.Page;
 });
 
+
+function ScrollToFirstOfMonth(offset = 0) {
+  var fom = document.querySelectorAll('.first-of-month');
+  fom = fom.length == 3 ? fom[1] : fom[0];
+  var fomWeek = fom;
+  while (fomWeek && fomWeek.classList.contains("week") == false) fomWeek = fomWeek.parentElement;
+  var headerHeight = +getComputedStyle(document.getElementById('calendar-month-header')).height.split('px')[0];
+  var weekHeaderHeight = +getComputedStyle(document.getElementById('calendar-week-header')).height.split('px')[0];
+  calendar().scrollTo(0, fomWeek.offsetTop - headerHeight - weekHeaderHeight);
+}
+
+window.addEventListener('resize', function(event) {
+  ScrollToFirstOfMonth(0);
+  //clearTemps();
+});
 
 
 function REMOVE_EVENTS() {
@@ -160,4 +183,4 @@ function ADD_EVENTS() {
 ADD_EVENTS()
 
 
-
+ScrollToFirstOfMonth(0)

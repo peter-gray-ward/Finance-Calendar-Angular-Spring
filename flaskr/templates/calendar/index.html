@@ -25,19 +25,67 @@
 			</div>
 		</header>
 	</div>
-	<main id="right-main">
-		<div id="x-axis"></div>
-		<div id="y-axis"></div>
-		<div id="z-axis"></div>
-		<div id="container">
-			<div id="Peter">
-				<div class="face front"></div>
-				<div class="face back"></div>
-				<div class="face left"></div>
-				<div class="face right"></div>
-				<div class="face top"></div>
-				<div class="face bottom"></div>
+	<div id="main">
+		<div id="calendar-month-header" data-year="{{ data.account.year }}" data-month="{{ data.account.month }}">
+	        <div>
+	          <h1 id="month-name">{{ data.MONTHS[data.account.month - 1] }}</h1>&nbsp;&nbsp;
+	          <h1 id="year-name" style="font-weight:100">{{ data.account.year }}</h1>
+	        </div>
+			<div id="data" class="search">
+				<input style="display:none;" type="test" placeholder="Go for it!" />
+			</div>
+			<div>
+				<button id="prev-month">
+					<span>
+						∟
+					</span>
+				</button>
+				<button id="go-to-today">
+					Today
+				</button>
+				<button id="next-month">
+					<span>
+						∟
+					</span>
+				</button>
 			</div>
 		</div>
-	</main>
+
+		<div id="calendar-week-header">
+			<div class="weekend">Sun</div>
+			<div>Mon</div>
+			<div>Tue</div>
+			<div>Wed</div>
+			<div>Thu</div>
+			<div>Fri</div>
+			<div class="weekend">Sat</div>
+		</div>
+
+		<div id="calendar">
+			{% for week in months %}
+				<div class="week">
+					{% for d in week %}
+						{% include "calendar/day.html" %}
+	          		{% endfor %}
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+	<div id="right-panel">
+		<main id="right-main">
+			<div id="x-axis"></div>
+			<div id="y-axis"></div>
+			<div id="z-axis"></div>
+			<div id="container">
+				<div id="Peter">
+					<div class="face front"></div>
+					<div class="face back"></div>
+					<div class="face left"></div>
+					<div class="face right"></div>
+					<div class="face top"></div>
+					<div class="face bottom"></div>
+				</div>
+			</div>
+		</main>
+	</div>
 {% endblock %}

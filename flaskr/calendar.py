@@ -1,11 +1,83 @@
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
 )
+import json
+import calendar
 from werkzeug.exceptions import abort
 from datetime import datetime
 from flaskr.auth import login_required
 from flaskr.db import get_db
 from . import enums
+
+DOW = [
+  'Monday','Tuesday',
+  'Wednesday','Thursday','Friday',
+  'Saturday', 'Sunday'
+];
+
+MONTHS = [
+  'January','February','March','April',
+  'May','June','July','August',
+  'September','October','November','December'
+]
+
+def PreviousMonth(year, month):
+    if month == 1:
+        year -= 1
+        month = 12
+    else:
+        month -= 1
+    return Month(year, month)
+
+def NextMonth(year, month):
+    if month == 12:
+        year += 1
+        month = 1
+    else:
+        month += 1
+    return Month(year, month)
+
+
+def Month(year, month):
+    cal = calendar.Calendar()
+    
+    month_days = cal.monthdayscalendar(year, month)
+
+    return [
+        [
+            {
+                "date": date,
+                "day": DOW[datetime(year, month, date).weekday()],
+                "events": [],
+                "year": year,
+                "month": month
+            }
+            for week_index, date in enumerate(week) if date != 0  # Skip zeroes (invalid days)
+        ]
+        for week in month_days
+    ]
+
+def Months(weeks):
+    months = []
+    week = []
+    first_sunday_found = False
+    
+    for i in range(len(weeks)):
+        for day in weeks[i]:
+            if not first_sunday_found and day['day'] == 'Sunday':
+                first_sunday_found = True
+
+            if first_sunday_found:
+                week.append(day)
+
+            if len(week) == 7: 
+                months.append(week)
+                week = []
+
+    if week:
+        months.append(week)
+    
+    return months
 
 def real_dict_row_to_dict(real_dict_row):
     """
@@ -21,7 +93,6 @@ def real_dict_row_to_dict(real_dict_row):
         return dict(real_dict_row)  # If it's already a dict, return it
     return {key: value for key, value in real_dict_row.items()}
 
-
 bp = Blueprint('calendar', __name__)
 
 @bp.route('/')
@@ -30,13 +101,58 @@ def index():
     user_id = session.get('user_id')
     data = load_user_info(user_id)
 
-    return render_template('calendar/index.html', data = data, datetime = datetime)
+    current_month = data['account']['month']
+    current_year = data['account']['year']
+
+    three_months_weeks = PreviousMonth(current_year, current_month) + Month(current_year, current_month) + NextMonth(current_year, current_month)
+    months = Months(three_months_weeks)
+    today = datetime.now()
+    today = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    events = []
+
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            '''
+                SELECT *
+                FROM "events"
+                WHERE user_id = %s
+                AND (
+                    date >= DATE_TRUNC('month', DATE '%s-%s-01') - INTERVAL '1 month'  -- Previous month
+                    AND date < DATE_TRUNC('month', DATE '%s-%s-01') + INTERVAL '2 months'  -- Next month
+                )
+
+            ''',
+            (user_id, current_year, current_month, current_year, current_month)
+        )
+        events = cursor.fetchall()
+    except Exception as e:
+        print(e)
+
+
+
+    for weeks in months:
+        for day in weeks:
+            day['today'] = datetime(day['year'], day['month'], day['date']) == today
+            day['todayOrLater'] = datetime(day['year'], day['month'], day['date']) >= today
+            total = 0
+            for event in events:
+                if datetime(day['year'], day['month'], day['date']) == event.date:
+                    day.events.append(event)
+                    total += event['total']
+            day['total'] = total
+
+
+    return render_template('calendar/index.html', data = data, datetime = datetime, months = months, today = today)
 
 def load_user_info(user_id):
     sync_data = {
         'Page': { page.name: page.value for page in enums.Page },
         'Api': enums.Api,
-        'frequency': enums.frequency
+        'frequency': enums.frequency,
+        'MONTHS': MONTHS,
+        'DOW': DOW
     }
     error = None
     user_data = {}
@@ -76,18 +192,34 @@ def load_user_info(user_id):
 
         print([real_dict_row_to_dict(expense) for expense in expenses])
 
+        now = datetime.now()
+
         sync_data['account'] = {
             'id': user_data['id'],
             'name': user_data['name'],
             'checking_balance': user_data['checking_balance'],
             'expenses': [real_dict_row_to_dict(expense) for expense in expenses],
             'debts': debts,
+            'month': session.get('selected_month', now.month),
+            'year': session.get('selected_year', now.year)
         }
     except Exception as e:
         print(f'{e}')
         return sync_data
     else:
         return sync_data
+
+@bp.route('/set_session_info', methods=['POST'])
+def set_session_info():
+    # Assume the client sends the month value as part of the JSON request
+    month = request.json.get('month')
+    year = request.json.get('year')
+    
+    # Save the month in the session
+    session['selected_month'] = month
+    session['selected_year'] = year
+    
+    return jsonify({'message': 'Month saved successfully'}), 200
 
 @bp.route('/sync')
 @login_required
@@ -152,21 +284,17 @@ def delete_expense(expense_id):
 def update_expense(expense_id):
     user_id = session.get('user_id')
     error = None
-    body = request.get_json()
 
-    name = body.get('name')
-    amount = body.get('amount')
-    startdate = body.get('startdate')
-    recurrenceenddate = body.get('recurrenceenddate')
-    frequency = body.get('frequency')
-    expense_id = body.get('id')
+    name = request.json.get('name')
+    amount = request.json.get('amount')
+    startdate = request.json.get('startdate')
+    recurrenceenddate = request.json.get('recurrenceenddate')
+    frequency = request.json.get('frequency')
+    expense_id = request.json.get('expense_id')
 
     # Validation
-    if not name or len(name) > 255:
+    if len(name) > 255:
         return jsonify({'status': 'error', 'error': 'Name is required and should not exceed 255 characters.'}), 400
-
-    if amount is None or not isinstance(amount, (int, float)) or amount <= 0:
-        return jsonify({'status': 'error', 'error': 'Amount is required and must be a positive number.'}), 400
 
     # Validate the start date format (YYYY-MM-DD)
     try:
