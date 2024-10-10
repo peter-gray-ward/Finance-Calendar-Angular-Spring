@@ -1155,6 +1155,7 @@ header button:hover {
     font-weight: 700;
     font-size: 1.25rem;
     width: 50%;
+    height: 1.5rem;
 /*    transform: translateZ(390px) rotateY(22deg) skew(21deg, 0deg);*/
 }
 

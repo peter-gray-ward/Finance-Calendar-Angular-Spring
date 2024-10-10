@@ -21,7 +21,8 @@ class Page(Enum):
 Api = {
   'ADD_EXPENSE': 'add-expense',
   'DELETE_EXPENSE': 'delete-expense',
-  'UPDATE_EXPENSE': 'update-expense'
+  'UPDATE_EXPENSE': 'update-expense',
+  'REFRESH_CALENDAR': 'refresh-calendar'
 }
 
 

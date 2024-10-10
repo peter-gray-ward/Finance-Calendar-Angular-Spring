@@ -4,7 +4,7 @@ var modal = document.createElement('div');
     modal.classList.add('modal');
 var calendar = () => document.getElementById('calendar');
 let Api, Page;
-
+let expanding = false
 var fc = {
   sync: () => {
     return new Promise(resolve => {
@@ -126,6 +126,37 @@ var events = {
         row[0].remove();
       }
     });
+  },
+  '#expand:click': () => {
+    if (expanding) return;
+    expanding = true;
+    if ($('body').hasClass('complex') == false) {
+      $('header').addClass('visible');
+      $('body').removeClass('music');
+      setTimeout(function() {
+        $('body').addClass('complex');
+        expanding = false;
+      }, 0);
+    } else {
+      $('body').removeClass('complex');
+      setTimeout(function() {
+        $('header').removeClass('visible');
+        expanding = false;
+      }, 100);
+    }
+  },
+  '#refresh-calendar:click': function refreshData() {
+    $('#refresh-calendar').addClass('refreshing');
+    setTimeout(() => {
+      $('#refresh-calendar').removeClass('refreshing');
+      fc.api(Api.REFRESH_CALENDAR).then(res => {
+        console.log(res)
+        if (res.status == 'success') {
+          //document.getElementById('calendar').innerHTML = res.weeks;
+        }
+      });
+    }, 500);
+    
   }
 }
 
