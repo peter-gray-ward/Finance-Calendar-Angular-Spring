@@ -905,6 +905,10 @@ header button:hover {
 /*    perspective: 1000px;*/
 }
 
+.day-header * {
+  font-family: cursive !important;
+}
+
 .day-date {
 	height: calc(100% - 6px);
 	margin: 3px;
