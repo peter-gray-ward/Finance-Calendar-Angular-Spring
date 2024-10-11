@@ -4,7 +4,7 @@
     {% if d.today or (d.todayOrLater and d.events | length > 0) %}
       <div class="total">
         {% if d.today %}
-            <input type="number" value="{{ d.total }}" id="total-input" />
+            <input type="number" value="{{ data['account']['checking_balance'] }}" id="total-input" />
         {% else %}
           {{ d.total }}
         {% endif %}

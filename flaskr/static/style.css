@@ -1209,13 +1209,24 @@ header button:hover {
 }
 
 #refresh-calendar {
-	font-size: 1.25rem;
+    font-size: 1.25rem;
+    transition: 0.5s; /* This will control non-infinite transitions, like when adding/removing the class */
 }
 
 #refresh-calendar.refreshing {
-	transform: rotate(-360deg);
-	transition: 0.5s linear all;
+    animation: rotate 1s linear infinite; /* Use animation for infinite looping */
 }
+
+/* Define the keyframes for the rotation */
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
 
 .chat-screen {
 	flex-grow: 1;

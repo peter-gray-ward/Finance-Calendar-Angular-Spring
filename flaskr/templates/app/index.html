@@ -16,7 +16,7 @@
 					<div class="th">End Date</div>
 				</div>
 				{% for expense in data.account.expenses %}
-					{% include 'calendar/expense.html' %}
+					{% include 'app/expense.html' %}
 				{% endfor %}
 			</div>
 			<div class="tr button-row-right">
@@ -62,14 +62,9 @@
 		</div>
 
 		<div id="calendar">
-			{% for week in months %}
-				<div class="week">
-					{% for d in week %}
-						{% include "calendar/day.html" %}
-	          		{% endfor %}
-				</div>
-			{% endfor %}
+			{% include 'app/calendar.html' %}
 		</div>
+		
 	</div>
 	<div id="right-panel">
 		<main id="right-main">

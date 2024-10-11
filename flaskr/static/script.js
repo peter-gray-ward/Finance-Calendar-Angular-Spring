@@ -4,7 +4,10 @@ var modal = document.createElement('div');
     modal.classList.add('modal');
 var calendar = () => document.getElementById('calendar');
 let Api, Page;
-let expanding = false
+let process = {
+  expanding: false,
+  refreshing: false
+}
 var fc = {
   sync: () => {
     return new Promise(resolve => {
@@ -21,7 +24,7 @@ var fc = {
     const isDelete = /delete/.test(which)
     return new Promise(resolve => {
       var xhr = new XMLHttpRequest();
-      xhr.open(isDelete ? 'DELETE' : 'POST', `/api/${which}`);
+      xhr.open(isDelete ? 'DELETE' : 'POST', `/api/${which}`, true);
       xhr.setRequestHeader('content-type', 'application/json')
       xhr.addEventListener('load', function() {
         var res = JSON.parse(this.response);
@@ -128,34 +131,34 @@ var events = {
     });
   },
   '#expand:click': () => {
-    if (expanding) return;
-    expanding = true;
+    if (process.expanding) return;
+    process.expanding = true;
     if ($('body').hasClass('complex') == false) {
       $('header').addClass('visible');
       $('body').removeClass('music');
       setTimeout(function() {
         $('body').addClass('complex');
-        expanding = false;
+        process.expanding = false;
       }, 0);
     } else {
       $('body').removeClass('complex');
       setTimeout(function() {
         $('header').removeClass('visible');
-        expanding = false;
+        process.expanding = false;
       }, 100);
     }
   },
   '#refresh-calendar:click': function refreshData() {
+    if (process.refreshing) return;
+    process.refreshing = true;
     $('#refresh-calendar').addClass('refreshing');
-    setTimeout(() => {
+    fc.api(Api.REFRESH_CALENDAR).then(res => {
       $('#refresh-calendar').removeClass('refreshing');
-      fc.api(Api.REFRESH_CALENDAR).then(res => {
-        console.log(res)
-        if (res.status == 'success') {
-          //document.getElementById('calendar').innerHTML = res.weeks;
-        }
-      });
-    }, 500);
+      process.refreshing = false;
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html;
+      }
+    });
     
   }
 }
