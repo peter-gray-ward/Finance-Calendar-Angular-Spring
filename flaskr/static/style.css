@@ -1607,7 +1607,7 @@ div.graphic {
 
 #event-edit {
 	box-shadow: 0 0 20px 0 cadetblue;
-	background: oldlace;
+	background: #f4ecdc;
 	margin: 0;
 	display: flex;
 	flex-direction: row;
@@ -1631,12 +1631,13 @@ div.graphic {
 
 }
 #event-edit #time-container div:last-of-type input {
-	background: #aeddef;
+	background: transparent;
 	color: black;
 }
 #event-edit #summary-div {
-	padding: 1.2rem;
-	width: calc(70% - 2.4rem);
+	padding: 1.15rem;
+	background: #9cccec;
+	width: calc(69% - 2.4rem);
 	align-self: start;
 }
 #event-edit input:nth-of-type(1) {
@@ -1645,16 +1646,21 @@ div.graphic {
 #event-edit #summary-div label {
 	color: #162136;
 }
-#event-edit input:nth-of-type(2), #event-edit input#event-amount {
-	color: oldlace;
-}
 #event-edit div#amount-div {
 	align-self: end;
-	width: calc(30% - .6rem);
+	width: calc(30.35% - .6rem);
+	background: #f4ecdc;
+	color: #a0ccec;
+}
+#event-edit div.#amount-div input {
+	background: #f4ecdc;
+}
+#event-edit div.#amount-div label {
+	color: black;
 }
 #event-edit input:nth-of-type(2) {
 	align-self: flex-end;
-	margin-right: -1.5rem;
+/*	margin-right: -1.5rem;*/
 }
 #event-edit #date-container input {
 	color: #4388ab;
@@ -1684,23 +1690,21 @@ div.graphic {
 	padding: 0;
 	margin: 0;
 	height: calc(100% - 21px);
-	background: #aeddf5;
+	background: url(/static/checker.png);
+	background-size: contain;
 }
 #amount-div {
 	padding: 0.3rem;
 }
 
 #modal-event #summary-div {
-	background: #c6d7f5 !important;
+	padding: 1.52rem 1.55rem;
+    width: calc(69.88% - 3.1rem);
 }
 
 #modal-event div:nth-of-type(2) {
 	background: #2d497a;
 /*	margin-right: 2rem;*/
-}
-
-#modal-event div:nth-of-type(2) label {
-	color: #FFFFFF;
 }
 
 #modal-event div:nth-of-type(3) {
@@ -1712,7 +1716,7 @@ div.graphic {
 
 #modal-event input[type="date"] {
 	font-size: 0.85rem !important;
-	background: oldlace !important;
+	background: #f4ecdc !important;
 	border: none;
 }
 
