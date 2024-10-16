@@ -1,4 +1,4 @@
-<div class="tr data" id="{{ expense.id }}">
+<div class="tr data id" id="{{ expense.id }}" data-name="expense">
 	<input value="{{ expense.name }}" name="name" class="td" type="text">
 	<div class="td select-container">
 		<input name="frequency" 
@@ -7,7 +7,7 @@
 			   type="text" 
 			   placeholder="frequency" 
 			   data-option="" 
-			   data-options="{{ data.frequency }}">
+			   data-options="{{ FREQUENCIES }}">
 	</div>
 	<input name="amount" class="td" type="number" value="{{ expense.amount }}">
 	<input name="startdate" class="td" type="date" value="{{ datetime.now().strftime('%Y-%m-%d') if expense.startdate == None else expense.startdate }}">

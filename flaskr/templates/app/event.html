@@ -1,0 +1,49 @@
+<div class='id modal-content' data-name="event" id="event-edit" data-id="{{ event.id }}" data-recurrenceid="{{ event.recurrenceid }}">
+    <div id="modal-event">
+        <div id="summary-div">
+            <label>Summary</label>
+            <input class="this" name="summary" type="text" value="{{ event.summary }}" />
+        </div>
+        <div id="amount-div">
+            <label>Amount</label>
+            <input class="this" type="number" id="event-amount" name="amount" value="{{ event.amount }}" />
+        </div>
+        <div id="time-container">
+            <div id="frequency-container">
+                <label>Frequency</label>
+                <div class="td select-container">
+                    <input name="frequency" 
+                            value="{{ event.frequency }}"
+                            class="select" 
+                            type="text" 
+                            placeholder="frequency" 
+                            data-option="" 
+                            data-options="{{ FREQUENCIES }}"
+                            data-weekly-graphic-text="MTWThFSaS"
+                            data-biweekly-graphic-text="2 MTWThFSaS"
+                            data-monthly-graphic-text="Jan-Dec"
+                            data-yearly-graphic-text="1988 - 2048">
+                </div>
+            </div>
+            <div id="date-container">
+                <div>
+                    <label style="color: #053147">Date</label>
+                    <input name="date" class="td" type="date" value="{{ datetime.now().strftime('%Y-%m-%d') if event.date == None else event.date }}">
+                </div>
+                <div>
+                    <label>End Date</label>
+                    <input name="recurrenceenddate" class="td" type="date" value="{{ datetime.now().strftime('%Y-%m-%d') if event.date == None else event.date }}">
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <div class="button-footer">
+        <button id="save-this-intance">save</button>
+        <button id="clude-this">{{ 'exclude' if event.exclude == '1' else 'include' }}</button>
+        <button id="clude-all">{{ 'exclude' if event.exclude == '1' else 'include' }} all</button>
+        <button id="delete-this">delete</button>
+        <button id="delete-all">delete all</button>
+        <button id="delete-tafe">delete tafe</div>
+    </div>
+</div>

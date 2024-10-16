@@ -5,43 +5,48 @@ from flask import (
 )
 
 from werkzeug.security import check_password_hash, generate_password_hash
-
+from datetime import datetime
 from flaskr.db import get_db
+import uuid
 
-bp = Blueprint('auth', __name__, url_prefix='/auth')
+api = Blueprint('auth', __name__, url_prefix='/auth')
 
-@bp.route('/register', methods=('GET', 'POST'))
+@api.route('/register', methods=('GET', 'POST'))
 def register():
     if request.method == 'POST':
         name = request.form['name']
         password = request.form['password']
         
-        db = get_db()
-        error = None
-        
-        if not name:
-            error = 'name is required.'
-        elif not password:
-            error = 'Password is required.'
-        
-        if error is None:
-            try:
-                cursor = db.cursor()
-                cursor.execute(
-                    "INSERT INTO \"user\" (id, name, password) VALUES (uuid_generate_v1(), %s, %s)",
-                    (name, generate_password_hash(password))
-                )
-                db.commit()
-            except db.IntegrityError:
-                error = f"User {name} is already registered."
-            else:
-                return redirect(url_for("auth.login"))
+        with get_db() as db:
+            error = None
+            
+            if not name:
+                error = 'name is required.'
+            elif not password:
+                error = 'Password is required.'
+            
+            if error is None:
+                try:
+                    cursor = db.cursor()
+                    cursor.execute(
+                        '''
+                            INSERT INTO "user" (id, name, password) 
+                            VALUES (%s, %s, %s)
+                        ''',
+                        (str(uuid.uuid4()), name, generate_password_hash(password))
+                    )
+                    db.commit()
+                    cursor.close()
+                except db.IntegrityError:
+                    error = f"User {name} is already registered."
+                else:
+                    return redirect(url_for("auth.login"))
         
         flash(error)
 
     return render_template('auth/register.html')
 
-@bp.route('/login', methods=('GET', 'POST'))
+@api.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
         name = request.form['name']
@@ -51,7 +56,12 @@ def login():
         
         cursor = db.cursor()
         cursor.execute(
-            "SELECT * FROM \"user\" WHERE name = %s", (name,)
+            '''
+                SELECT * 
+                FROM "user" 
+                WHERE name = %s
+            ''', 
+            (name,)
         )
         user = cursor.fetchone()
 
@@ -64,27 +74,35 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user['id']
+            now = datetime.now().date()
+            session['selected_month'] = now.month
+            session['selected_year'] = now.year
             return redirect(url_for('index'))
         
         flash(error)
     
     return render_template('auth/login.html')
         
-@bp.before_app_request
+@api.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
-    db = get_db()
-    
-    if user_id is None:
-        g.user = None
-    else:
-        cursor = db.cursor()
-        cursor.execute(
-            'SELECT * FROM \"user\" WHERE id = %s', (user_id,)
-        )
-        g.user = cursor.fetchone()
+    with get_db() as db:
+        if user_id is None:
+            g.user = None
+        else:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                    SELECT * 
+                    FROM "user" 
+                    WHERE id = %s
+                ''',
+                (user_id,)
+            )
+            g.user = cursor.fetchone()
+            cursor.close()
 
-@bp.route('/logout')
+@api.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('index'))

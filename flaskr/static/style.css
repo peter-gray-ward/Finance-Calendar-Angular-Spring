@@ -1,5 +1,6 @@
 
 
+
 #calendar * {
 	font-family: system-ui;
 }
@@ -35,8 +36,8 @@
 }
 
 * {
+	--saveThisInstanceButtonHeight: 100px;
 	--modal-width: 400px;
-	--modal-height: 250px;
 	--modal-label-font-size: 1.15rem;
 	--modal-font-size: 1.5rem;
 	--panel-transition-speed: 0.1s;
@@ -120,6 +121,7 @@ main#main form * {
 	margin: 0.5rem;
 	font-size: 1.5rem;
 }
+
 
 #main {
 	width: 100%;
@@ -934,7 +936,6 @@ header button:hover {
 .modal {
 	position: absolute;
 	width: var(--modal-width);
-	height: var(--modal-height);
 	box-shadow: 0 0 3px 0;
 	border-radius: 5px;
 	background: ghostwhite;
@@ -951,19 +952,7 @@ header button:hover {
 	font-family: system-ui;
 }
 
-.modal #modal-event {
-	display: inline-table;
-	height: calc(100% - 21px);
-}
 
-.modal #modal-event div {
-	width: calc(50% - 0.2rem);
-    padding: 0.25rem;
-    box-sizing: border-box;
-    display: inline-flex;
-    flex-direction: column;
-    margin: 0.1rem;
-}
 
 /*
 <div class="modal-content">
@@ -1185,10 +1174,8 @@ header button:hover {
 }
 
 .button-footer {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	padding: 0.25rem;
+	padding: 0.15rem;
+	box-sizing: content-box;
 }
 .button-footer button {
 	margin-right: 5px;
@@ -1393,6 +1380,11 @@ html.dark #total-input {
 	color: white;
 }
 
+#calendar *, label {
+	user-select: none;
+	-webkit-user-select: none;
+}
+
 #search-results {
 	background: #5a5b5d;
 	box-shadow: 0 10px 40px 0px;
@@ -1491,13 +1483,26 @@ html.dark #total-input {
 }
 
 
+.tr .select-container {
+	max-height: 1.13rem;
+}
+
 .select-container {
 	overflow: visible;
-	max-height: 1.38rem;
 }
 
 .select-container.active {
 	z-index: 8;
+}
+
+.select-container input {
+	border: none;
+}
+
+.tr .select-container input {
+	font-size: .75rem;
+	border-bottom: 1px solid lightgray;
+	border-right: 1px solid lightgray;
 }
 
 .select {
@@ -1507,14 +1512,50 @@ html.dark #total-input {
 	box-sizing: border-box;
 }
 
+.tr .select-container input[type="date"] {
+	font-size: .5rem;
+}
 input.select:focus, input.select:active {
 	outline: none;
 }
 
-.select-container .option {
-	background: whitesmoke;
+#model-event {
+	display: flex;
+	justify-content: space-between;
+}
+
+#modal-event, .modal #modal-event div.option {
+	box-sizing: border-box;
 	color: black;
-	padding: 0.1rem;
+	box-sizing: content-box;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	background: transparent;
+	justify-content: space-between;
+
+}
+
+#modal-event, .modal #modal-event div.option:hover {
+	background: black;
+	color: white;
+}
+
+#modal-event, .modal #modal-event div.option:hover div.graphic {
+	color: pink;
+	opacity: 1;
+}
+
+#modal-event, .modal #modal-event div.graphic {
+	color: maroon;
+}
+
+div.graphic {
+	width: auto;
+	font-family: PT Mono;
+	background: transparent !important;
+	opacity: 0.8;
+
 }
 
 .select-container .option:hover {
@@ -1522,6 +1563,140 @@ input.select:focus, input.select:active {
 	background: #EBEDEF;
 }
 
+.select-container .option {
+	background: whitesmoke;
+	display: flex;
+	justify-content: space-between;
+}
+
+.select-container .option {
+	color: black;
+	box-sizing: border-box;
+	padding: 0.02rem;
+}
+
 .select .option.selected {
 	display: flex;
 }
+
+.select .option .graphic {
+	font-size: 1rem;
+	font-family: system-ui;
+	font-weight: 100;
+	color: blue;
+	margin-left: 2rem;
+}
+
+
+
+
+
+
+
+#event-edit {
+	box-shadow: 0 0 20px 0 cadetblue;
+	background: oldlace;
+	margin: 0;
+}
+
+
+#event-edit #frequency-container {
+	padding: 0.5rem;
+	width: 50%;
+}
+#event-edit #time-container {
+	display: flex;
+	flex-direction: row;
+}
+#event-edit #time-container div:first-of-type {
+
+}
+#event-edit #time-container div:last-of-type input {
+	background: #aeddef;
+	color: black;
+}
+#event-edit #summary-div {
+	padding: 1.2rem;
+	width: 65%;
+	align-self: start;
+}
+#event-edit input:nth-of-type(1) {
+	color: maroon;
+}
+#event-edit #summary-div label {
+	color: #162136;
+}
+#event-edit input:nth-of-type(2), #event-edit input#event-amount {
+	color: oldlace;
+}
+#event-edit div#amount-div {
+	margin-right: -2rem;
+}
+#event-edit input:nth-of-type(2) {
+	align-self: flex-end;
+	margin-right: -1.5rem;
+}
+#event-edit #date-container input {
+	color: #4388ab;
+}
+#event-edit input:nth-of-type(4) {
+	color: #00CCDD;
+}
+#event-edit input:nth-of-type(5) {
+	color: #00CCDD;
+}
+#event-edit input:nth-of-type(6) {
+	color: #00CCDD;
+}
+#event-edit input:nth-of-type(7) {
+	color: #00CCDD;
+}
+
+#event-edit label {
+	padding: 0.15rem;
+}
+
+
+#modal-event {
+	width: calc(94% - 0.2rem);
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+	margin: 0;
+	height: calc(100% - 21px);
+	background: #aeddf5;
+}
+#amount-div {
+	padding: 0.3rem;
+}
+
+#modal-event #summary-div {
+	background: #c6d7f5 !important;
+}
+
+#modal-event div:nth-of-type(2) {
+	background: #2d497a;
+/*	margin-right: 2rem;*/
+}
+
+#modal-event div:nth-of-type(2) label {
+	color: #FFFFFF;
+}
+
+#modal-event div:nth-of-type(3) {
+	background: cornflowerblue;
+}
+#modal-event div:nth-of-type(3) label {
+	color: #FFFFFF !important;
+}
+
+#modal-event input[type="date"] {
+	font-size: 0.85rem !important;
+	background: oldlace !important;
+	border: none;
+}
+
+.graphic {
+	background: transparent !important;
+}
+
