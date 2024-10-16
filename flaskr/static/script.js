@@ -101,9 +101,9 @@ function SelectOption(event, callback) {
       optionEl.classList.add('option');
       optionEl.innerHTML = `<span>${option}</span>`;
       optionEl.dataset.value = option
-      $(optionEl).css({
-        width: +getComputedStyle(input).width.split('px')[0]
-      })
+      // $(optionEl).css({
+      //   width: +getComputedStyle(input).width.split('px')[0]
+      // })
 
       var graphic = document.createElement('div')
       $(graphic).addClass('graphic')

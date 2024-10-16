@@ -1183,11 +1183,12 @@ header button:hover {
 	margin: 0.5px;
 	border: none;
 	outline: none;
-    height: 20px;
+	flex-grow: 1;
 	color: black;
 	border-radius: 5px;
 	box-shadow: 0 0.35px 1px 0.55px rgb(0 0 0 / 23%);
 }
+
 
 
 .mistyrose {
@@ -1489,6 +1490,7 @@ html.dark #total-input {
 
 .select-container {
 	overflow: visible;
+	max-height: initial;
 }
 
 .select-container.active {
@@ -1533,6 +1535,7 @@ input.select:focus, input.select:active {
 	align-items: center;
 	background: transparent;
 	justify-content: space-between;
+	background: whitesmoke;
 
 }
 
@@ -1556,6 +1559,15 @@ div.graphic {
 	background: transparent !important;
 	opacity: 0.8;
 
+}
+
+.select-container {
+	max-height: 2rem;
+	z-index: 999;
+}
+
+.select-container, #frequency-container, #time-container, #modal-event, .modal-content, #event-edit, .event-modal {
+	overflow: visible;
 }
 
 .select-container .option:hover {
@@ -1597,8 +1609,15 @@ div.graphic {
 	box-shadow: 0 0 20px 0 cadetblue;
 	background: oldlace;
 	margin: 0;
+	display: flex;
+	flex-direction: row;
 }
 
+#event-edit .button-footer {
+	width: calc(15% - 0.2rem);
+	display: flex;
+    flex-direction: column;
+}
 
 #event-edit #frequency-container {
 	padding: 0.5rem;
@@ -1617,7 +1636,7 @@ div.graphic {
 }
 #event-edit #summary-div {
 	padding: 1.2rem;
-	width: 65%;
+	width: calc(70% - 2.4rem);
 	align-self: start;
 }
 #event-edit input:nth-of-type(1) {
@@ -1630,7 +1649,8 @@ div.graphic {
 	color: oldlace;
 }
 #event-edit div#amount-div {
-	margin-right: -2rem;
+	align-self: end;
+	width: calc(30% - .6rem);
 }
 #event-edit input:nth-of-type(2) {
 	align-self: flex-end;
@@ -1658,7 +1678,7 @@ div.graphic {
 
 
 #modal-event {
-	width: calc(94% - 0.2rem);
+	width: calc(85% - 0.2rem);
 	display: flex;
 	flex-direction: column;
 	padding: 0;
