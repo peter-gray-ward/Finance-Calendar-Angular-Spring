@@ -205,6 +205,7 @@ body.grabbing .day-block:hover {
 
 .table {
 	width: 100%;
+	background: black;
 }
 
 .tr {
@@ -263,7 +264,8 @@ body.grabbing .day-block:hover {
 }
 
 .th {
-	font-size: 0.58rem;
+	font-family: Andale Mono;
+	padding: 0.35rem;
 }
 
 input.td {
@@ -1161,7 +1163,6 @@ div.graphic {
 
 .select-container {
 	max-height: 2rem;
-	z-index: 999;
 }
 
 .select-container, #frequency-container, #time-container, #modal-event, .modal-content, #event-edit, .event-modal {

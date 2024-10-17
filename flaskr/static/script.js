@@ -115,9 +115,6 @@ var events = {
     var input = event.srcElement;
     input.classList.add('focusable')
 
-    $(input.parentElement).css({
-      'z-index': 99999
-    })
     if (!input.parentElement.classList.contains('active')) {
       input.parentElement.classList.add('active');
       var options = eval(input.dataset.options);
@@ -126,7 +123,6 @@ var events = {
         optionEl.classList.add('option');
         optionEl.innerHTML = `<span>${option}</span>`;
         optionEl.dataset.value = option
-        optionEl.addEventListener("click", this['button.option:click'])
 
         var graphic = document.createElement('div')
         graphic.classList.add('option')
@@ -138,21 +134,21 @@ var events = {
 
         input.parentElement.appendChild(optionEl);
       }
-
-      
+      ADD_EVENTS()
     }
   },
   
   '.select:blur': function(event) {
-    var inSelectContainer = event.target
-    while (inSelectContainer && inSelectContainer.classList.contains('select-container') == false) {
-      inSelectContainer = inSelectContainer.parentElement
-    }
-    if (inSelectContainer) return
-    var input = event.srcElement;
-    if (!$(input).closest('.select-container').length) return
-    input.parentElement.classList.remove('active');
-    input.parentElement.querySelectorAll('.option').forEach(el => el.remove());
+    // var isOption = event.target
+    // if (isOption.classList.contains('option')) return
+    // while (isOption && isOption.classList.contains('option') == false) {
+    //   isOption = isOption.parentElement
+    // }
+    // if (isOption) return
+    // var input = event.srcElement;
+    // var sc = $(event.target).closest('.select-container')
+    // $(sc).removeClass('active');
+    // sc[0].querySelectorAll('.option').forEach(el => el.remove());
   },
 
   'button.option:click': function(event) {
@@ -161,11 +157,19 @@ var events = {
       tr = tr.parentElement;
     }
 
+    
+    var id = $(event.srcElement).closest('.id')[0].id
+    var name = $(event.srcElement).closest('.id')[0].dataset.name
+    var selectContainer = $(event.srcElement).closest('.select-container')
+    var input = $(selectContainer).find('input.select');
+    var button = $(event.srcElement).closest('button.option')
+
+    
+    $(input).val(button.data().value);
+
+
+
     if (tr) {
-      var id = $(event.srcElement).closest('.id')[0].id
-      var name = $(event.srcElement).closest('.id')[0].dataset.name
-      var input = event.srcElement.parentElement.querySelector('input.select');
-      $(input).val(event.srcElement.dataset.value);
       clearTimeout(SerializeAndSave)
       switch (name) {
       case 'expense':
@@ -177,10 +181,7 @@ var events = {
       default:
         break;
       }
-    } else {
-      var value = event.target.dataset.value;
-      $($(event.target.parentElement).find('input')).val(value)
-    } 
+    }
   },
 
 
@@ -268,15 +269,15 @@ var events = {
 
   // Mouse down: start dragging
   'window:mousedown': (event) => {
-    // var modal = $(event.target).closest('.modal')
-    // if (modal.length && !$(event.target).hasClass('focusable') && !$(event.target).closest('.focuable').length) {
-      
-    //   modal.addClass('gripped');
-    //   modal.data().offset = JSON.stringify({
-    //     x: event.clientX - modal.offset().left,
-    //     y: event.clientY - modal.offset().top
-    //   });
-    // }
+    var isSelect = event.target
+    while (isSelect && isSelect.classList.contains('select-container') == false) {
+      isSelect = isSelect.parentElement;
+    }
+
+    if (!isSelect && document.querySelector('.select-container .option')) {
+      $('.select-container').removeClass('active')
+      document.querySelectorAll('.option').forEach(option => option.remove())
+    }
 
     var isModal = event.target
     while (isModal && isModal.classList.contains('modal') == false) {
@@ -289,7 +290,6 @@ var events = {
     }
 
     if (isModal && !focusable) {
-      console.log(event.target, 'is not focusable')
       isModal.classList.add('gripped')
       $(isModal).data().offset = JSON.stringify({
         x: event.clientX - $(isModal).offset().left,
@@ -310,7 +310,6 @@ var events = {
     }
 
     if (eventItem) {
-      console.log('request for ' + eventItem.id + ' event edit')
       fc.api('GET', Api.GET_EVENT + '/' + eventItem.id).then(res => {
         if (res.status !== 'success') return alert(res.status)
 
@@ -392,10 +391,8 @@ var events = {
 
   // Mouse up: stop dragging
   'window:mouseup': (event) => {
-    console.log(event.target)
     var focusable = event.target
     while (focusable && !focusable.classList.contains('focusable')) focusable = focusable.parentElement
-    console.log('is focusable:', focusable)
     var modal = event.target
     while (modal && modal.classList.contains('modal') == false) {
       modal = modal.parentElement
@@ -564,10 +561,9 @@ function ADD_EVENTS() {
       window.addEventListener(eventType, events[key]);
     } else {
       elements = document.querySelectorAll(selector);
+      console.log(elements.length, selector)
       elements.forEach(element => {
-        if (element.classList.contains('focusable')) {
-          console.log('Adding ' + eventType + ' for ' + selector, element)
-        }
+        console.log('Adding ' + eventType + ' for ' + selector, element)
         element.addEventListener(eventType, events[key]);
       });
     }
