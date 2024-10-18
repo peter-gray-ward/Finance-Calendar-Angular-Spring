@@ -1,7 +1,14 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
+    Blueprint, 
+    g, 
+    redirect, 
+    render_template, 
+    request, url_for, 
+    session, 
+    jsonify, 
+    flash,
+    json
 )
-import json
 import calendar
 import uuid
 from werkzeug.exceptions import abort
@@ -93,7 +100,7 @@ def Months(weeks):
         months.append(week)
     
     return months
-def real_dict_row_to_dict(real_dict_row):
+def as_dict(real_dict_row):
     """
     Transform a RealDictRow to a plain dictionary.
 
@@ -106,7 +113,7 @@ def real_dict_row_to_dict(real_dict_row):
     if isinstance(real_dict_row, dict):
         return dict(real_dict_row)  # If it's already a dict, return it
     return {key: value for key, value in real_dict_row.items()}
-def fetch_all_as_dict(cursor):
+def fetchall_as_dict(cursor):
     """
     Converts the cursor result into a list of dictionaries.
 
@@ -120,7 +127,7 @@ def fetch_all_as_dict(cursor):
     columns = [col[0] for col in cursor.description]
     
     # Fetch all rows and convert each row into a dictionary
-    return [real_dict_row_to_dict(row) for row in cursor.fetchall()]
+    return [as_dict(row) for row in cursor.fetchall()]
 def calculate_totals(events, checking_balance):
     user_id = session.get('user_id')
     try:
@@ -203,14 +210,14 @@ def load_user_info(db, user_id):
             ''',
             (user_id,)
         )
-        expenses = fetch_all_as_dict(cursor)
+        expenses = fetchall_as_dict(cursor)
 
         cursor.execute(
             'SELECT * FROM "debt"'
             ' WHERE user_id = %s',
             (user_id,)
         )
-        debts = fetch_all_as_dict(cursor)
+        debts = fetchall_as_dict(cursor)
 
         now = datetime.now().date()
 
@@ -218,7 +225,7 @@ def load_user_info(db, user_id):
             'id': user_data['id'],
             'name': user_data['name'],
             'checking_balance': user_data['checking_balance'],
-            'expenses': [real_dict_row_to_dict(expense) for expense in expenses],
+            'expenses': [as_dict(expense) for expense in expenses],
             'debts': debts,
             'month': session.get('selected_month', now.month),
             'year': session.get('selected_year', now.year)
@@ -233,14 +240,7 @@ def load_user_info(db, user_id):
 def select_events(db, data, user_id):
     current_month = data['account']['month']
     current_year = data['account']['year']
-    
-    three_months_weeks = PreviousMonth(current_year, current_month) + Month(current_year, current_month) + NextMonth(current_year, current_month)
-    months = Months(three_months_weeks)
-    
-    today = datetime.now()
-    today = today.replace(hour=0, minute=0, second=0, microsecond=0)
-    twodaysfromnow = today + timedelta(days=2)
-    
+     
     try:
         cursor = db.cursor()
         cursor.execute(
@@ -256,48 +256,49 @@ def select_events(db, data, user_id):
             (user_id, current_year, current_month, current_year, current_month)
         )
 
+        events = fetchall_as_dict(cursor)
+        print(f'fetched {len(events)} events')
 
-        events = fetch_all_as_dict(cursor)
-        today = datetime.now().date()
-        tmr = today + timedelta(days=1)
+        cursor.close()
 
         try:
             events = calculate_totals(events, data['account']['checking_balance'])
         except Exception as e:
             return f'Exception calculating totals {e}', 500
 
+        print(f'calculated totals for {len(events)} events')
 
-        # Apply the filter with debug output
-        filtered_events = list(filter(debug_filter, events))
-
-        # Print the final result
-        print('... fetched events', filtered_events)
-
-
-        for weeks in months:
-            for day in weeks:
-                thisday = datetime(day['year'], day['month'], day['date']).date()
-                day['today'] = thisday == today
-                day['todayOrLater'] = thisday >= today
-                total = 0
-                for event in events:
-                    if day['year'] == event['date'].year and day['month'] == event['date'].month and day['date'] == event['date'].day:
-                        day['events'].append(event)
-                        day['total'] = event['total']
-
-
-        cursor.close()
-
-        return (months, events)
-
+        return events
     except Exception as e:
         print(f'Exception selecting events {e}')
+def build_months(data, events):
+    current_month = data['account']['month']
+    current_year = data['account']['year']
+    today = datetime.now().date()
+    
+    three_months_weeks = PreviousMonth(current_year, current_month) + Month(current_year, current_month) + NextMonth(current_year, current_month)
+    months = Months(three_months_weeks)
+    for weeks in months:
+        for day in weeks:
+            thisday = datetime(day['year'], day['month'], day['date']).date()
+            day['today'] = thisday == today
+            day['todayOrLater'] = thisday >= today
+            total = 0
+            for event in events:
+                if day['year'] == event['date'].year and day['month'] == event['date'].month and day['date'] == event['date'].day:
+                    day['events'].append(event)
+                    day['total'] = event['total']
+
+
+
+    return (months, events)
 def RenderApp(db = None, just_calendar = False):
     user_id = session.get('user_id')
     try:
         if db != None:
             data = load_user_info(db, user_id)
-            (months, events) = select_events(db, data, user_id)
+            events = select_events(db, data, user_id)
+            (months, events) = build_months(data, events)
 
             html = render_template('app/calendar.html' if just_calendar else 'app/index.html', data = data, datetime = datetime, months = months, today = datetime.now().date(), FREQUENCIES = FREQUENCIES)
 
@@ -305,7 +306,8 @@ def RenderApp(db = None, just_calendar = False):
         else:
             with get_db() as db:
                 data = load_user_info(db, user_id)
-                (months, events) = select_events(db, data, user_id)
+                events = select_events(db, data, user_id)
+                (months, events) = build_months(data, events)
 
                 html = render_template('app/calendar.html' if just_calendar else 'app/index.html', data = data, datetime = datetime, months = months, today = datetime.now().date(), FREQUENCIES = FREQUENCIES)
 
@@ -331,10 +333,10 @@ def CreateEvent(data, user_id, event=None):
         'exclude': '1' if event and 'exclude' in event else '0',
         'user_id': user_id
     }
-def CreateEventFromExpense(data, user_id, expense=None):
+def CreateEventFromExpense(recurrenceid, data, user_id, expense=None):
     return {
         'id': id(),
-        'recurrenceid': expense['recurrenceid'] if expense and 'recurrenceid' in expense else id(),
+        'recurrenceid': recurrenceid,
         'summary': expense['name'] if expense and 'name' in expense else (data['name'] if data and 'name' in data else '-'),
         
         # Format the date using Python's datetime
@@ -348,7 +350,68 @@ def CreateEventFromExpense(data, user_id, expense=None):
         'exclude': '1' if expense and 'exclude' in expense else '0',
         'user_id': user_id
     }
+def save_event(db, event_id, request):
+    user_id = session['user_id']
+    try:
+        event = request.get_json()
+        event.pop('id', None)
+        cursor = db.cursor()
 
+        previous_fields = {}
+        cursor.execute(
+            '''
+                SELECT *
+                FROM "event"
+                WHERE id = %s
+            ''',
+            (event_id,)
+        )
+
+        previous_fields = fetchall_as_dict(cursor)[0]
+
+        for field in event.keys():
+            cursor.execute(
+                '''
+                    INSERT INTO "event_field_lock"
+                    (user_id, event_id, field)
+                    SELECT %s, %s, %s
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM "event_field_lock"
+                        WHERE event_id = %s AND field = %s
+                    )
+                ''',
+                (
+                    user_id, 
+                    event_id, 
+                    field, 
+                    event_id, 
+                    field
+                )
+            )
+
+
+        sqlquery = '''UPDATE "event" SET '''
+        sqlquery += ', '.join([f'{key} = %({key})s' for key in event.keys()])
+        sqlquery += '''
+            WHERE id = %(id)s
+            AND user_id = %(user_id)s
+        '''
+
+        cursor.execute(sqlquery, {**event, 'id': event_id, 'user_id': user_id})
+
+        db.commit()
+        cursor.close()
+
+        data = load_user_info(db, user_id)
+        events = select_events(db, data, user_id)
+
+        
+
+        return calculate_totals(events, data['account']['checking_balance'])
+    except Exception as e:
+        print(e)
+        return  []
 
 
 
@@ -412,7 +475,7 @@ def add_expense():
     except Exception as e:
         return jsonify({ 'status': 'error', 'error': f'Error adding expense: {e}' }), 500
     else:
-        expense = real_dict_row_to_dict(inserted_row)
+        expense = as_dict(inserted_row)
         print(f'making a row for expense {expense}')
         rendered_row = render_template('app/expense.html', expense = expense, FREQUENCIES = FREQUENCIES, datetime = datetime)
         return jsonify({ 'status': 'success', 'html': rendered_row }), 201          
@@ -583,45 +646,129 @@ def get_event(event_id):
             'html': html
         })
 
-@api.route('/api/update-event/<event_id>', methods=('PUT',))
+@api.route('/api/save-this-event/<event_id>', methods=('PUT',))
 @login_required
-def put_event(event_id):
-    user_id = session['user_id']
-
-    print('put_event(' + event_id + ')')
-    
+def save_this_event(event_id):
     with get_db() as db:
-        data = load_user_info(db, user_id)
-        try:
-            event = json.loads(request.get_json())
 
-            sqlquery = '''UPDATE "event"'''
-            for key in event.keys():
-                sqlquery += f'\nset {key} = %s'
-
-            sqlquery += '''
-                    WHERE id = %s
-                    AND user_id = %s
-                '''
-            cursor = db.cursor()
-
-            print(sqlquery)
-            cursor.execute(sqlquery, event.values())
-            cursor.close()
-
-            calculate_totals()
-
+        if len(save_event(db, event_id, request)):
             html = RenderApp(db, True)
 
             return jsonify({
                 'status': 'success',
                 'html': html
             })
-        except Exception as e:
+        else:
             return jsonify({
                 'status': 'error',
-                'message': e
+                'message': f'Didn\'t save this event {event_id}'
             })
+
+
+@api.route('/api/save-this-and-future-events/<event_id>', methods=('PUT',))
+@login_required
+def save_tafe(event_id):
+    user_id = session['user_id']
+    with get_db() as db:
+        try:
+            data = load_user_info(db, user_id)
+            print('Now I see, I am here again, saving this and future events.')
+            print('~~~~ WIND ~~~~ WIND ~~~~~')
+            print('<i>Why is my reflection not for past events?</i>')
+            print('<i>Because its who I am inside! ~~~ COLORS OF THE WIND ~~~</i>')
+
+            cursor = db.cursor()
+            event = request.get_json()
+            event_id = event.pop('id', None)
+
+
+             ######   ##   ##   ####     #####            #######  ##   ##  #######  ##   ##  ######
+             # ## #   ##   ##    ##     ##   ##            ##   #  ##   ##   ##   #  ###  ##  # ## #
+               ##     ##   ##    ##     #                  ## #     ## ##    ## #    #### ##    ##
+               ##     #######    ##      #####             ####     ## ##    ####    ## ####    ##
+               ##     ##   ##    ##          ##            ## #      ###     ## #    ##  ###    ##
+               ##     ##   ##    ##     ##   ##            ##   #    ###     ##   #  ##   ##    ##
+              ####    ##   ##   ####     #####            #######     #     #######  ##   ##   ####
+
+
+            print(f'<h1>First, lets update this event</h1>')
+            events = save_event(db, event_id, request)
+            if not len(events):
+                return jsonify({ 'status': 'error', 'message': 'Error saving the event in the first place...'})
+
+             #######  ##   ##  ######   ##   ##  ######   #######           #######  ##   ##  #######  ##   ##  ######    #####
+              ##   #  ##   ##  # ## #   ##   ##   ##  ##   ##   #            ##   #  ##   ##   ##   #  ###  ##  # ## #   ##   ##
+              ## #    ##   ##    ##     ##   ##   ##  ##   ## #              ## #     ## ##    ## #    #### ##    ##     #
+              ####    ##   ##    ##     ##   ##   #####    ####              ####     ## ##    ####    ## ####    ##      #####
+              ## #    ##   ##    ##     ##   ##   ## ##    ## #              ## #      ###     ## #    ##  ###    ##          ##
+              ##      ##   ##    ##     ##   ##   ##  ##   ##   #            ##   #    ###     ##   #  ##   ##    ##     ##   ##
+             ####      #####    ####     #####   #### ##  #######           #######     #     #######  ##   ##   ####     #####
+
+
+            sql = '''
+                UPDATE "event" e
+                SET
+                    summary = CASE 
+                                WHEN EXISTS (
+                                    SELECT 1 FROM "event_field_lock" efl
+                                    WHERE efl.event_id = e.id
+                                    AND efl.field = 'summary'
+                                ) THEN summary
+                                ELSE %s
+                              END,
+                    amount = CASE 
+                                WHEN EXISTS (
+                                    SELECT 1 FROM "event_field_lock" efl
+                                    WHERE efl.event_id = e.id
+                                    AND efl.field = 'amount'
+                                ) THEN amount
+                                ELSE %s
+                              END,
+                    frequency = CASE 
+                                  WHEN EXISTS (
+                                      SELECT 1 FROM "event_field_lock" efl
+                                      WHERE efl.event_id = e.id
+                                      AND efl.field = 'frequency'
+                                  ) THEN frequency
+                                  ELSE %s
+                                END
+                WHERE
+                    e.recurrenceid = %s
+                AND
+                    e.date > %s;
+
+            '''
+
+
+            cursor.execute( sql, 
+                (
+                    event['summary'], 
+                    event['amount'], 
+                    event['frequency'], 
+                    event['recurrenceid'], 
+                    event['date']
+                )
+            )
+
+            events = select_events(db, data, user_id)
+
+            calculate_totals(events, data['account']['checking_balance'])
+
+            html = RenderApp(db, True)
+
+            print('done')
+
+            return jsonify({
+                'status': 'success',
+                'html': html
+            })
+
+
+        except Exception as e:
+            print(e)
+            return jsonify({ 'status': 'error' })
+
+
 
 @api.route('/api/refresh-calendar', methods=('GET',))
 @login_required
@@ -647,7 +794,7 @@ def refresh_calendar():
                 ''',
                 (user_id,)
             )
-            expenses = fetch_all_as_dict(cursor)
+            expenses = fetchall_as_dict(cursor)
 
             print(f'Found {len(expenses)} expenses to recur')
 
@@ -655,6 +802,8 @@ def refresh_calendar():
             events = []
             total = 0
             for expense in expenses:
+                recurrenceid = str(uuid.uuid4())
+
                 frequency = expense['frequency'].lower()
                 start = expense['startdate']
                 end = expense['recurrenceenddate']
@@ -668,7 +817,7 @@ def refresh_calendar():
                         'date': start.day
                     }
 
-                    event = CreateEventFromExpense(options, user_id, expense)
+                    event = CreateEventFromExpense(recurrenceid, options, user_id, expense)
 
                     events.append(event)
 

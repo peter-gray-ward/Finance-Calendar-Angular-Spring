@@ -44,11 +44,12 @@
         </div>
     </div>
     <div class="button-footer">
-        <button id="save-this-intance" class="focusable">save</button>
-        <button id="clude-this" class="focusable">{{ 'exclude' if event.exclude == '1' else 'include' }}</button>
-        <button id="clude-all" class="focusable">{{ 'exclude' if event.exclude == '1' else 'include' }} all</button>
+        <button id="save-this-event" class="focusable">save this</button>
+        <button id="save-this-and-future-events" class="focusable">save t&fe</button>
+        <button id="clude-this" class="focusable">{{ 'exclude' if event.exclude == '0' else 'include' }}</button>
+        <button id="clude-all" class="focusable">{{ 'exclude' if event.exclude == '0' else 'include' }} all</button>
         <button id="delete-this" class="focusable">delete</button>
         <button id="delete-all" class="focusable">delete all</button>
-        <button id="delete-tafe" class="focusable">delete tafe</div>
+        <button id="delete-tafe" class="focusable">delete t&fe</div>
     </div>
 </div>

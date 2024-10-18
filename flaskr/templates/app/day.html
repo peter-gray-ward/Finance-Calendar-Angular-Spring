@@ -17,7 +17,7 @@
   <div class="events">
     {% for event in d.events %}
       <div class="event {{ 'exclude' if event.exclude == 1 else '' }}" data-id="{{ event.id }}" id="{{ event.id }}">
-        <span>•</span> <span class="summary">{{ event.summary }}</span> <span>{{ event.amount }}</span>
+        <span>•</span> <span class="summary">{{ event.summary }}</span> <span class="{{ 'positive' if event.amount >= 0 else 'negative' }}">{{ event.amount }}</span>
       </div>
     {% endfor %}
   </div>

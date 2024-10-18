@@ -7,6 +7,9 @@ class Frequency(Enum):
   MONTHLY = 'monthly'
   YEARLY = 'yearly'
 
+class Range(Enum):
+  TMR = "tmr"
+
 class Page(Enum):
     CALENDAR = 1
     DAY = 2
@@ -25,7 +28,8 @@ Api = {
   'REFRESH_CALENDAR': 'refresh-calendar',
   'CHANGE_MONTH_YEAR': 'update-month-year',
   'GET_EVENT': 'get-event',
-  'UPDATE_EVENT': 'update-event'
+  'SAVE_THIS_EVENT': 'save-this-event',
+  'SAVE_THIS_AND_FUTURE_EVENTS': 'save-this-and-future-events'
 }
 
 

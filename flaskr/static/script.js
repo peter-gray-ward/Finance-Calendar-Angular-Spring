@@ -27,6 +27,9 @@ var fc = {
       xhr.setRequestHeader('content-type', 'application/json')
       xhr.addEventListener('load', function() {
         var res = JSON.parse(this.response);
+        if (res.status == 'loggedout') {
+          return location.reload()
+        }
         resolve(res);
       });
       var req = data;
@@ -75,22 +78,16 @@ function SerializeAndSaveExpense(id) {
 function SerializeEvent() {
   var eventEdit = document.getElementById("event-edit");
   var modalEvent = eventEdit.children[0]
-  return JSON.stringify({  
+  return {  
     id: eventEdit.dataset.id,
     recurrenceid: eventEdit.dataset.recurrenceid,
-    summary: $(modalEvent.children[0].children[1].children[0]).val(),
-    date: moment(modalEvent.children[3].children[1].value,).format('yyyy-MM-DD') ,
-    recurrenceenddate: moment(modalEvent.children[4].children[1].value,).format('yyyy-MM-DD'), 
-    amount: $(modalEvent.children[1].children[1].children[0]).val(),
-    frequency: $(modalEvent.children[2].children[1].children[0]).val()
-  });
+    summary: $(modalEvent).find('input[name="summary"]').val(),
+    date: moment($(modalEvent.querySelector('input[name="date"]')).val()).format('yyyy-MM-DD'),
+    recurrenceenddate:  moment($(modalEvent.querySelector('input[name="recurrenceenddate"]')).val()).format('yyyy-MM-DD'), 
+    amount: $(modalEvent.querySelector('input[name="amount"]')).val(),
+    frequency: $(modalEvent.querySelector('input[name="frequency"]')).val()
+  };
 }
-
-function SerializeAndSaveEvent(callback) {
-  var json = SerializeEvent()
-  fc.api('PUT', Api.UPDATE_EVENT + '/' + eventEdit.dataset.id, json).then(callback)
-}
-
 
 
 var chillout = {
@@ -104,12 +101,12 @@ var events = {
   '.td:keyup': function(event) {
     var id = $(event.srcElement).closest('.tr')[0].id;
     clearTimeout(SerializeAndSave)
-    SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 2000);
+    SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 200);
   },
   '.td:change': function(event) {
     var id = $(event.srcElement).closest('.tr')[0].id;
     clearTimeout(SerializeAndSave)
-    SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 2000);
+    SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 200);
   },
   '.select:focus': (event) => {
     var input = event.srcElement;
@@ -130,7 +127,7 @@ var events = {
         $(graphic).html(input.dataset[option + '-graphic-text'])
         optionEl.appendChild(graphic)
 
-        console.log('adding a graphic')
+        // console.log('adding a graphic')
 
         input.parentElement.appendChild(optionEl);
       }
@@ -164,7 +161,7 @@ var events = {
     var input = $(selectContainer).find('input.select');
     var button = $(event.srcElement).closest('button.option')
 
-    
+
     $(input).val(button.data().value);
 
 
@@ -174,9 +171,6 @@ var events = {
       switch (name) {
       case 'expense':
         SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 2000);
-        break
-      case 'event':
-        SerializeAndSave = setTimeout(SerializeAndSaveEvent.bind(null, id), 2000)
         break
       default:
         break;
@@ -400,6 +394,30 @@ var events = {
     if (modal) {
       modal.classList.remove("gripped")
     }
+  },
+
+
+
+  '#save-this-event:click': (e) => {
+    var event = SerializeEvent()
+    fc.api('PUT', Api.SAVE_THIS_EVENT + '/' + event.id, event).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        $('.modal').addClass('saved')
+        setTimeout(() => $('.modal').removeClass('saved'), 1000)
+      }
+    })
+  },
+
+  '#save-this-and-future-events:click': (e) => {
+    var event = SerializeEvent()
+    fc.api('PUT', Api.SAVE_THIS_AND_FUTURE_EVENTS + '/' + event.recurrenceid, event).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        $('.modal').addClass('saved')
+        setTimeout(() => $('.modal').removeClass('saved'), 1000)
+      }
+    })
   }
 }
 
@@ -561,9 +579,9 @@ function ADD_EVENTS() {
       window.addEventListener(eventType, events[key]);
     } else {
       elements = document.querySelectorAll(selector);
-      console.log(elements.length, selector)
+      // console.log(elements.length, selector)
       elements.forEach(element => {
-        console.log('Adding ' + eventType + ' for ' + selector, element)
+        // console.log('Adding ' + eventType + ' for ' + selector, element)
         element.addEventListener(eventType, events[key]);
       });
     }

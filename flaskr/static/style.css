@@ -553,12 +553,17 @@ header button:hover {
 
 .modal * {
 	font-family: system-ui;
+	transition: 0.5s linear outline;
 }
 
 
 .modal.gripped {
 	outline: 3px solid crimson;
 	cursor: grabbing;
+}
+
+.modal.saved {
+	outline: 3px solid lawngreen;
 }
 
 .modal.gripped * {
