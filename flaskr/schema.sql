@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public.debt
 (
-    summary text COLLATE pg_catalog."default",
+    creditor text COLLATE pg_catalog."default",
     id uuid NOT NULL,
     balance double precision,
     interest double precision,

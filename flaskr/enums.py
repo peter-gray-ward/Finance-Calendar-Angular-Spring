@@ -29,7 +29,10 @@ Api = {
   'CHANGE_MONTH_YEAR': 'update-month-year',
   'GET_EVENT': 'get-event',
   'SAVE_THIS_EVENT': 'save-this-event',
-  'SAVE_THIS_AND_FUTURE_EVENTS': 'save-this-and-future-events'
+  'SAVE_THIS_AND_FUTURE_EVENTS': 'save-this-and-future-events',
+  'SAVE_CHECKING_BALANCE': 'save-checking-balance',
+  'ADD_DEBT': 'add-debt',
+  'UPDATE_DEBT': 'update-debt'
 }
 
 

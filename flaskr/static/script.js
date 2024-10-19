@@ -75,6 +75,19 @@ function SerializeAndSaveExpense(id) {
   fc.api('POST', Api.UPDATE_EXPENSE + '/' + id, json);
 }
 
+function SerializeAndSaveDebt(id) {
+  var row = document.getElementById(id);
+  var json = JSON.stringify({
+    id: row.id,
+    creditor: row.children[0].value,
+    account_number: row.children[1].value,
+    balance: row.children[2].value,
+    interest: row.children[3].value,
+    recurrenceid: row.children[4].dataset.recurrenceid
+  });
+  fc.api('POST', Api.UPDATE_DEBT + '/' + id, json);
+}
+
 function SerializeEvent() {
   var eventEdit = document.getElementById("event-edit");
   var modalEvent = eventEdit.children[0]
@@ -98,16 +111,30 @@ var chillout = {
 
 var events = {
 
-  '.td:keyup': function(event) {
+  '.expenses .td:keyup': function(event) {
     var id = $(event.srcElement).closest('.tr')[0].id;
     clearTimeout(SerializeAndSave)
+    console.log('starting a new debounce at line:',104)
     SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 200);
   },
-  '.td:change': function(event) {
+  '.expenses .td:change': function(event) {
     var id = $(event.srcElement).closest('.tr')[0].id;
     clearTimeout(SerializeAndSave)
+    console.log('starting a new debounce at line:',110)
     SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 200);
   },
+
+  '.debts .td:keyup': function(event) {
+    var id = $(event.srcElement).closest('.tr')[0].id;
+    clearTimeout(SerializeAndSave)
+    SerializeAndSave = setTimeout(SerializeAndSaveDebt.bind(null, id), 200);
+  },
+  '.debts .td:change': function(event) {
+    var id = $(event.srcElement).closest('.tr')[0].id;
+    clearTimeout(SerializeAndSave)
+    SerializeAndSave = setTimeout(SerializeAndSaveDebt.bind(null, id), 200);
+  },
+
   '.select:focus': (event) => {
     var input = event.srcElement;
     input.classList.add('focusable')
@@ -168,6 +195,7 @@ var events = {
 
     if (tr) {
       clearTimeout(SerializeAndSave)
+      console.log('starting a new debounce at line:',173)
       switch (name) {
       case 'expense':
         SerializeAndSave = setTimeout(SerializeAndSaveExpense.bind(null, id), 2000);
@@ -177,7 +205,6 @@ var events = {
       }
     }
   },
-
 
   '.add-expense:click': function(event) {
     var expenses = $($(event.srcElement).closest('#left')).find('#expenses')[0]
@@ -227,9 +254,21 @@ var events = {
         document.getElementById('calendar').innerHTML = res.html;
         ADD_EVENTS()
       }
-    });
-    
+    });   
   },
+
+  '#add-debt:click': function(event) {
+    var debts = $($(event.srcElement).closest('#left')).find('#debts')[0]
+    fc.api('POST', Api.ADD_DEBT).then(res => {
+      if (res.status == 'success') {
+        debts.insertAdjacentHTML('beforeend', res.html);
+        ADD_EVENTS()
+      } else {
+        console.error(res.error)
+      }
+    });
+  },
+
   '#prev-month:click': () => {
     fc.api('POST', Api.CHANGE_MONTH_YEAR, { which: 'prev' }).then(res => {
       if (res.status == 'success') {
@@ -261,7 +300,6 @@ var events = {
     })
   },
 
-  // Mouse down: start dragging
   'window:mousedown': (event) => {
     var isSelect = event.target
     while (isSelect && isSelect.classList.contains('select-container') == false) {
@@ -365,7 +403,6 @@ var events = {
     }
   },
 
-  // Mouse move: drag the modal
   'window:mousemove': (event) => {
     var modal = $(event.target).closest('.modal')
     if (modal.length) {
@@ -383,7 +420,6 @@ var events = {
     }
   },
 
-  // Mouse up: stop dragging
   'window:mouseup': (event) => {
     var focusable = event.target
     while (focusable && !focusable.classList.contains('focusable')) focusable = focusable.parentElement
@@ -395,8 +431,6 @@ var events = {
       modal.classList.remove("gripped")
     }
   },
-
-
 
   '#save-this-event:click': (e) => {
     var event = SerializeEvent()
@@ -418,7 +452,31 @@ var events = {
         setTimeout(() => $('.modal').removeClass('saved'), 1000)
       }
     })
-  }
+  },
+
+  '#checking-balance:change': ChangeCheckingBalance,
+  '#checking-balance:onpaste': ChangeCheckingBalance,
+  '#checking-balance:keyup': ChangeCheckingBalance
+}
+
+function ChangeCheckingBalance(e) {
+  clearTimeout(SerializeAndSave)
+  SerializeAndSave = setTimeout(() => {
+    var value = $('#checking-balance').val()
+    try {
+      value = Number(value).toFixed(2)
+      fc.api('POST', Api.SAVE_CHECKING_BALANCE + '/' + value).then(res => {
+        if (res.status == 'success') {
+          document.getElementById('calendar').innerHTML = res.html
+          ScrollToFirstOfMonth()
+          ADD_EVENTS()
+        }
+      })
+    } catch (error) {
+      console.error(error)
+    }
+    
+  }, 800)
 }
 
 events['button.option:click'] = events['button.option:click'].bind(events)
@@ -513,6 +571,9 @@ function add_chessboard_pieces() {
 fc.sync().then(res => {
   Api = res.Api;
   Page = res.Page;
+
+
+  ScrollToFirstOfMonth(0)
 });
 
 
@@ -591,6 +652,3 @@ function ADD_EVENTS() {
 
 
 ADD_EVENTS()
-
-
-ScrollToFirstOfMonth(0)

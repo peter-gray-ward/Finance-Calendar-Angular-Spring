@@ -21,9 +21,6 @@ from . import enums
 import pprint
 import uuid
 
-# {
-#     [recurrenceid]: reduce(lambda a, b: a.total  sorted(filter(lambda e: e['recurrenceid'] = recurrenceid, events), key=e['date'])
-# }
 balance_map = {}
 
 DOW = [
@@ -202,6 +199,8 @@ def load_user_info(db, user_id):
             (user_id,)
         )
         user_data = cursor.fetchone()
+
+        print(11, user_data)
 
         cursor.execute(
             '''
@@ -576,6 +575,68 @@ def update_expense(expense_id):
         if db:
             db.close()
 
+@api.route('/api/add-debt', methods=('POST',))
+@login_required
+def add_debt():
+    user_id = session.get('user_id')
+    error = None
+    inserted_row = {}
+
+    cursor = None
+
+    try:
+        sql_payload = (str(uuid.uuid4()), '-- creditor --', 0.0, 0.0, '-- account number --', '-- link --', user_id)
+        with get_db() as db:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                    INSERT INTO "debt"
+                    (id, creditor, balance, interest, account_number, link, user_id, recurrenceid)
+                     VALUES (%s, %s, %s, %s, %s, %s, %s, NULL)
+                     RETURNING *;
+                ''',
+                sql_payload
+            )
+            inserted_row = cursor.fetchone()
+            db.commit()
+            cursor.close()
+    except Exception as e:
+        return jsonify({ 'status': 'error', 'error': f'Error adding expense: {e}' }), 500
+    else:
+        debt = as_dict(inserted_row)
+        print(f'making a row for debt {debt}')
+        rendered_row = render_template('app/debt.html', debt = debt)
+        return jsonify({ 'status': 'success', 'html': rendered_row }), 201    
+
+@api.route('/api/update-debt/<debt_id>', methods=('POST',))
+@login_required
+def update_debt(debt_id):
+    user_id = session.get('user_id')
+    try:
+        body = json.loads(request.get_json())
+        creditor = body['creditor']
+        balance = body['balance']
+        interest = body['interest']
+        account_number = body['account_number']
+        link = body['link']
+        recurrenceid = body['recurrenceid']
+        debt_id = body['id']
+        with get_db() as db:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                UPDATE "debt"
+                SET creditor = %s, balance = %s, interest = %s,
+                    account_number = %s, link = %s, recurrenceid = %s
+                WHERE id = %s
+                ''',
+                (creditor, balance, interest, account_number, link, recurrenceid, debt_id)
+            )
+            db.commit()
+            cursor.close()
+    except Exception as e:
+        return jsonify({ 'status': 'error', 'message': f'{e}' })
+
 @api.route('/api/update-month-year', methods=('POST',))
 @login_required
 def update_account():
@@ -646,6 +707,42 @@ def get_event(event_id):
             'html': html
         })
 
+@api.route('/api/create-event', methods=('POST',))
+@login_required
+def create_event():
+    user_id = session['user_id']
+    event_date = request.get_json()['date']
+    with get_db() as db:
+        data = load_user_info(db, user_id)
+        event = CreateEvent(data, user_id)
+        try:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                    INSERT INTO "event"
+                    ({', '.join(event.keys())})
+                    VALUES
+                    ({
+                        ''.join(
+                            [
+                                '%s' + ',' if i < len(event.keys()) - 1 else '%s' 
+                                for i, key in enumerate(event.keys())
+                            ]
+                        )
+                    })
+                ''',
+                event.values()
+            )
+            db.commit()
+            cursor.close()
+
+            html = RenderApp(db, True)
+
+            return jsonify({ 'status': 'success', 'html': html })
+        except Exception as e:
+            return jsonify({ 'status': 'error', 'message': f'{e}'})
+
+
 @api.route('/api/save-this-event/<event_id>', methods=('PUT',))
 @login_required
 def save_this_event(event_id):
@@ -663,7 +760,6 @@ def save_this_event(event_id):
                 'status': 'error',
                 'message': f'Didn\'t save this event {event_id}'
             })
-
 
 @api.route('/api/save-this-and-future-events/<event_id>', methods=('PUT',))
 @login_required
@@ -767,6 +863,80 @@ def save_tafe(event_id):
         except Exception as e:
             print(e)
             return jsonify({ 'status': 'error' })
+
+@api.route('/api/save-checking-balance/<float:checking_balance>', methods=('POST',))
+@login_required
+def save_checking_balance(checking_balance):
+    user_id = session['user_id']
+    with get_db() as db:
+        try:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                    UPDATE "user"
+                    SET checking_balance = %s
+                    WHERE id = %s
+                ''',
+                (checking_balance,user_id,)
+            )
+            db.commit()
+            html = RenderApp(db, True)
+            return jsonify({ 'status': 'success', 'html': html })
+        except Exception as e:
+            print(e)
+            return jsonify({ 'status': 'error' })
+
+# @api.route('/api/delete-this-event/<event_id>', methods=('DELETE',))
+# @login_required
+# def delete_this_event(event_id):
+#     user_id = session['user_id']
+#     with get_db() as db:
+#         try:
+#             cursor = db.cursor()
+#             cursor.execute(
+#                 '''
+#                 DELETE FROM "event"
+#                 WHERE id = %s
+#                 ''',
+#                 (event_id,)
+#             )
+#             db.commit()
+
+#             html = RenderApp(db, True)
+
+#             return jsonify({ 'status': 'success', 'html': html })
+#         except Exception as e:
+#             return jsonify({ 'status': 'error', message: f'{e}' })
+
+# @api.route('/api/delete-this-and-future-events/<event_id>/<recurrenceid>', methods=('DELETE',))
+# @login_required
+# def delete_this_event(event_id, recurrenceid):
+#     user_id = session['user_id']
+#     with get_db() as db:
+#         try:
+#             cursor = db.cursor()
+#             cursor.execute(
+#                 '''
+#                 DELETE FROM "event"
+#                 WHERE recurrenceid = %s
+#                 AND date > (
+#                     SELECT date
+#                     FROM "event"
+#                     WHERE id = %s
+#                 )
+#                 ''',
+#                 (recurrenceid, event_id,)
+#             )
+#             db.commit()
+            
+#             html = RenderApp(db, True)
+
+#             return jsonify({ 'status': 'success', 'html': html })
+#         except Exception as e:
+#             return jsonify({ 'status': 'error', message: f'{e}' })
+
+
+
 
 
 

@@ -2,11 +2,20 @@
 
 {% block content %}
 
-
-
 <button id="expand">☰</button>
 <div id="left-panel">
 	<header id="left" style="background:url({{ url_for('static', filename='wallpaper01.webp') }})">
+		<h3>User Information</h3>
+		<div class="vertical-table">
+			<div class="column">
+				<div class="th">Name</div>
+				<div class="th">Checking Balance</div>
+			</div>
+			<div class="column">
+				<div class="td">{{ data.account.name }}</div>
+				<div class="td">{{ data.account.checking_balance }}</div>
+			</div>
+		</div>	
 		<h3>
 			<div>Regular Expenses</div>
 		</h3>
@@ -25,6 +34,22 @@
 		<div class="tr button-row-right">
 			<button class="add-expense">+</button>
 			<button id="refresh-calendar">↺</button>
+		</div>
+		<h3>Debts</h3>
+		<div class="table" id="debts">
+			<div class="tr">
+				<div class="th">Creditor</div>
+				<div class="th">Account Number</div>
+				<div class="th">Balance</div>
+				<div class="th">Interest</div>
+				<div class="th">Event</div>
+			</div>
+			{% for debt in data.account.debts %}
+				{% include 'app/debt.html' %}
+			{% endfor %}
+		</div>
+		<div class="tr button-row-right">
+			<button id="add-debt">+</button>
 		</div>
 	</header>
 </div>
@@ -69,23 +94,7 @@
 	</div>
 	
 </div>
-<div id="right-panel">
-	<main id="right-main">
-		<div id="x-axis"></div>
-		<div id="y-axis"></div>
-		<div id="z-axis"></div>
-		<div id="container">
-			<div id="Peter">
-				<div class="face front"></div>
-				<div class="face back"></div>
-				<div class="face left"></div>
-				<div class="face right"></div>
-				<div class="face top"></div>
-				<div class="face bottom"></div>
-			</div>
-		</div>
-	</main>
-</div>
+
 
 
 
