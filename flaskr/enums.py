@@ -32,7 +32,8 @@ Api = {
   'SAVE_THIS_AND_FUTURE_EVENTS': 'save-this-and-future-events',
   'SAVE_CHECKING_BALANCE': 'save-checking-balance',
   'ADD_DEBT': 'add-debt',
-  'UPDATE_DEBT': 'update-debt'
+  'UPDATE_DEBT': 'update-debt',
+  'DELETE_DEBT': 'delete-debt'
 }
 
 

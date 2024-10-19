@@ -200,8 +200,6 @@ def load_user_info(db, user_id):
         )
         user_data = cursor.fetchone()
 
-        print(11, user_data)
-
         cursor.execute(
             '''
             SELECT * FROM public.expense
@@ -299,7 +297,14 @@ def RenderApp(db = None, just_calendar = False):
             events = select_events(db, data, user_id)
             (months, events) = build_months(data, events)
 
-            html = render_template('app/calendar.html' if just_calendar else 'app/index.html', data = data, datetime = datetime, months = months, today = datetime.now().date(), FREQUENCIES = FREQUENCIES)
+            html = render_template(
+                'app/calendar.html' if just_calendar else 'app/index.html', 
+                data = data, 
+                datetime = datetime, 
+                months = months, 
+                today = datetime.now().date(), 
+                FREQUENCIES = FREQUENCIES
+            )
 
             return html
         else:
@@ -308,7 +313,14 @@ def RenderApp(db = None, just_calendar = False):
                 events = select_events(db, data, user_id)
                 (months, events) = build_months(data, events)
 
-                html = render_template('app/calendar.html' if just_calendar else 'app/index.html', data = data, datetime = datetime, months = months, today = datetime.now().date(), FREQUENCIES = FREQUENCIES)
+                html = render_template(
+                    'app/calendar.html' if just_calendar else 'app/index.html',
+                    data = data,
+                    datetime = datetime,
+                    months = months,
+                    today = datetime.now().date(),
+                    FREQUENCIES = FREQUENCIES
+                )
 
                 return html
     except Exception as e:
@@ -411,7 +423,180 @@ def save_event(db, event_id, request):
     except Exception as e:
         print(e)
         return  []
+def CalculatePaymentPlans(db, user_id):
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            '''
+            WITH debt_info AS (
+                -- Assuming we know the debt balance and interest rate for each debt
+                SELECT
+                    d.creditor,
+                    d.id,  -- Assuming a primary key for debt
+                    d.balance,
+                    d.interest,  -- The annual interest rate, included directly
+                    d.interest / 12.0 AS monthly_interest_rate,  -- Convert annual interest to monthly
+                    NOW() AS start_date  -- Use NOW() to get the current date
+                FROM
+                    debt d
+                WHERE d.user_id = %s
+            ),
+            payment_plan AS (
+                -- Step 1: Calculate payment amounts for three different plans (long-term, mid-range, short-term) and three frequencies (weekly, bi-weekly, monthly)
+                SELECT
+                    id,
+                    creditor,
+                    'long-term' AS plan_type,
+                    'weekly' AS frequency,
+                    120 AS term_in_months,  -- Long-term plan: 10 years (120 months)
+                    (balance * (monthly_interest_rate * POWER(1 + monthly_interest_rate, 120)) /
+                    (POWER(1 + monthly_interest_rate, 120) - 1)) / 4.33 AS payment_amount  -- Weekly payments (approx. 4.33 weeks per month)
+                FROM debt_info
+                UNION ALL
+                SELECT
+                    id,
+                    creditor,
+                    'long-term' AS plan_type,
+                    'bi-weekly' AS frequency,
+                    120 AS term_in_months,  -- Long-term plan: 10 years (120 months)
+                    (balance * (monthly_interest_rate * POWER(1 + monthly_interest_rate, 120)) /
+                    (POWER(1 + monthly_interest_rate, 120) - 1)) / 2 AS payment_amount  -- Bi-weekly payments (2 payments per month)
+                FROM debt_info
+                UNION ALL
+                SELECT
+                    id,
+                    creditor,
+                    'long-term' AS plan_type,
+                    'monthly' AS frequency,
+                    120 AS term_in_months,  -- Long-term plan: 10 years (120 months)
+                    (balance * (monthly_interest_rate * POWER(1 + monthly_interest_rate, 120)) /
+                    (POWER(1 + monthly_interest_rate, 120) - 1)) AS payment_amount  -- Monthly payments
+                FROM debt_info
+                UNION ALL
+                SELECT
+                    id,
+                    creditor,
+                    'mid-range' AS plan_type,
+                    'weekly' AS frequency,
+                    60 AS term_in_months,  -- Mid-range plan: 5 years (60 months)
+                    (balance * (monthly_interest_rate * POWER(1 + monthly_interest_rate, 60)) /
+                    (POWER(1 + monthly_interest_rate, 60) - 1)) / 4.33 AS payment_amount  -- Weekly payments
+                FROM debt_info
+                UNION ALL
+                SELECT
+                    id,
+                    creditor,
+                    'mid-range' AS plan_type,
+                    'bi-weekly' AS frequency,
+                    60 AS term_in_months,  -- Mid-range plan: 5 years (60 months)
+                    (balance * (monthly_interest_rate * POWER(1 + monthly_interest_rate, 60)) /
+                    (POWER(1 + monthly_interest_rate, 60) - 1)) / 2 AS payment_amount  -- Bi-weekly payments
+                FROM debt_info
+                UNION ALL
+                SELECT
+                    id,
+                    creditor,
+                    'mid-range' AS plan_type,
+                    'monthly' AS frequency,
+                    60 AS term_in_months,  -- Mid-range plan: 5 years (60 months)
+                    (balance * (monthly_interest_rate * POWER(1 + monthly_interest_rate, 60)) /
+                    (POWER(1 + monthly_interest_rate, 60) - 1)) AS payment_amount  -- Monthly payments
+                FROM debt_info
+                UNION ALL
+                SELECT
+                    id,
+                    creditor,
+                    'short-term' AS plan_type,
+                    'weekly' AS frequency,
+                    24 AS term_in_months,  -- Short-term plan: 2 years (24 months)
+                    (balance * (monthly_interest_rate * POWER(1 + monthly_interest_rate, 24)) /
+                    (POWER(1 + monthly_interest_rate, 24) - 1)) / 4.33 AS payment_amount  -- Weekly payments
+                FROM debt_info
+                UNION ALL
+                SELECT
+                    id,
+                    creditor,
+                    'short-term' AS plan_type,
+                    'bi-weekly' AS frequency,
+                    24 AS term_in_months,  -- Short-term plan: 2 years (24 months)
+                    (balance * (monthly_interest_rate * POWER(1 + monthly_interest_rate, 24)) /
+                    (POWER(1 + monthly_interest_rate, 24) - 1)) / 2 AS payment_amount  -- Bi-weekly payments
+                FROM debt_info
+                UNION ALL
+                SELECT
+                    id,
+                    creditor,
+                    'short-term' AS plan_type,
+                    'monthly' AS frequency,
+                    24 AS term_in_months,  -- Short-term plan: 2 years (24 months)
+                    (balance * (monthly_interest_rate * POWER(1 + monthly_interest_rate, 24)) /
+                    (POWER(1 + monthly_interest_rate, 24) - 1)) AS payment_amount  -- Monthly payments
+                FROM debt_info
+            ),
+            payment_schedule AS (
+                -- Step 2: Simulate payment schedule and calculate remaining balance for each plan and frequency
+                SELECT
+                    pp.id,
+                    d.creditor,
+                    pp.plan_type,
+                    pp.frequency,
+                    pp.term_in_months,
+                    pp.payment_amount,
+                    CASE
+                        WHEN pp.frequency = 'weekly' THEN d.start_date + (interval '1 week' * gs)
+                        WHEN pp.frequency = 'bi-weekly' THEN d.start_date + (interval '2 weeks' * gs)
+                        ELSE d.start_date + (interval '1 month' * gs)
+                    END AS payment_date,  -- Adjust based on payment frequency
+                    d.balance * (1 + d.interest) - SUM(pp.payment_amount) OVER (PARTITION BY pp.id, pp.plan_type, pp.frequency ORDER BY gs) AS remaining_balance
+                FROM
+                    payment_plan pp
+                JOIN
+                    debt_info d
+                ON
+                    pp.id = d.id
+                CROSS JOIN
+                    generate_series(1, pp.term_in_months * CASE
+                        WHEN pp.frequency = 'weekly' THEN 4.33  -- Approximate weeks per month
+                        WHEN pp.frequency = 'bi-weekly' THEN 2  -- Bi-weekly: 2 payments per month
+                        ELSE 1  -- Monthly
+                    END) gs  -- Simulate payments based on frequency
+            ),
+            payoff_schedule AS (
+                -- Step 3: Find the payoff date for each plan and frequency when remaining balance becomes <= 0
+                SELECT
+                    id,
+                    plan_type,
+                    frequency,
+                    MIN(payment_date) AS recurrenceenddate
+                FROM
+                    payment_schedule
+                WHERE
+                    remaining_balance <= 0
+                GROUP BY
+                    id, plan_type, frequency
+            )
+            -- Final Step: Select the debt, plan, frequency, calculated payment amount, and payoff date for each plan
+            SELECT
+                pp.creditor,
+                pp.plan_type,
+                pp.frequency,
+                pp.payment_amount,
+                ps.recurrenceenddate
+            FROM
+                payment_plan pp
+            JOIN
+                payoff_schedule ps
+            ON
+                pp.id = ps.id AND pp.plan_type = ps.plan_type AND pp.frequency = ps.frequency;
 
+            ''',
+            (user_id,)
+        )
+        db.commit()
+        plan = fetchall_as_dict(cursor)
+        return jsonify({ 'status': 'success', 'plan': plan })
+    except Exception as e:
+        return jsonify({ 'status': 'error '})
 
 
 
@@ -585,7 +770,7 @@ def add_debt():
     cursor = None
 
     try:
-        sql_payload = (str(uuid.uuid4()), '-- creditor --', 0.0, 0.0, '-- account number --', '-- link --', user_id)
+        sql_payload = (str(uuid.uuid4()), '• creditor •', 0.0, 0.0, '• account number •', '• link •', user_id)
         with get_db() as db:
             cursor = db.cursor()
             cursor.execute(
@@ -618,8 +803,9 @@ def update_debt(debt_id):
         balance = body['balance']
         interest = body['interest']
         account_number = body['account_number']
-        link = body['link']
-        recurrenceid = body['recurrenceid']
+        recurrenceid = None
+        if 'recurrenceid' in body:
+            recurrenceid = uuid.UUID(body['recurrenceid'])
         debt_id = body['id']
         with get_db() as db:
             cursor = db.cursor()
@@ -627,15 +813,46 @@ def update_debt(debt_id):
                 '''
                 UPDATE "debt"
                 SET creditor = %s, balance = %s, interest = %s,
-                    account_number = %s, link = %s, recurrenceid = %s
+                    account_number = %s, recurrenceid = %s
                 WHERE id = %s
                 ''',
-                (creditor, balance, interest, account_number, link, recurrenceid, debt_id)
+                (creditor, balance, interest, account_number, recurrenceid, debt_id)
             )
             db.commit()
             cursor.close()
+            return jsonify({ 'status': 'success' })
     except Exception as e:
+        print(e)
         return jsonify({ 'status': 'error', 'message': f'{e}' })
+
+@api.route('/api/delete-debt/<debt_id>', methods=('DELETE',))
+@login_required
+def delete_debt(debt_id):
+    user_id = session.get('user_id')
+    error = None
+    data = {}
+
+    db = None
+    cursor = None
+
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            'DELETE FROM "debt" '
+            'WHERE user_id = %s AND id = %s',
+            (user_id,debt_id,)
+        )
+        db.commit()
+    except Exception as e:
+        return jsonify({ 'status': 'error', 'error': f'Error deleting debt: {e}' }), 500
+    else:
+        return jsonify({ 'status': 'success' }), 200
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            db.close()
 
 @api.route('/api/update-month-year', methods=('POST',))
 @login_required

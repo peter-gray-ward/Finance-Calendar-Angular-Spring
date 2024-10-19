@@ -83,7 +83,7 @@ function SerializeAndSaveDebt(id) {
     account_number: row.children[1].value,
     balance: row.children[2].value,
     interest: row.children[3].value,
-    recurrenceid: row.children[4].dataset.recurrenceid
+    recurrenceid: row.children[5].dataset.recurrenceid
   });
   fc.api('POST', Api.UPDATE_DEBT + '/' + id, json);
 }
@@ -221,6 +221,15 @@ var events = {
     var row = $(event.srcElement).closest('.tr.data')
     var expense_id  = row[0].id;
     fc.api('DELETE', Api.DELETE_EXPENSE + '/' + expense_id).then(res => {
+      if (res.status == 'success') {
+        row[0].remove();
+      }
+    });
+  },
+  '.delete-debt:click': function(event) {
+    var row = $(event.srcElement).closest('.tr.data')
+    var debt_id  = row[0].id;
+    fc.api('DELETE', Api.DELETE_DEBT + '/' + debt_id).then(res => {
       if (res.status == 'success') {
         row[0].remove();
       }

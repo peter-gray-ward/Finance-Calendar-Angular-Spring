@@ -142,7 +142,7 @@ main#main form * {
 
 #left.visible {
 	display: flex;
-	padding: 0.5rem;
+	padding: 0.5rem 0.5rem 5rem 0.5rem;
 	overflow-y: auto;
 /*	transform: translateX(0%);*/
 }
@@ -295,27 +295,32 @@ body.grabbing .day-block:hover {
 
 #debts .tr .th:nth-child(1),
 #debts .tr .td:nth-child(1) {
-	width: 20%;
+	width: 16.667%;
 }
 #debts .tr .th:nth-child(2),
 #debts .tr .td:nth-child(2) {
-	width: 20%;
+	width: 16.667%;
 }
 #debts .tr .th:nth-child(3),
 #debts .tr .td:nth-child(3) {
-	width: 20%;
+	width: 16.667%;
 }
 #debts .tr .th:nth-child(4),
 #debts .tr .td:nth-child(4) {
-	width: 20%;
+	width: 16.667%;
 }
 #debts .tr .th:nth-child(5),
 #debts .tr .td:nth-child(5) {
-	width: 20%;
+	width: 16.667%;
+}
+
+#debts .tr .th:nth-child(6),
+#debts .tr .td:nth-child(6) {
+	width: 16.667%;
 }
 
 .create-debt-event {
-	font-size: 1.25rem;
+	font-size: 1.35vw;
 }
 
 input.td {
@@ -800,6 +805,7 @@ header button:hover {
 
 .total {
 	display: flex;
+ 	align-items: start; 
 	justify-content: space-around;
 	flex-grow: 1;
     text-align: center;
@@ -818,6 +824,7 @@ header button:hover {
     width: 100%;
     text-align: center;
     font-weight: 700;
+    display: flex;
 }
 
 .total input:focus {

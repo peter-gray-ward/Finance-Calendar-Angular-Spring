@@ -1,8 +1,9 @@
 <div class="tr data id debts" id="{{ debt.id }}" data-name="debt">
 	<input value="{{ debt.creditor }}" name="creditor" class="td" type="text">
-	<input value="{{ debt.account_number }}" name="account_number" type="text" />
+	<input value="{{ debt.account_number }}" class="td"  name="account_number" type="text" />
 	<input name="balance" class="td" type="number" value="{{ debt.balance }}">
 	<input name="interest" class="td" type="number" value="{{ debt.interest }}">
+	<input name="payoff-date" class="td" type="date" value="{{ debt.payoffdebt }}">
 	<div name="recurrenceid" class="td" {{ "data-recurrenceid=\"debt.recurrenceid\"" if debt.recurrenceid else "" }}>
 		{% if debt.recurrenceid %}
 			{{ debt.recurrenceid }}
