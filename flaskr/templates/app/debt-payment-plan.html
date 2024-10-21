@@ -1,86 +1,92 @@
-<div class="short-term">
-	<h1>Short-Term</h1>
-	<div class="bi-weekly">
-		<h2>Biweekly</h2>
-		<div class="vertical-table">
-			<div class="column">
-				<div class="th">Payment</div>
-				<div class="th">End Date</div>
-			</div>
-			<div class="column">
-				<div class="td">${{ plan['short-term']['bi-weekly']['payment_amount']  | round }}</div>
-				<div class="td">{{ plan['short-term']['bi-weekly']['recurrenceenddate'] }}</div>
-			</div>
-		</div>
-	</div>
-	<div class="monthly">
-		<h2>Monthly</h2>
-		<div class="vertical-table">
-			<div class="column">
-				<div class="th">Payment</div>
-				<div class="th">End Date</div>
-			</div>
-			<div class="column">
-				<div class="td">${{ plan['short-term']['monthly']['payment_amount'] | round }}</div>
-				<div class="td">{{ plan['short-term']['monthly']['recurrenceenddate'] }}</div>
-			</div>
-		</div>
-	</div>
+<div>
+	<h1>{{ plan['short-term']['monthly']['creditor'] }}</h1>
+	<h1>${{ plan['short-term']['monthly']['balance'] | round }}</h1>
 </div>
-<div class="mid-range">
-	<h1>Mid-Range</h1>
-	<div class="bi-weekly">
-		<h2>Bieekly</h2>
-		<div class="vertical-table">
-			<div class="column">
-				<div class="th">Payment</div>
-				<div class="th">End Date</div>
+<div class="debt-payment-options">
+	<div class="short-term">
+		<h1>Short-Term</h1>
+		<div class="bi-weekly">
+			<h2>Biweekly</h2>
+			<div class="vertical-table">
+				<div class="column">
+					<div class="th">Payment</div>
+					<div class="th">End Date</div>
+				</div>
+				<div class="column">
+					<div class="td">${{ plan['short-term']['bi-weekly']['payment_amount']  | round }}</div>
+					<div class="td">{{ plan['short-term']['bi-weekly']['recurrenceenddate'] }}</div>
+				</div>
 			</div>
-			<div class="column">
-				<div class="td">${{ plan['mid-range']['bi-weekly']['payment_amount'] | round }}</div>
-				<div class="td">{{ plan['mid-range']['bi-weekly']['recurrenceenddate'] }}</div>
+		</div>
+		<div class="monthly">
+			<h2>Monthly</h2>
+			<div class="vertical-table">
+				<div class="column">
+					<div class="th">Payment</div>
+					<div class="th">End Date</div>
+				</div>
+				<div class="column">
+					<div class="td">${{ plan['short-term']['monthly']['payment_amount'] | round }}</div>
+					<div class="td">{{ plan['short-term']['monthly']['recurrenceenddate'] }}</div>
+				</div>
 			</div>
 		</div>
 	</div>
-	<div class="monthly">
-		<h2>Monthly</h2>
-		<div class="vertical-table">
-			<div class="column">
-				<div class="th">Payment</div>
-				<div class="th">End Date</div>
+	<div class="mid-range">
+		<h1>Mid-Range</h1>
+		<div class="bi-weekly">
+			<h2>Bieekly</h2>
+			<div class="vertical-table">
+				<div class="column">
+					<div class="th">Payment</div>
+					<div class="th">End Date</div>
+				</div>
+				<div class="column">
+					<div class="td">${{ plan['mid-range']['bi-weekly']['payment_amount'] | round }}</div>
+					<div class="td">{{ plan['mid-range']['bi-weekly']['recurrenceenddate'] }}</div>
+				</div>
 			</div>
-			<div class="column">
-				<div class="td">${{ plan['mid-range']['monthly']['payment_amount'] | round  }}</div>
-				<div class="td">{{ plan['mid-range']['monthly']['recurrenceenddate'] }}</div>
+		</div>
+		<div class="monthly">
+			<h2>Monthly</h2>
+			<div class="vertical-table">
+				<div class="column">
+					<div class="th">Payment</div>
+					<div class="th">End Date</div>
+				</div>
+				<div class="column">
+					<div class="td">${{ plan['mid-range']['monthly']['payment_amount'] | round  }}</div>
+					<div class="td">{{ plan['mid-range']['monthly']['recurrenceenddate'] }}</div>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
-<div class="long-term">
-	<h1>Long-Term</h1>
-	<div class="bi-weekly">
-		<h2>Biweekly</h2>
-		<div class="vertical-table">
-			<div class="column">
-				<div class="th">Payment</div>
-				<div class="th">End Date</div>
-			</div>
-			<div class="column">
-				<div class="td">${{ plan['long-term']['bi-weekly']['payment_amount'] | round  }}</div>
-				<div class="td">{{ plan['long-term']['bi-weekly']['recurrenceenddate'] }}</div>
+	<div class="long-term">
+		<h1>Long-Term</h1>
+		<div class="bi-weekly">
+			<h2>Biweekly</h2>
+			<div class="vertical-table">
+				<div class="column">
+					<div class="th">Payment</div>
+					<div class="th">End Date</div>
+				</div>
+				<div class="column">
+					<div class="td">${{ plan['long-term']['bi-weekly']['payment_amount'] | round  }}</div>
+					<div class="td">{{ plan['long-term']['bi-weekly']['recurrenceenddate'] }}</div>
+				</div>
 			</div>
 		</div>
-	</div>
-	<div class="monthly">
-		<h2>Monthly</h2>
-		<div class="vertical-table">
-			<div class="column">
-				<div class="th">Payment</div>
-				<div class="th">End Date</div>
-			</div>
-			<div class="column">
-				<div class="td">${{ plan['long-term']['monthly']['payment_amount'] | round  }}</div>
-				<div class="td">{{ plan['long-term']['monthly']['recurrenceenddate'] }}</div>
+		<div class="monthly">
+			<h2>Monthly</h2>
+			<div class="vertical-table">
+				<div class="column">
+					<div class="th">Payment</div>
+					<div class="th">End Date</div>
+				</div>
+				<div class="column">
+					<div class="td">${{ plan['long-term']['monthly']['payment_amount'] | round  }}</div>
+					<div class="td">{{ plan['long-term']['monthly']['recurrenceenddate'] }}</div>
+				</div>
 			</div>
 		</div>
 	</div>

@@ -338,6 +338,12 @@ var events = {
       });
     }
 
+    if (!isModal) {
+      if (document.querySelector('.modal')) {
+        document.querySelector('.modal').remove()
+      }
+    }
+
 
     var eventItem = event.srcElement;
     while (eventItem && eventItem.classList.contains('event') == false) {
@@ -475,6 +481,7 @@ var events = {
       if (res.status == 'success') {
         var planModal = document.createElement('div')
         planModal.id = 'debt-payment-plan'
+        planModal.classList.add('modal')
         planModal.innerHTML = res.html
         document.body.appendChild(planModal)
       }

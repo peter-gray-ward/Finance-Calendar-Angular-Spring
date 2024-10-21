@@ -337,6 +337,11 @@ input.td {
 	padding-right: 0;
 }
 
+.td button {
+	font-size: 1rem;
+	height: 100%;
+}
+
 input.td:first-of-type {
 	border-left: 1px solid lightgray;
 }
@@ -881,6 +886,7 @@ header button:hover {
 	line-height: 1.4rem;
 }
 #refresh-calendar {
+	height: 2rem;
     font-size: 1.25rem;
     transition: 0.5s; /* This will control non-infinite transitions, like when adding/removing the class */
 }
@@ -1431,7 +1437,7 @@ div.graphic {
 	background: transparent !important;
 }
 
-#debt-payment-plan {
+#debt-payment-plan  {
 	position: absolute;
 	width: 80vw;
 	height: 80vh;
@@ -1440,24 +1446,44 @@ div.graphic {
 	z-index: 999999;
 	background: white;
 	display: flex;
+	flex-direction: column;
 	box-sizing: border-box;
 	border: 1px solid;
 	box-shadow: 0 0 10px 0;
 }
 
-#debt-payment-plan > div {
+#debt-payment-plan > div:first-of-type {
+	background: black;
+}
+
+#debt-payment-plan > div:first-of-type h1 {
+	display: inline-block;
+	width: 50%;
+	float: left;
+	padding: 1rem;
+	box-sizing: border-box;
+	color: white;
+}
+
+.debt-payment-options {
+	display: flex;
+	width: 100%;
+	height: 100%;
+}
+
+.debt-payment-options > div {
 	width: calc(100% / 3);
 	box-sizing: border-box;
 	padding: 0.75rem;
 }
 
-#debt-payment-plan > div:nth-of-type(1) {
+.debt-payment-options > div:nth-of-type(1) {
 	background: aliceblue;
 }
-#debt-payment-plan > div:nth-of-type(2) {
+.debt-payment-options > div:nth-of-type(2) {
 	background: lightskyblue;
 }
-#debt-payment-plan > div:nth-of-type(3) {
+.debt-payment-options > div:nth-of-type(3) {
 	background: lightblue;
 }
 
@@ -1467,7 +1493,11 @@ div.graphic {
 }
 
 
-
+.debt-payment-options .th {
+	color: gray;
+	background: transparent;
+	font-weight: 100;
+}
 
 
 

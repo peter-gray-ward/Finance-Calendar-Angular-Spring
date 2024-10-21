@@ -583,12 +583,15 @@ def CalculatePaymentPlans(db, user_id, debt_id):
             -- Final Step: Select the debt, plan, frequency, calculated payment amount, and payoff date for each plan
             SELECT
                 pp.creditor,
+                d.balance,
                 pp.plan_type,
                 pp.frequency,
                 pp.payment_amount,
                 to_char(ps.recurrenceenddate, 'yyyy-MM-dd') as recurrenceenddate
             FROM
                 payment_plan pp
+            
+            JOIN debt_info d on 1 = 1
             JOIN
                 payoff_schedule ps
             ON
@@ -601,6 +604,7 @@ def CalculatePaymentPlans(db, user_id, debt_id):
         plan = fetchall_as_dict(cursor)
         return plan
     except Exception as e:
+        print(e)
         return None
 
 
