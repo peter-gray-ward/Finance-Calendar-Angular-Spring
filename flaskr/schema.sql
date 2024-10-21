@@ -52,7 +52,7 @@ ALTER TABLE IF EXISTS public.event
 CREATE TABLE IF NOT EXISTS public.event_field_lock
 (
     id uuid NOT NULL,
-    user uuid,
+    user_id uuid,
     event_id uuid NOT NULL,
     field_name character varying(100) COLLATE pg_catalog."default"
     CONSTRAINT event_field_lock_pkey PRIMARY KEY (id)

@@ -127,7 +127,7 @@ var events = {
   '.debts .td:keyup': function(event) {
     var id = $(event.srcElement).closest('.tr')[0].id;
     clearTimeout(SerializeAndSave)
-    SerializeAndSave = setTimeout(SerializeAndSaveDebt.bind(null, id), 200);
+    SerializeAndSave = setTimeout(SerializeAndSaveDebt.bind(null, id), 900);
   },
   '.debts .td:change': function(event) {
     var id = $(event.srcElement).closest('.tr')[0].id;
@@ -392,7 +392,7 @@ var events = {
 
 
 
-        add_chessboard_pieces()
+        addFoliage()
         
 
 
@@ -465,7 +465,21 @@ var events = {
 
   '#checking-balance:change': ChangeCheckingBalance,
   '#checking-balance:onpaste': ChangeCheckingBalance,
-  '#checking-balance:keyup': ChangeCheckingBalance
+  '#checking-balance:keyup': ChangeCheckingBalance,
+
+  '.create-payment-plan:click': e => {
+    var row = $(e.target).closest('.tr')
+    var id = row[0].id
+    var creditor = $(row[0].children[0]).val()
+    fc.api('GET', Api.CREATE_PAYMENT_PLAN + '/' + id).then(res => {
+      if (res.status == 'success') {
+        var planModal = document.createElement('div')
+        planModal.id = 'debt-payment-plan'
+        planModal.innerHTML = res.html
+        document.body.appendChild(planModal)
+      }
+    })
+  }
 }
 
 function ChangeCheckingBalance(e) {
@@ -490,7 +504,7 @@ function ChangeCheckingBalance(e) {
 
 events['button.option:click'] = events['button.option:click'].bind(events)
 
-function add_chessboard_pieces() {
+function addFoliage() {
   var chessBoards = [document.getElementById('after-summary'), document.getElementById('before-amount')]
 
   if (chessBoards[0]) {
@@ -509,7 +523,7 @@ function add_chessboard_pieces() {
               div.style.background = `url(/static/tree-branch-${n}.png)`;
               
               div.dataset.board_width = width;
-              var boardPieceWidth = width / 9
+              var boardPieceWidth = width / 12
               div.style.width = boardPieceWidth + 'px';
               div.style.height = div.style.width;
               div.style.border = 'none';
@@ -572,7 +586,7 @@ function add_chessboard_pieces() {
     }
 
   } else {
-    window.requestAnimationFrame(add_chessboard_pieces)
+    window.requestAnimationFrame(addFoliage)
   }
 
 }

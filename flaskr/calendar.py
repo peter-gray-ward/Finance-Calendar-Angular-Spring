@@ -362,7 +362,7 @@ def CreateEventFromExpense(recurrenceid, data, user_id, expense=None):
         'user_id': user_id
     }
 def save_event(db, event_id, request):
-    user_id = session['user_id']
+    user_id = session.get('user_id')
     try:
         event = request.get_json()
         event.pop('id', None)
@@ -380,24 +380,25 @@ def save_event(db, event_id, request):
 
         previous_fields = fetchall_as_dict(cursor)[0]
 
-        for field in event.keys():
+        for field_name in event.keys():
             cursor.execute(
                 '''
                     INSERT INTO "event_field_lock"
-                    (user_id, event_id, field)
-                    SELECT %s, %s, %s
+                    (id, user_id, event_id, field_name)
+                    SELECT %s, %s, %s, %s
                     WHERE NOT EXISTS (
                         SELECT 1
                         FROM "event_field_lock"
-                        WHERE event_id = %s AND field = %s
+                        WHERE event_id = %s AND field_name = %s
                     )
                 ''',
                 (
+                    str(uuid.uuid1()),
                     user_id, 
                     event_id, 
-                    field, 
+                    field_name, 
                     event_id, 
-                    field
+                    field_name
                 )
             )
 
@@ -423,7 +424,10 @@ def save_event(db, event_id, request):
     except Exception as e:
         print(e)
         return  []
-def CalculatePaymentPlans(db, user_id):
+
+
+
+def CalculatePaymentPlans(db, user_id, debt_id):
     try:
         cursor = db.cursor()
         cursor.execute(
@@ -440,6 +444,7 @@ def CalculatePaymentPlans(db, user_id):
                 FROM
                     debt d
                 WHERE d.user_id = %s
+                AND d.id = %s
             ),
             payment_plan AS (
                 -- Step 1: Calculate payment amounts for three different plans (long-term, mid-range, short-term) and three frequencies (weekly, bi-weekly, monthly)
@@ -581,7 +586,7 @@ def CalculatePaymentPlans(db, user_id):
                 pp.plan_type,
                 pp.frequency,
                 pp.payment_amount,
-                ps.recurrenceenddate
+                to_char(ps.recurrenceenddate, 'yyyy-MM-dd') as recurrenceenddate
             FROM
                 payment_plan pp
             JOIN
@@ -590,13 +595,13 @@ def CalculatePaymentPlans(db, user_id):
                 pp.id = ps.id AND pp.plan_type = ps.plan_type AND pp.frequency = ps.frequency;
 
             ''',
-            (user_id,)
+            (user_id,debt_id,)
         )
         db.commit()
         plan = fetchall_as_dict(cursor)
-        return jsonify({ 'status': 'success', 'plan': plan })
+        return plan
     except Exception as e:
-        return jsonify({ 'status': 'error '})
+        return None
 
 
 
@@ -857,7 +862,7 @@ def delete_debt(debt_id):
 @api.route('/api/update-month-year', methods=('POST',))
 @login_required
 def update_account():
-    user_id = session['user_id']
+    user_id = session.get('user_id')
     body = request.get_json()
     print(user_id, body)
     try:
@@ -905,7 +910,7 @@ def update_account():
 @api.route('/api/get-event/<event_id>', methods=('GET',))
 @login_required
 def get_event(event_id):
-    user_id = session['user_id']
+    user_id = session.get('user_id')
     with get_db() as db:
         cursor = db.cursor()
         cursor.execute(
@@ -927,7 +932,7 @@ def get_event(event_id):
 @api.route('/api/create-event', methods=('POST',))
 @login_required
 def create_event():
-    user_id = session['user_id']
+    user_id = session.get('user_id')
     event_date = request.get_json()['date']
     with get_db() as db:
         data = load_user_info(db, user_id)
@@ -981,14 +986,10 @@ def save_this_event(event_id):
 @api.route('/api/save-this-and-future-events/<event_id>', methods=('PUT',))
 @login_required
 def save_tafe(event_id):
-    user_id = session['user_id']
+    user_id = session.get('user_id')
     with get_db() as db:
         try:
             data = load_user_info(db, user_id)
-            print('Now I see, I am here again, saving this and future events.')
-            print('~~~~ WIND ~~~~ WIND ~~~~~')
-            print('<i>Why is my reflection not for past events?</i>')
-            print('<i>Because its who I am inside! ~~~ COLORS OF THE WIND ~~~</i>')
 
             cursor = db.cursor()
             event = request.get_json()
@@ -1004,7 +1005,6 @@ def save_tafe(event_id):
               ####    ##   ##   ####     #####            #######     #     #######  ##   ##   ####
 
 
-            print(f'<h1>First, lets update this event</h1>')
             events = save_event(db, event_id, request)
             if not len(events):
                 return jsonify({ 'status': 'error', 'message': 'Error saving the event in the first place...'})
@@ -1025,7 +1025,7 @@ def save_tafe(event_id):
                                 WHEN EXISTS (
                                     SELECT 1 FROM "event_field_lock" efl
                                     WHERE efl.event_id = e.id
-                                    AND efl.field = 'summary'
+                                    AND efl.field_name = 'summary'
                                 ) THEN summary
                                 ELSE %s
                               END,
@@ -1033,7 +1033,7 @@ def save_tafe(event_id):
                                 WHEN EXISTS (
                                     SELECT 1 FROM "event_field_lock" efl
                                     WHERE efl.event_id = e.id
-                                    AND efl.field = 'amount'
+                                    AND efl.field_name = 'amount'
                                 ) THEN amount
                                 ELSE %s
                               END,
@@ -1041,7 +1041,7 @@ def save_tafe(event_id):
                                   WHEN EXISTS (
                                       SELECT 1 FROM "event_field_lock" efl
                                       WHERE efl.event_id = e.id
-                                      AND efl.field = 'frequency'
+                                      AND efl.field_name = 'frequency'
                                   ) THEN frequency
                                   ELSE %s
                                 END
@@ -1084,7 +1084,7 @@ def save_tafe(event_id):
 @api.route('/api/save-checking-balance/<float:checking_balance>', methods=('POST',))
 @login_required
 def save_checking_balance(checking_balance):
-    user_id = session['user_id']
+    user_id = session.get('user_id')
     with get_db() as db:
         try:
             cursor = db.cursor()
@@ -1106,7 +1106,7 @@ def save_checking_balance(checking_balance):
 # @api.route('/api/delete-this-event/<event_id>', methods=('DELETE',))
 # @login_required
 # def delete_this_event(event_id):
-#     user_id = session['user_id']
+#     user_id = session.get('user_id')
 #     with get_db() as db:
 #         try:
 #             cursor = db.cursor()
@@ -1128,7 +1128,7 @@ def save_checking_balance(checking_balance):
 # @api.route('/api/delete-this-and-future-events/<event_id>/<recurrenceid>', methods=('DELETE',))
 # @login_required
 # def delete_this_event(event_id, recurrenceid):
-#     user_id = session['user_id']
+#     user_id = session.get('user_id')
 #     with get_db() as db:
 #         try:
 #             cursor = db.cursor()
@@ -1153,7 +1153,26 @@ def save_checking_balance(checking_balance):
 #             return jsonify({ 'status': 'error', message: f'{e}' })
 
 
-
+@api.route('/api/create-payment-plan/<debt_id>', methods=('GET',))
+@login_required
+def create_payment_plan(debt_id):
+    user_id = session.get('user_id')
+    try:
+        with get_db() as db:
+            plan = CalculatePaymentPlans(db, user_id, debt_id)
+            if plan is None:
+                return jsonify({ 'error': f'Execption creating payment plan'})
+            terms = {}
+            for p in plan:
+                if p['plan_type'] not in terms:
+                    terms[p['plan_type']] = {}
+                if p['frequency'] not in terms[p['plan_type']]:
+                    terms[p['plan_type']][p['frequency']] = p
+            print(terms)
+            html = render_template('app/debt-payment-plan.html', plan = terms)
+            return jsonify({ 'status': 'success', 'html': html })
+    except Exception as e:
+        return jsonify({ 'error': f'Execption creating payment plan {e}'})
 
 
 

@@ -33,7 +33,8 @@ Api = {
   'SAVE_CHECKING_BALANCE': 'save-checking-balance',
   'ADD_DEBT': 'add-debt',
   'UPDATE_DEBT': 'update-debt',
-  'DELETE_DEBT': 'delete-debt'
+  'DELETE_DEBT': 'delete-debt',
+  'CREATE_PAYMENT_PLAN': 'create-payment-plan'
 }
 
 

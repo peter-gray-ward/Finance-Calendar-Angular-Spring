@@ -1,7 +1,8 @@
 import functools
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, g, redirect, render_template, 
+    request, session, url_for
 )
 
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -89,22 +90,22 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
-            return redirect(url_for('auth.login'))
-        
+            return redirect(url_for('auth.login'))   
         return view(**kwargs)
     return wrapped_view
 
 
-
-
-
 @api.before_app_request
 def load_logged_in_user():
+    if request.path.startswith('/static/'):
+        return
+
     user_id = session.get('user_id')
-    with get_db() as db:
-        if user_id is None:
-            g.user = None
-        else:
+    if user_id is None:
+        g.user = None
+        print('NO USER IN SESSION')
+    else:
+        with get_db() as db:
             cursor = db.cursor()
             cursor.execute(
                 '''
@@ -116,6 +117,7 @@ def load_logged_in_user():
             )
             g.user = cursor.fetchone()
             cursor.close()
+
 
 @api.route('/logout')
 def logout():

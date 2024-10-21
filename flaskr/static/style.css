@@ -1,6 +1,3 @@
-
-
-
 #calendar * {
 	font-family: system-ui;
 }
@@ -210,7 +207,6 @@ body.grabbing .day-block:hover {
 
 .vertical-table .th, .vertical-table .td {
 	display: flex;
-	min-width: 10rem;
 	align-items: center;
 	color: white;
 }
@@ -225,12 +221,22 @@ body.grabbing .day-block:hover {
 	color: black;
 	justify-content: center;
 	background: white;
+	white-space: pre;
 }
 
 .vertical-table .column:nth-child(even) .td:nth-child(even) {
 	background: #EBEDEF;
+	padding: 0.25rem;
+	box-sizing: border-box;
 }
 
+.vertical-table .column:first-of-type {
+	width: 40%;
+}
+
+.vertical-table .column:last-of-type {
+	width: 60%;
+}
 
 .table {
 	width: 100%;
@@ -244,7 +250,6 @@ body.grabbing .day-block:hover {
 
 .td, .tr, .th {
 	min-height: 1.5rem;
-	height: 1.5rem;
 }
 
 .th {
@@ -321,6 +326,7 @@ body.grabbing .day-block:hover {
 
 .create-debt-event {
 	font-size: 1.35vw;
+	height: 100%;
 }
 
 input.td {
@@ -358,10 +364,9 @@ input.td:active, input.td:focus {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 0.75rem;
 	border-bottom: 1px dotted;
 /*	padding: 0 3px 0 0;*/
-	color: lightcoral;
+	color: white;
 	line-height: 1rem;
 }
 
@@ -866,6 +871,15 @@ header button:hover {
 	color: black;
 }
 
+
+#refresh-calendar, .add-expense {
+	padding: 0;
+	width: 1rem;
+	height: 1rem;
+	margin: .5rem;
+	align-items: center;
+	line-height: 1.4rem;
+}
 #refresh-calendar {
     font-size: 1.25rem;
     transition: 0.5s; /* This will control non-infinite transitions, like when adding/removing the class */
@@ -1201,11 +1215,6 @@ input.select:focus, input.select:active {
 
 }
 
-#modal-event, .modal #modal-event div.option:hover {
-	background: black;
-	color: white;
-}
-
 #modal-event, .modal #modal-event div.option:hover div.graphic {
 	color: pink;
 	opacity: 1;
@@ -1297,36 +1306,31 @@ div.graphic {
 #event-edit #summary-div {
 	padding: 1.15rem;
 	background: #9cccec;
-	width: calc(69% - 2.4rem);
+	width: 100%;
 	align-self: start;
 }
 #event-edit input:nth-of-type(1) {
 	color: maroon;
 	background: #9cccec;
+	flex-grow: 1;
+	font-size: 1.1rem;
 }
 #event-edit #summary-div label {
 	color: #162136;
 }
 #event-edit div#amount-div {
 	align-self: center;
-	width: 25%;
-	background: black;
-	color: aquamarine;
+	width: 35%;
+	background: #9cccec;
 	display: flex;
 	box-sizing: content-box;
 	flex-direction: column;
 	align-items: center;
 	padding: 0;
-}
-#event-edit div.#amount-div input {
-	background: black;
-	color: aquamarine;
+	display: flex;
 }
 #event-edit #amount-div label {
-	color: black;
-	font-weight: 500;
-	font-family: Brush Script MT;
-	color: aquamarine;
+	color: #162136;
 }
 #event-edit input:nth-of-type(2) {
 	align-self: flex-end;
@@ -1348,9 +1352,6 @@ div.graphic {
 	color: #00CCDD;
 }
 
-#event-edit label {
-	padding: 0.15rem;
-}
 
 
 
@@ -1362,6 +1363,7 @@ div.graphic {
 	padding: 0;
 	margin: 0;
 	height: calc(100% - 21px);
+	background: #9cccec;
 	background-size: contain;
 }
 
@@ -1405,10 +1407,7 @@ div.graphic {
 	padding: 0.3rem;
 }
 
-#modal-event #summary-div {
-	padding: 1.52rem 1.55rem;
-    width: calc(100% - 3.1rem);
-}
+
 
 #modal-event div:nth-of-type(3) {
 	background: #2d497a;
@@ -1431,4 +1430,55 @@ div.graphic {
 .graphic {
 	background: transparent !important;
 }
+
+#debt-payment-plan {
+	position: absolute;
+	width: 80vw;
+	height: 80vh;
+	left: 10vw;
+	top: 10vh;
+	z-index: 999999;
+	background: white;
+	display: flex;
+	box-sizing: border-box;
+	border: 1px solid;
+	box-shadow: 0 0 10px 0;
+}
+
+#debt-payment-plan > div {
+	width: calc(100% / 3);
+	box-sizing: border-box;
+	padding: 0.75rem;
+}
+
+#debt-payment-plan > div:nth-of-type(1) {
+	background: aliceblue;
+}
+#debt-payment-plan > div:nth-of-type(2) {
+	background: lightskyblue;
+}
+#debt-payment-plan > div:nth-of-type(3) {
+	background: lightblue;
+}
+
+#debt-payment-plan h1, #debt-payment-plan h2 {
+	font-family: system-ui;
+	font-weight: 100;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
