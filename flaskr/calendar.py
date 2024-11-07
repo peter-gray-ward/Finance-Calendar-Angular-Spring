@@ -1135,6 +1135,27 @@ def clude_event(event_id):
     except Exception as e:
         return jsonify({ 'status': 'error', 'message': f'{e}' })
 
+@api.route('/api/clude-all-these-events/<event_recurrenceid>', methods=('GET',))
+def clude_all_these_events(event_recurrenceid):
+    try:
+        with get_db() as db:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                    UPDATE "event"
+                    SET exclude = (exclude::int # 1)::bit
+                    WHERE recurrenceid = %s
+                ''',
+                (event_recurrenceid,)
+            )
+            cursor.close()
+
+            html = RenderApp(db, True)
+
+            return jsonify({ 'status': 'success', 'html': html })
+    except Exception as e:
+        return jsonify({ 'status': 'error', 'message': f'{e}' })
+
 # @api.route('/api/delete-this-event/<event_id>', methods=('DELETE',))
 # @login_required
 # def delete_this_event(event_id):

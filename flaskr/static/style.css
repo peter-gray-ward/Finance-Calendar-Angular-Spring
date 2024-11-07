@@ -607,7 +607,7 @@ header button:hover {
 	width: var(--modal-width);
 	box-shadow: 0 0 3px 0;
 	border-radius: 5px;
-	background: ghostwhite;
+	background: url(/static/waternormals.jpg);
 	z-index: 2;
 }
 
@@ -854,14 +854,23 @@ header button:hover {
 }
 .button-footer button {
 	margin-right: 5px;
-	background: white;
+	 background: whitesmoke; 
 	margin: 0.5px;
 	border: none;
 	outline: none;
 	flex-grow: 1;
-	color: black;
-	border-radius: 5px;
-	box-shadow: 0 0.35px 1px 0.55px rgb(0 0 0 / 23%);
+	font-size: 1rem;
+	color: darkblue;
+	font-family: Charter;
+	text-align: justify;
+}
+
+.button-footer button:first-of-type {
+	border-top-right-radius: 5px;
+}
+
+.button-footer button:last-of-type {
+	border-bottom-right-radius: 5px;
 }
 
 .button-footer button:hover {
@@ -869,9 +878,10 @@ header button:hover {
 	background: #EBEDEF;
 }
 
-.button-footer button:active {
+.button-footer button:active, .button-footer button.active {
 	cursor: pointer;
 	background: url(/static/waternormals.jpg);
+	color: white;
 }
 
 .mistyrose {

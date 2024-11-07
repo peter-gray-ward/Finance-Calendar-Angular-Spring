@@ -109,6 +109,62 @@ var chillout = {
   }
 }
 
+var modalEvents = {
+   '#save-this-event:click': (e) => {
+    var event = SerializeEvent()
+    fc.api('PUT', Api.SAVE_THIS_EVENT + '/' + event.id, event).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        $('.modal').addClass('saved')
+        setTimeout(() => $('.modal').removeClass('saved'), 1000)
+      }
+    })
+  },
+
+  '#save-this-and-future-events:click': (e) => {
+    var event = SerializeEvent()
+    fc.api('PUT', Api.SAVE_THIS_AND_FUTURE_EVENTS + '/' + event.recurrenceid, event).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        $('.modal').addClass('saved')
+        setTimeout(() => $('.modal').removeClass('saved'), 1000)
+      }
+    })
+  },
+
+  '#clude-this-event:click': e => {
+    var eventId = e.srcElement
+    var newButtonText = eventId.innerHTML == 'include' ? 'exclude' : 'include'
+    while (eventId && !eventId.classList.contains('id')) {
+      eventId = eventId.parentElement
+    }
+    eventId = eventId.dataset.id
+    fc.api('GET', Api.CLUDE_THIS_EVENT + '/' + eventId).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        e.srcElement.innerHTML = newButtonText
+        document.querySelector('#clude-all-these-events').innerHTML = newButtonText + ' all'
+      }
+    })
+  },
+
+  '#clude-all-these-events:click': e => {
+    var eventRecurrenceid = e.srcElement
+    var newButtonText = eventRecurrenceid.innerHTML == 'include all' ? 'exclude all' : 'include all'
+    while (eventRecurrenceid && !eventRecurrenceid.classList.contains('id')) {
+      eventRecurrenceid = eventRecurrenceid.parentElement
+    }
+    eventRecurrenceid = eventRecurrenceid.dataset.recurrenceid
+    fc.api('GET', Api.CLUDE_ALL_THESE_EVENTS + '/' + eventRecurrenceid).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        e.srcElement.innerHTML = newButtonText
+        document.querySelector('#clude-this-event').innerHTML = newButtonText.replace(' all', '')
+      }
+    })
+  },
+}
+
 var events = {
 
   '.expenses .td:keyup': function(event) {
@@ -401,7 +457,7 @@ var events = {
         
 
 
-        ADD_EVENTS();
+        ADD_EVENTS(modalEvents);
 
           
       });
@@ -444,41 +500,6 @@ var events = {
     if (modal) {
       modal.classList.remove("gripped")
     }
-  },
-
-  '#save-this-event:click': (e) => {
-    var event = SerializeEvent()
-    fc.api('PUT', Api.SAVE_THIS_EVENT + '/' + event.id, event).then(res => {
-      if (res.status == 'success') {
-        document.getElementById('calendar').innerHTML = res.html
-        $('.modal').addClass('saved')
-        setTimeout(() => $('.modal').removeClass('saved'), 1000)
-      }
-    })
-  },
-
-  '#save-this-and-future-events:click': (e) => {
-    var event = SerializeEvent()
-    fc.api('PUT', Api.SAVE_THIS_AND_FUTURE_EVENTS + '/' + event.recurrenceid, event).then(res => {
-      if (res.status == 'success') {
-        document.getElementById('calendar').innerHTML = res.html
-        $('.modal').addClass('saved')
-        setTimeout(() => $('.modal').removeClass('saved'), 1000)
-      }
-    })
-  },
-
-  '#clude-this-event:click': e => {
-    var eventId = e.srcElement
-    while (eventId && !eventId.classList.contains('id')) {
-      eventId = eventId.parentElement
-    }
-    eventId = eventId.dataset.id
-    fc.api('GET', Api.CLUDE_THIS_EVENT + '/' + eventId).then(res => {
-      if (res.status == 'success') {
-        document.getElementById('calendar').innerHTML = res.html
-      }
-    })
   },
 
   '#checking-balance:change': ChangeCheckingBalance,
@@ -584,21 +605,21 @@ function REMOVE_EVENTS() {
   }
 }
 
-function ADD_EVENTS() {
+function ADD_EVENTS(event_to_add = events) {
   REMOVE_EVENTS();
 
 
-  for (var key in events) {
+  for (var key in event_to_add) {
     const [selector, eventType] = key.split(':');
     let elements;
     if (selector == 'window') {
-      window.addEventListener(eventType, events[key]);
+      window.addEventListener(eventType, event_to_add[key]);
     } else {
       elements = document.querySelectorAll(selector);
       // console.log(elements.length, selector)
       elements.forEach(element => {
         // console.log('Adding ' + eventType + ' for ' + selector, element)
-        element.addEventListener(eventType, events[key]);
+        element.addEventListener(eventType, event_to_add[key]);
       });
     }
   }
