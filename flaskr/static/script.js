@@ -188,7 +188,7 @@ var globalEvents = {
 
         
 
-          
+        ADD_EVENTS()
       });
     }
   },
@@ -223,7 +223,7 @@ var globalEvents = {
 }
 
 var typeEvents = {
-    '.select:focus': (event) => {
+  '.select:focus': (event) => {
     var input = event.srcElement;
     input.classList.add('focusable')
 

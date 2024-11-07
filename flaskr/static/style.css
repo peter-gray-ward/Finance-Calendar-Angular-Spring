@@ -879,14 +879,15 @@ header button:hover {
 	box-sizing: content-box;
 }
 .button-footer button {
-	background: whitesmoke; 
+	background: whitesmoke;
 	border: none;
 	outline: none;
 	flex-grow: 1;
-	font-size: 1rem;
+	font-size: .88rem;
 	color: darkblue;
 	font-family: Charter;
 	text-align: justify;
+	margin-left: 0.2rem;
 }
 
 .button-footer button:first-of-type {
@@ -1263,6 +1264,11 @@ input.select:focus, input.select:active {
 
 }
 
+#modal-event {
+	border-top-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+
 #modal-event, .modal #modal-event div.option:hover div.graphic {
 	color: pink;
 	opacity: 1;
@@ -1282,6 +1288,11 @@ div.graphic {
 
 .select-container {
 	max-height: 2rem;
+}
+
+
+#time-container {
+	padding: 2.25rem;
 }
 
 .select-container, #frequency-container, #time-container, #modal-event, .modal-content, #event-edit, .event-modal {
@@ -1342,7 +1353,8 @@ div.graphic {
 }
 
 #event-edit #frequency-container {
-	margin: 2.25rem;
+	width: 50%;
+	padding-right: 0.15rem;
 }
 #event-edit #frequency-container > * {
 /*	padding: 0 0.25rem;*/
@@ -1350,9 +1362,6 @@ div.graphic {
 #event-edit #time-container {
 	display: flex;
 	flex-direction: row;
-}
-#event-edit #time-container > * {
-/*	padding: 0 0.5rem;*/
 }
 .recurrenceid {
 	margin-top: 1rem;
@@ -1443,7 +1452,7 @@ div.graphic {
 	color: white;
 	background: url(/static/waternormals.jpg);
 	flex-grow: 1;
-	font-size: 1.1rem;
+	font-size: 1rem;
 	padding: 0.15rem;
 }
 #event-edit label {
@@ -1500,7 +1509,6 @@ div[contenteditable]:focus {
 /*	margin-right: -1.5rem;*/
 }
 #event-edit #date-container {
-	padding: 2.25rem;
 	padding-left: 0rem;
 	-webkit-user-select: none;
 	user-select: none;
