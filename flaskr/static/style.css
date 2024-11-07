@@ -52,15 +52,15 @@ sup {
 
 html, body {
 	margin: 0;
-	height: 100%;
-	width: 100%;
+	height: 100vh;
+	width: 100vw;
 	overflow: hidden;
 }
 
 body {
 	display: flex;
 	flex-direction: row;
-	justify-content: flex-end;
+	overflow: auto;
 }
 
 body footer iframe {
@@ -82,12 +82,25 @@ body.complex #left-panel {
 	z-index: 99;
     transition: 0.1s linear width;
 }
-
 main#main {
-	outline: 3px solid red;
-	transform: rotateX(13deg) rotateY(32deg);
+	margin: auto;
 	padding: 1rem;
 	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	font-family: Charter;
+}
+
+#main.authenticated {
+	width: 100%;
+	height: 100%;
+	transition: var(--panel-transition-speed) linear all;
+	background: white;
+	z-index: 2;
+	float: right;
+	position: absolute;
+	left: 0;
 }
 
 main#main form {
@@ -101,20 +114,8 @@ main#main form * {
 	font-size: 1.5rem;
 }
 
-
-#main {
-	width: 100%;
-	height: 100%;
-	transition: var(--panel-transition-speed) linear all;
-	background: white;
-	z-index: 2;
-	float: right;
-	position: absolute;
-	left: 0;
-}
-
 #left-panel {
-    width: 40%;
+	width: 40%;
     position: absolute;
     left: 0px;
     top: 0px;
@@ -613,7 +614,6 @@ header button:hover {
 .modal label {
 	color: gray;
 	font-size: var(--modal-label-font-size);
-	line-height: 1.1rem;
 }
 
 .modal * {
@@ -623,12 +623,11 @@ header button:hover {
 
 
 .modal.gripped {
-	outline: 3px solid crimson;
 	cursor: grabbing;
 }
 
 .modal.saved {
-	outline: 3px solid lawngreen;
+/*	outline: 3px solid lawngreen;*/
 }
 
 .modal.gripped * {
@@ -865,7 +864,15 @@ header button:hover {
 	box-shadow: 0 0.35px 1px 0.55px rgb(0 0 0 / 23%);
 }
 
+.button-footer button:hover {
+	cursor: pointer;
+	background: #EBEDEF;
+}
 
+.button-footer button:active {
+	cursor: pointer;
+	background: url(/static/waternormals.jpg);
+}
 
 .mistyrose {
 	background: mistyrose;
@@ -1203,9 +1210,14 @@ input.select:focus, input.select:active {
 	outline: none;
 }
 
-#model-event {
+#modal-event {
 	display: flex;
 	justify-content: space-between;
+	border-radius: 5px;
+}
+
+.event-modal, .modal-content {
+	border-radius: 5px;
 }
 
 #modal-event, .modal #modal-event div.option {
@@ -1282,65 +1294,105 @@ div.graphic {
 
 
 #event-edit {
-	box-shadow: 0 0 20px 0 cadetblue;
 	margin: 0;
 	display: flex;
 	flex-direction: row;
 }
 
 #event-edit .button-footer {
-	width: calc(15% - 0.2rem);
 	display: flex;
     flex-direction: column;
 }
 
 #event-edit #frequency-container {
-	padding: 0.5rem;
-	width: 50%;
+	margin: 2.25rem 2.25rem 0 2.25rem;
+}
+#event-edit #frequency-container > * {
+	padding: 0 0.25rem;
 }
 #event-edit #time-container {
 	display: flex;
 	flex-direction: row;
 }
-#event-edit #time-container div:first-of-type {
-
+#event-edit #time-container > * {
+	padding: 0 0.5rem;
+}
+#event-edit #summary-div div:first-of-type {
+	font-size: 1.75rem;
+	background: url(/static/waternormals.jpg);
+	color: white;
+	font-family: Andale Mono;
 }
 #event-edit #time-container div:last-of-type input {
 	background: transparent;
 	color: black;
 }
 #event-edit #summary-div {
-	padding: 1.15rem;
-	background: #9cccec;
+	background: whitesmoke;
 	width: 100%;
 	align-self: start;
 }
 #event-edit input:nth-of-type(1) {
 	color: maroon;
-	background: #9cccec;
+	background: whitesmoke;
 	flex-grow: 1;
 	font-size: 1.1rem;
 }
-#event-edit #summary-div label {
+#event-edit label {
 	color: #162136;
 }
+#event-edit label {
+	line-height: 2rem;
+}
+div[contenteditable] {
+	padding: 0.25rem 0.5rem;
+}
+div[contenteditable]:focus {
+	outline: none;
+}
+.foliage {
+	min-height: 46px;
+	cursor: grabbing;
+	flex-grow: 1;
+	transition: 0.1s linear all;
+}
+.foliage:hover {
+	outline: 2px solid;
+}
 #event-edit div#amount-div {
-	align-self: center;
-	width: 35%;
-	background: #9cccec;
+	align-self: start;
+	margin: auto;
+	background: whitesmoke;
 	display: flex;
 	box-sizing: content-box;
 	flex-direction: column;
-	align-items: center;
+	align-items: start;
 	padding: 0;
 	display: flex;
 }
+.upper-div-collection {
+	display: flex;
+	flex-direction: column;
+}
 #event-edit #amount-div label {
-	color: #162136;
+	color: black;
+	font-weight: 100;
+	font-family: system-ui;
+}
+#event-edit #amount-div input {
+	background: url(/static/waternormals.jpg);
+	color: white !important;
+	font-size: 1.75rem;
+	text-alignt: center;
+	font-family: Menlo;
+	width: 100%;
 }
 #event-edit input:nth-of-type(2) {
 	align-self: flex-end;
 /*	margin-right: -1.5rem;*/
+}
+#event-edit #date-container {
+	padding: 2.25rem;
 }
 #event-edit #date-container input {
 	color: #4388ab;
@@ -1358,7 +1410,12 @@ div.graphic {
 	color: #00CCDD;
 }
 
-
+#event-edit .recurrenceid::before {
+	content: "RecurrenceID: ";
+	font-family: system-ui;
+	font-weight: 100;
+	color: purple;
+}
 
 
 
@@ -1369,34 +1426,17 @@ div.graphic {
 	padding: 0;
 	margin: 0;
 	height: calc(100% - 21px);
-	background: #9cccec;
+	background: whitesmoke;
 	background-size: contain;
 }
 
-#modal-event > div:nth-child(1), #modal-event > div:nth-child(2) {
-	display: flex;
+#modal-event > div:first-of-type {
+	align-items: start;
+	justify-content: start;
+	padding-top: 2.25rem;
+	padding-left: 2.25rem;
+	padding-right: 2.25rem;
 }
-
-#after-summary, #before-amount  {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0;
-	flex-grow: 1;
-	transform-style: preserve-3d;
-	perspective: 1000px;
-}
-
-#before-amount {
-	background: url(/static/moss-2.png);
-	background-size: contain;
-}
-
-#after-summary {
-	background: url(/static/moss-1.png);
-	background-size: contain;
-}
-
-
 
 #after-summary .chess-block, #before-amount .chess-block {
 	margin: 0;
@@ -1409,10 +1449,6 @@ div.graphic {
 	background-repeat: no repeat !important;
 }
 
-#amount-div {
-	padding: 0.3rem;
-}
-
 
 
 #modal-event div:nth-of-type(3) {
@@ -1423,9 +1459,7 @@ div.graphic {
 #modal-event div:nth-of-type(3) {
 	background: cornflowerblue;
 }
-#modal-event div:nth-of-type(3) label {
-	color: #FFFFFF !important;
-}
+
 
 #modal-event input[type="date"] {
 	font-size: 0.85rem !important;

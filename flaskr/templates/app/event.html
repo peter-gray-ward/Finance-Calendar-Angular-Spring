@@ -1,18 +1,17 @@
-<div class='id modal-content' data-name="event" id="event-edit" data-id="{{ event.id }}" data-recurrenceid="{{ event.recurrenceid }}">
+<div class='id modal-content' data-name="event" 
+         id="event-edit" 
+         data-id="{{ event.id }}" 
+         data-recurrenceid="{{ event.recurrenceid }}">
     <div id="modal-event">
-        <div>
+        <div class="upper-div-collection">
             <div id="summary-div">
                 <label>Summary</label>
-                <input class="this focusable" name="summary" type="text" value="{{ event.summary }}" />
+                <div contenteditable class="this focusable" style="font-size: 1.75rem;" name="summary" type="text">{{ event.summary | safe }}</div>
             </div>
             <div id="amount-div">
                 <label>Amount</label>
                 <input class="this focusable" type="number" id="event-amount" name="amount" value="{{ event.amount }}" />
             </div>
-        </div>
-        <div>
-            <div id="before-amount"></div>
-            <div id="after-summary"></div>
         </div>
         <div id="time-container">
             <div id="frequency-container">
@@ -30,6 +29,7 @@
                             data-monthly-graphic-text="Jan-Dec"
                             data-yearly-graphic-text="1988 - 2048">
                 </div>
+                <div class="recurrenceid" style="width: 80%; text-align: justify; font-family: Charter; font-size: 0.666rem;">{{ event.recurrenceid }}</div>
             </div>
             <div id="date-container">
                 <div>
@@ -46,7 +46,7 @@
     <div class="button-footer">
         <button id="save-this-event" class="focusable">save this</button>
         <button id="save-this-and-future-events" class="focusable">save t&fe</button>
-        <button id="clude-this" class="focusable">{{ 'exclude' if event.exclude == '0' else 'include' }}</button>
+        <button id="clude-this-event" class="focusable">{{ 'exclude' if event.exclude == '0' else 'include' }}</button>
         <button id="clude-all" class="focusable">{{ 'exclude' if event.exclude == '0' else 'include' }} all</button>
         <button id="delete-this" class="focusable">delete</button>
         <button id="delete-all" class="focusable">delete all</button>

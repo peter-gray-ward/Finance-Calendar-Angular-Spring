@@ -21,7 +21,8 @@ from . import enums
 import pprint
 import uuid
 
-balance_map = {}
+
+cache = {}
 
 DOW = [
   'Monday','Tuesday',
@@ -127,6 +128,8 @@ def fetchall_as_dict(cursor):
     return [as_dict(row) for row in cursor.fetchall()]
 def calculate_totals(events, checking_balance):
     user_id = session.get('user_id')
+    if not user_id in cache:
+        cache[user_id] = { 'balance_map': {} }
     try:
         events = sorted(events, key = lambda e: e['date'])
 
@@ -145,21 +148,21 @@ def calculate_totals(events, checking_balance):
         start = False
         for event in events:
             if event['balance'] != 0:
-                if event['recurrenceid'] not in balance_map:
-                    balance_map[event['recurrenceid']] = event['balance']
+                if event['recurrenceid'] not in cache[user_id]['balance_map']:
+                    cache[user_id]['balance_map'][event['recurrenceid']] = event['balance']
                 else:
-                    event['balance'] = balance_map[event['recurrenceid']] + event['amount']
-                    balance_map[event['recurrenceid']]['count'] += 1
-                    balance_map[event['recurrenceid']] = event
-                    if event['balance'] <= 0 and balance_map[event['recurrenceid']]['months'] == None:
-                        balance_map[event['recurrenceid']]['month'] = balance_map[event['recurrenceid']]['count']
-                        balance_map[event['recurrenceid']]['balanceEndDate'] = event['date']
+                    event['balance'] = cache[user_id]['balance_map'][event['recurrenceid']] + event['amount']
+                    cache[user_id]['balance_map'][event['recurrenceid']]['count'] += 1
+                    cache[user_id]['balance_map'][event['recurrenceid']] = event
+                    if event['balance'] <= 0 and cache[user_id]['balance_map'][event['recurrenceid']]['months'] == None:
+                        cache[user_id]['balance_map'][event['recurrenceid']]['month'] = cache[user_id]['balance_map'][event['recurrenceid']]['count']
+                        cache[user_id]['balance_map'][event['recurrenceid']]['balanceEndDate'] = event['date']
                         events = [
                             {
                                 **e,
-                                'months': balance_map[e['recurrenceid']]['months'],
-                                'balanceEndDate': balance_map[e['recurrenceid']]['balanceEndDate']
-                            } if e['recurrenceid'] in balance_map else e
+                                'months': cache[user_id]['balance_map'][e['recurrenceid']]['months'],
+                                'balanceEndDate': cache[user_id]['balance_map'][e['recurrenceid']]['balanceEndDate']
+                            } if e['recurrenceid'] in cache[user_id]['balance_map'] else e
                             for e in events
                         ]
             if event['date'] >= today:
@@ -171,10 +174,9 @@ def calculate_totals(events, checking_balance):
         return events
     except Exception as e:
         errormessage = f'Error calculating totals {e}'
-        print(errormessage)
         return jsonify({ 'status': 'error', 'message': errormessage }), 500
     finally:
-        balance_map = {}
+        cache[user_id]['balance_map'] = {}
 def load_user_info(db, user_id):
     sync_data = {
         'Page': { page.name: page.value for page in enums.Page },
@@ -261,6 +263,7 @@ def select_events(db, data, user_id):
         try:
             events = calculate_totals(events, data['account']['checking_balance'])
         except Exception as e:
+            print(e)
             return f'Exception calculating totals {e}', 500
 
         print(f'calculated totals for {len(events)} events')
@@ -275,6 +278,7 @@ def build_months(data, events):
     
     three_months_weeks = PreviousMonth(current_year, current_month) + Month(current_year, current_month) + NextMonth(current_year, current_month)
     months = Months(three_months_weeks)
+    vv = False
     for weeks in months:
         for day in weeks:
             thisday = datetime(day['year'], day['month'], day['date']).date()
@@ -313,6 +317,7 @@ def RenderApp(db = None, just_calendar = False):
                 events = select_events(db, data, user_id)
                 (months, events) = build_months(data, events)
 
+
                 html = render_template(
                     'app/calendar.html' if just_calendar else 'app/index.html',
                     data = data,
@@ -322,9 +327,11 @@ def RenderApp(db = None, just_calendar = False):
                     FREQUENCIES = FREQUENCIES
                 )
 
+                print(5)
+
                 return html
     except Exception as e:
-        return f'500: {e}'
+        return f'<div style="padding: 1rem; width: 50vw; height: 50vh; background: blue; color: white; font-family: Menlo;">500: {e}</div>'
 def id():
     return str(uuid.uuid4())
 def CreateEvent(data, user_id, event=None):
@@ -614,7 +621,6 @@ api = Blueprint('calendar', __name__)
 @api.route('/')
 @login_required
 def index():
-    print('/')
     return RenderApp()
 
 @api.route('/set_session_info', methods=['POST'])
@@ -1107,6 +1113,28 @@ def save_checking_balance(checking_balance):
             print(e)
             return jsonify({ 'status': 'error' })
 
+
+@api.route('/api/clude-this-event/<event_id>', methods=('GET',))
+def clude_event(event_id):
+    try:
+        with get_db() as db:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                    UPDATE "event"
+                    SET exclude = (exclude::int # 1)::bit
+                    WHERE id = %s
+                ''',
+                (event_id,)
+            )
+            cursor.close()
+
+            html = RenderApp(db, True)
+
+            return jsonify({ 'status': 'success', 'html': html })
+    except Exception as e:
+        return jsonify({ 'status': 'error', 'message': f'{e}' })
+
 # @api.route('/api/delete-this-event/<event_id>', methods=('DELETE',))
 # @login_required
 # def delete_this_event(event_id):
@@ -1291,7 +1319,7 @@ def refresh_calendar():
             db.commit()
             cursor.close()
 
-            html = RenderApp(db, True)
+            html = RenderApp(db, True, g)
             return jsonify({ 'status': 'success', 'html': html })
     except Exception as e:
         res['status'] = 'error'

@@ -34,7 +34,8 @@ Api = {
   'ADD_DEBT': 'add-debt',
   'UPDATE_DEBT': 'update-debt',
   'DELETE_DEBT': 'delete-debt',
-  'CREATE_PAYMENT_PLAN': 'create-payment-plan'
+  'CREATE_PAYMENT_PLAN': 'create-payment-plan',
+  'CLUDE_THIS_EVENT': 'clude-this-event'
 }
 
 

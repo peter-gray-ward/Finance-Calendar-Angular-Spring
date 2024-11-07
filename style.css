@@ -58,9 +58,8 @@ html, body {
 }
 
 body {
-	display: flex;
-	flex-direction: row;
-	justify-content: flex-end;
+	display: inline-block;
+	text-align: center;
 }
 
 body footer iframe {
@@ -112,6 +111,7 @@ body.complex #left-panel {
 	float: right;
 	position: absolute;
 	left: 0;
+	margin: auto;
 }
 
 #left-panel {

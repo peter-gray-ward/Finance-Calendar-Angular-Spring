@@ -3,7 +3,6 @@
 
 {% block content %}
 	<main id="main">
-		<h1>{% block title %}Register{% endblock %}</h1>
 		<nav>
 		    <h1>Finance Calendar</h1>
 		    <ul>
@@ -16,6 +15,8 @@
 		        {% endif %}
 		    </ul>
 		</nav>
+		
+		<h1>{% block title %}Register{% endblock %}</h1>
 		<form method="post">
 			<label for="name">Username</label>
 			<input name="name" id="username">

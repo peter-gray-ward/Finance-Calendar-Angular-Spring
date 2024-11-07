@@ -1,20 +1,21 @@
 Expense,Frequency,Amount,Recurs,Start Date
 Amazon Prime,Monthly,-15,60,25
 Netflix,Monthly,-15,60,16
-Hulu,Monthly,-15,60,16
 Publix,Weekly,-49,60,5
 AT&T,Monthly,-65,60,17
-Spotify,Monthly,-10,60,14
 AT&T,Monthly,-91,60,14
 Gas,Weekly,-40,100,6
 State Farm,Monthly,-239,10,1
-Payroll,Biweekly,2024,100,4
+Payroll,Biweekly,0,100,4
 Rent,Monthly,-1744,100,2
 Georgia Power,Monthly,-45,100,14
-Emory HC,Monthly,-213,100,28
 Peacock,Monthly,-5,100,27
-YouTube TV,Monthly,-73,100,9
-AppleTV,Monthly,-7,100,22
+AppleTV,Monthly,-9,100,22
 John Staetsman,Monthly,-125,100,19
-Video Game,Monthly,-70,13,3
-Match Maker,Once,-1500,0,6
+YouTube Premium,Monthly,-20,100,
+ChatGPT,Monthly,-20,100,29
+Spotify,Monthly,-12,100,4
+Walgreens Meds,Monthly,-23,100,16
+Disney+,Monthly,-20,100,16
+ASI Home Insurance,Monthly,-25,10,9
+Chordify,Monthly,-9,10,9

@@ -94,7 +94,7 @@ function SerializeEvent() {
   return {  
     id: eventEdit.dataset.id,
     recurrenceid: eventEdit.dataset.recurrenceid,
-    summary: $(modalEvent).find('input[name="summary"]').val(),
+    summary: $(modalEvent).find('div[name="summary"]').html(),
     date: moment($(modalEvent.querySelector('input[name="date"]')).val()).format('yyyy-MM-DD'),
     recurrenceenddate:  moment($(modalEvent.querySelector('input[name="recurrenceenddate"]')).val()).format('yyyy-MM-DD'), 
     amount: $(modalEvent.querySelector('input[name="amount"]')).val(),
@@ -394,11 +394,7 @@ var events = {
 
 
 
-        
 
-
-
-        addFoliage()
         
 
 
@@ -469,6 +465,19 @@ var events = {
     })
   },
 
+  '#clude-this-event:click': e => {
+    var eventId = e.srcElement
+    while (eventId && !eventId.classList.contains('id')) {
+      eventId = eventId.parentElement
+    }
+    eventId = eventId.dataset.id
+    fc.api('GET', Api.CLUDE_THIS_EVENT + '/' + eventId).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+      }
+    })
+  },
+
   '#checking-balance:change': ChangeCheckingBalance,
   '#checking-balance:onpaste': ChangeCheckingBalance,
   '#checking-balance:keyup': ChangeCheckingBalance,
@@ -510,93 +519,6 @@ function ChangeCheckingBalance(e) {
 }
 
 events['button.option:click'] = events['button.option:click'].bind(events)
-
-function addFoliage() {
-  var chessBoards = [document.getElementById('after-summary'), document.getElementById('before-amount')]
-
-  if (chessBoards[0]) {
-  
-    for (var board of chessBoards) {
-      var width = window.innerHeight / 3;
-      var height = width;
-
-      var Y = 3
-      for (var y = 0; y < Y; y++) {
-          for (var x = 0; x < 3; x++) {
-              var div = document.createElement('div');
-
-              // Random tree branch background image
-              let n = Math.random() < 0.5 ? 1 : (Math.random() < 0.5 ? 2 : (Math.random() < 0.5 ? 3 : 4));
-              div.style.background = `url(/static/tree-branch-${n}.png)`;
-              
-              div.dataset.board_width = width;
-              var boardPieceWidth = width / 12
-              div.style.width = boardPieceWidth + 'px';
-              div.style.height = div.style.width;
-              div.style.border = 'none';
-              div.classList.add('chess-block');
-
-              // Apply a translation toward the center
-              // var translateX = distanceToCenterX * 0.5; // Move halfway toward the center
-              // var translateY = distanceToCenterY * 0.5;
-              // translate(${translateX}px, ${translateY}px)
-              div.style.zIndex = 9999
-              div.style.transform = `translateZ(${boardPieceWidth / 2}px) scale3d(3, 3, 3) rotateX(${Math.random() * 50}deg) rotateY(${Math.random() * 360}deg) rotateZ(${Math.random() * 50}deg)`;
-
-              div.addEventListener('mouseover', function(event) {
-                  // var div = event.target;
-                  // var touchHistory = div.dataset.touchHistory;
-                  
-                  // // If there's no previous touch history, initialize it
-                  // if (!touchHistory) {
-                  //     touchHistory = JSON.stringify({
-                  //         last: [event.clientX, event.clientY],
-                  //         current: [event.clientX, event.clientY]
-                  //     });
-                  //     div.dataset.touchHistory = touchHistory;
-                  // }
-
-                  // // Parse the touch history
-                  // touchHistory = JSON.parse(div.dataset.touchHistory);
-
-                  // // Update the current position in touch history
-                  // touchHistory.last = touchHistory.current;
-                  // touchHistory.current = [event.clientX, event.clientY];
-
-                  // // Calculate the distance moved in both X and Y directions
-                  // var distX = touchHistory.current[0] - touchHistory.last[0];
-                  // var distY = touchHistory.current[1] - touchHistory.last[1];
-
-                  // // Calculate the center of the div
-                  // var divRect = div.getBoundingClientRect();
-                  // var divCenterX = divRect.left + divRect.width / 2;
-
-                  // // Calculate the relative movement toward the center of the div on the X-axis
-                  // var relativeX = event.clientX - divCenterX;
-
-                  // // Rotate the div toward the Z-axis (positive Z), clamping the Y-axis rotation between -180 and 180 degrees
-                  // var rotateY = relativeX * 0.1; // Adjust this factor to control the sensitivity
-
-                  // // Ensure the rotateY doesn't exceed -180 to 180 degrees
-                  // rotateY = Math.max(-180, Math.min(rotateY, 180));
-
-                  // // Rotate the div along the Y-axis (Z-axis pointing into the screen)
-                  // div.style.transform = `rotateX(0deg) rotateY(${rotateY}deg) rotateZ(0deg)`;
-
-                  // // Store the updated touch history back into the dataset
-                  // div.dataset.touchHistory = JSON.stringify(touchHistory);
-              });
-
-              board.appendChild(div)
-          }
-      }
-    }
-
-  } else {
-    window.requestAnimationFrame(addFoliage)
-  }
-
-}
 
 fc.sync().then(res => {
   Api = res.Api;

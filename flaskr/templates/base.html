@@ -10,6 +10,8 @@
 </head>
 <body>
     {% block content %}{% endblock %}
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% if request.path == '/' %}
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% endif %}
 </body>
 </html>
