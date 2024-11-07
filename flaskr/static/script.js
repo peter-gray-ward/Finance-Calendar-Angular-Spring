@@ -186,7 +186,7 @@ var globalEvents = {
         modal.style.left = left + 'px';
 
 
-
+        console.log(res)
 
         load_the_news(res.event)
         
@@ -652,34 +652,38 @@ function ADD_EVENTS(events_to_add = events) {
 
 function load_the_news(event) {
   // load news for the day and type
-  var today = new Date()
+  console.log(event)
+  var today = new Date(event.date)
   var type = event.summary
-  var date = today.getDate()
+  var date = today.getDate() + 1
   if (date < 10) {
     date = '0' + date
   }
-  var month = today.getMonth()
+  var month = today.getMonth() + 1
   if (month < 10) {
     month = '0' + month
   }
   var url = `https://newsapi.org/v2/everything?q=${type}&from=${today.getFullYear() + '-' + month + '-' + date}&sortBy=publishedAt&apiKey=48b0fbf9821148af8caf19d1685f8d3a`
-  console.log(url)
+  console.log(today, url)
   var news = new XMLHttpRequest()
   news.open("GET", url)
   news.addEventListener('load', function() {
     news = JSON.parse(this.response)
     var newsContainer = document.querySelector("#event-news")
-    newsContainer.innerHTML = !news.articles.length ? '<section>0 articles</section>' : ''
+    newsContainer.innerHTML = !news.articles || !news.articles.length ? news.message || '' : ''
     var tagRegex = new RegExp(type, 'ig')
-    for (var article of news.articles.filter(art => {
+    let articles = news.articles || []
+    for (var article of articles.filter(art => {
       return tagRegex.test(art.description) || tagRegex.test(art.content) || tagRegex.test(art.title)
     })) {
       var section = document.createElement('section')
       section.classList.add('news-article')
       section.innerHTML = `<hr>
-<h3 style="background:black;
-  padding: 0.25rem;
-  font-family: Chalkduster;color: 3px 3px; color: rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})">@${article.source.name}</h3>
+<h3 style="background:transparent;
+  padding: 0.25rem;">
+  <span style="font-size: 0.75rem; font-family: system-ui; font-weight: 200">${article.publishedAt}</span>
+  @${article.source.name}
+</h3>
 <h5>${article.author}</h5>
 <h1 style="color: white;background:rgb(${Math.floor(Math.random() * 255)},
 ${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})">${article.title}</h1>
