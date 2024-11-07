@@ -849,13 +849,10 @@ header button:hover {
 }
 
 .button-footer {
-	padding: 0.15rem;
 	box-sizing: content-box;
 }
 .button-footer button {
-	margin-right: 5px;
-	 background: whitesmoke; 
-	margin: 0.5px;
+	background: whitesmoke; 
 	border: none;
 	outline: none;
 	flex-grow: 1;
@@ -875,7 +872,8 @@ header button:hover {
 
 .button-footer button:hover {
 	cursor: pointer;
-	background: #EBEDEF;
+	background: transparent;
+	color: white;
 }
 
 .button-footer button:active, .button-footer button.active {
@@ -1223,7 +1221,9 @@ input.select:focus, input.select:active {
 #modal-event {
 	display: flex;
 	justify-content: space-between;
-	border-radius: 5px;
+	border-top-left-radius: 5px;
+
+	border-bottom-left-radius: 5px;
 }
 
 .event-modal, .modal-content {
@@ -1420,7 +1420,7 @@ div[contenteditable]:focus {
 }
 #event-edit #date-container input {
 	color: #4388ab;
-	
+
 	-webkit-user-select: none;
 	user-select: none;
 }
