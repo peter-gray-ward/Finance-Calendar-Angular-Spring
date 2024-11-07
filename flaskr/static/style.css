@@ -173,11 +173,31 @@ main#main form * {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    align-items: center;
+    align-items: space-between;
     width: 100%;
 	height: 100%;
 	box-sizing: border-box;
 	padding: 0.5rem;
+}
+
+#game-menu-canvas-container {
+	height: 70%;
+	background: black;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: start;
+}
+
+#game-menu-controller {
+	height: 30%;
+	background: whitesmoke;
+}
+
+.tile {
+	border: 1px dotted white;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
 }
 
 #top {
@@ -377,7 +397,7 @@ input.td:active, input.td:focus {
 }
 
 body.complex #main,
-body.music #main {
+body.simple #main {
 	width: 60%;
 /*	transform: translateX(66.69%);*/
 }
@@ -395,7 +415,7 @@ footer {
 }
 
 body.complex header,
-body.music footer {
+body.simple footer {
 	width: 40%;
 	height: 100%;
 }
@@ -417,9 +437,16 @@ header button:hover {
 
 }
 
-#expand {
+#expand-to-budget {
 	position: absolute;
 	left: 5px;
+	top: calc(100% - 26px);
+	z-index: 100;
+}
+
+#expand-to-game {
+	position: absolute;
+	left: calc(100vw - 2rem);
 	top: calc(100% - 26px);
 	z-index: 100;
 }
@@ -471,7 +498,7 @@ header button:hover {
 	font-family: system-ui;
 }
 
-#prev-month, #go-to-today, #next-month, #expand, #music {
+#prev-month, #go-to-today, #next-month, #expand, #simple {
 	background: white;
 	margin: 0.5px;
 	border: none;
@@ -488,15 +515,15 @@ header button:hover {
 #go-to-today:active,
 #next-month:active,
 #expand:active,
-#music:active {
+#simple:active {
 	background: white;
 }
 
-#prev-month:hover, #go-to-today:hover, #next-month:hover, #expand:hover, #music:hover {
+#prev-month:hover, #go-to-today:hover, #next-month:hover, #expand:hover, #simple:hover {
 	cursor: pointer;
 }
 
-#prev-month:active, #go-to-today:active, #next-month:active, #expand:active, #music:active {
+#prev-month:active, #go-to-today:active, #next-month:active, #expand:active, #simple:active {
 	background: rgb(0 0 0 / 6%);
 }
 
@@ -1031,7 +1058,7 @@ html.dark #prev-month,
 html.dark #go-to-today,
 html.dark #next-month,
 html.dark #expand,
-html.dark #music {
+html.dark #simple {
 	background: #5a5b5d;
 	color: #ededed;
 }
@@ -1040,7 +1067,7 @@ html.dark #prev-month:active,
 html.dark #go-to-today:active,
 html.dark #next-month:active,
 html.dark #expand:active,
-html.dark #music:active {
+html.dark #simple:active {
 	background: #414142;
 }
 
@@ -1371,6 +1398,25 @@ div.graphic {
 	background: white;
 	padding: .2rem;
 	box-sizing: border-box;
+	margin: 0;
+}
+
+.news-article h3 {
+	font-size: 2.2rem;
+	padding: 2rem 0 0 0;
+	font-family: Chalkduster;
+	font-weight: 900;
+	background: transparent;
+}
+
+.news-article h5 {
+	background: transparent;
+	color: white;
+	text-align: right;
+	font-family: system-ui;
+	font-weight: 100;
+	font-size: 1rem;
+	margin: 0;
 }
 
 .news-article p {

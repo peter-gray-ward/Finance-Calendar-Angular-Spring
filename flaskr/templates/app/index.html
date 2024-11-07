@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<button id="expand">☰</button>
+<button id="expand-to-budget">☰</button>
 <div id="left-panel">
 	<header id="left" style="background:url({{ url_for('static', filename='wallpaper01.webp') }})">
 		<h3>
@@ -82,7 +82,15 @@
 	<div id="calendar">
 		{% include 'app/calendar.html' %}
 	</div>
-	
+</div>
+<button id="expand-to-game">G</button>
+<div id="right-panel">
+	<footer id="right">
+		<div id="game-menu-canvas-container"></div>
+		<section id="game-menu-controller">
+			
+		</section>
+	</footer> 
 </div>
 
 
