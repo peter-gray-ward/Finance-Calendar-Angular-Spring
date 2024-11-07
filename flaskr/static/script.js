@@ -517,6 +517,29 @@ var events = {
         document.body.appendChild(planModal)
       }
     })
+  },
+
+  '#delete-this-event:click': e => {
+    var eventId = e.srcElement
+    while (eventId && !eventId.classList.contains('id')) {
+      eventId = eventId.parentElement
+    }
+    fc.api('DELETE', Api.DELETE_THIS_EVENT + '/' + eventId.dataset.id).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+      }
+    })
+  },
+  '#delete-all-these-events:click': e => {
+    var eventId = e.srcElement
+    while (eventId && !eventId.classList.contains('id')) {
+      eventId = eventId.parentElement
+    }
+    fc.api('DELETE', Api.DELETE_ALL_THESE_EVENTS + '/' + eventId.dataset.id + '/' + eventId.dataset.recurrenceid).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+      }
+    })
   }
 }
 

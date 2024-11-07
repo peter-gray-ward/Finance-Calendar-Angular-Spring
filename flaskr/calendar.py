@@ -1138,54 +1138,54 @@ def clude_all_these_events(event_recurrenceid):
     except Exception as e:
         return jsonify({ 'status': 'error', 'message': f'{e}' })
 
-# @api.route('/api/delete-this-event/<event_id>', methods=('DELETE',))
-# @login_required
-# def delete_this_event(event_id):
-#     user_id = session.get('user_id')
-#     with get_db() as db:
-#         try:
-#             cursor = db.cursor()
-#             cursor.execute(
-#                 '''
-#                 DELETE FROM "event"
-#                 WHERE id = %s
-#                 ''',
-#                 (event_id,)
-#             )
-#             db.commit()
+@api.route('/api/delete-this-event/<event_id>', methods=('DELETE',))
+@login_required
+def delete_this_event(event_id):
+    user_id = session.get('user_id')
+    with get_db() as db:
+        try:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                DELETE FROM "event"
+                WHERE id = %s
+                ''',
+                (event_id,)
+            )
+            db.commit()
 
-#             html = RenderApp(db, True)
+            html = RenderApp(db, True)
 
-#             return jsonify({ 'status': 'success', 'html': html })
-#         except Exception as e:
-#             return jsonify({ 'status': 'error', message: f'{e}' })
+            return jsonify({ 'status': 'success', 'html': html })
+        except Exception as e:
+            return jsonify({ 'status': 'error', message: f'{e}' })
 
-# @api.route('/api/delete-this-and-future-events/<event_id>/<recurrenceid>', methods=('DELETE',))
-# @login_required
-# def delete_this_event(event_id, recurrenceid):
-#     user_id = session.get('user_id')
-#     with get_db() as db:
-#         try:
-#             cursor = db.cursor()
-#             cursor.execute(
-#                 '''
-#                 DELETE FROM "event"
-#                 WHERE recurrenceid = %s
-#                 AND date > (
-#                     SELECT date
-#                     FROM "event"
-#                     WHERE id = %s
-#                 )
-#                 ''',
-#                 (recurrenceid, event_id,)
-#             )
-#             db.commit()
+@api.route('/api/delete-all-these-events/<event_id>/<recurrenceid>', methods=('DELETE',))
+@login_required
+def delete_all_these_events(event_id, recurrenceid):
+    user_id = session.get('user_id')
+    with get_db() as db:
+        try:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                DELETE FROM "event"
+                WHERE recurrenceid = %s
+                AND date > (
+                    SELECT date
+                    FROM "event"
+                    WHERE id = %s
+                )
+                ''',
+                (recurrenceid, event_id,)
+            )
+            db.commit()
             
-#             html = RenderApp(db, True)
+            html = RenderApp(db, True)
 
-#             return jsonify({ 'status': 'success', 'html': html })
-#         except Exception as e:
-#             return jsonify({ 'status': 'error', message: f'{e}' })
+            return jsonify({ 'status': 'success', 'html': html })
+        except Exception as e:
+            return jsonify({ 'status': 'error', message: f'{e}' })
 
 
 @api.route('/api/create-payment-plan/<debt_id>', methods=('GET',))
