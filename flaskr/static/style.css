@@ -1322,7 +1322,7 @@ div.graphic {
 }
 
 #event-edit #frequency-container {
-	margin: 2.25rem 2.25rem 0 2.25rem;
+	margin: 2.25rem;
 }
 #event-edit #frequency-container > * {
 /*	padding: 0 0.25rem;*/
@@ -1415,9 +1415,14 @@ div[contenteditable]:focus {
 #event-edit #date-container {
 	padding: 2.25rem;
 	padding-left: 0rem;
+	-webkit-user-select: none;
+	user-select: none;
 }
 #event-edit #date-container input {
 	color: #4388ab;
+	
+	-webkit-user-select: none;
+	user-select: none;
 }
 #event-edit input:nth-of-type(4) {
 	color: #00CCDD;

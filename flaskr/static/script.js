@@ -109,6 +109,169 @@ var chillout = {
   }
 }
 
+
+var globalEvents = {
+
+  'window:mousedown': (event) => {
+    var isSelect = event.target
+    while (isSelect && isSelect.classList.contains('select-container') == false) {
+      isSelect = isSelect.parentElement;
+    }
+    if (!isSelect && document.querySelector('.select-container .option')) {
+      $('.select-container').removeClass('active')
+      document.querySelectorAll('.option').forEach(option => option.remove())
+    }
+    var isModal = event.target
+    while (isModal && isModal.classList.contains('modal') == false) {
+      isModal = isModal.parentElement;
+    }
+    var focusable = event.target
+    while (focusable && focusable.classList.contains('focusable') == false) {
+      focusable = focusable.parentElement;
+    }
+    var eventItem = event.srcElement;
+    while (eventItem && eventItem.classList.contains('event') == false) {
+      eventItem = eventItem.parentElement;
+    }
+
+
+
+
+    if (isModal && !focusable) {
+      isModal.classList.add('gripped')
+      $(isModal).data().offset = JSON.stringify({
+        x: event.clientX - $(isModal).offset().left,
+        y: event.clientY - $(isModal).offset().top
+      });
+    } else if (!isModal) {
+      if (document.querySelector('.modal')) {
+        document.querySelector('.modal').remove()
+      }
+    }
+
+    if (eventItem) {
+      fc.api('GET', Api.GET_EVENT + '/' + eventItem.id).then(res => {
+        if (res.status !== 'success') return alert(res.status)
+
+        var modal = document.createElement('div');
+        modal.classList.add('modal');
+        modal.classList.add('event-modal')
+        modal.innerHTML = res.html;
+
+        body().appendChild(modal);
+
+
+        var width = +getComputedStyle(modal).width.split('px')[0]
+        var height = +getComputedStyle(modal).height.split('px')[0]
+        var top = event.clientY
+        var left = event.clientX
+
+        while (top < 0) {
+          top += 1
+        }
+
+         while (height + top > window.innerHeight) {
+          top -= 1
+        }
+
+        while (width + left > window.innerWidth) {
+          left -= 1
+        }
+
+         while (left < 0) {
+          left += 1
+        }
+
+        modal.style.top = top + 'px';
+        modal.style.left = left + 'px';
+
+
+
+
+        
+
+
+        ADD_EVENTS(modalEvents);
+
+          
+      });
+    }
+  },
+  'window:mousemove': (event) => {
+    var modal = $(event.target).closest('.modal')
+    if (modal.length) {
+      if (modal.hasClass('gripped')) {
+        var offset = JSON.parse(modal.data().offset);
+        var newX = event.clientX - offset.x;
+        var newY = event.clientY - offset.y;
+
+        modal.css({
+            left: `${newX}px`,
+            top: `${newY}px`
+        });
+
+      }
+    }
+  },
+
+  'window:mouseup': (event) => {
+    var focusable = event.target
+    while (focusable && !focusable.classList.contains('focusable')) focusable = focusable.parentElement
+    var modal = event.target
+    while (modal && modal.classList.contains('modal') == false) {
+      modal = modal.parentElement
+    }
+    if (modal) {
+      modal.classList.remove("gripped")
+    }
+  }
+}
+
+var typeEvents = {
+    '.select:focus': (event) => {
+    var input = event.srcElement;
+    input.classList.add('focusable')
+
+    if (!input.parentElement.classList.contains('active')) {
+      input.parentElement.classList.add('active');
+      var options = eval(input.dataset.options);
+      var width = getComputedStyle(input.parentElement.children[0]).width
+      var i = 0;
+      for (var option of options) {
+        var optionEl = document.createElement('button');
+        optionEl.classList.add('option');
+        optionEl.innerHTML = `<span>${option}</span>`;
+        optionEl.dataset.value = option
+
+        // var graphic = document.createElement('div')
+        // graphic.classList.add('option')
+        // $(graphic).addClass('graphic')
+        // $(graphic).html(input.dataset[option + '-graphic-text'])
+        // optionEl.appendChild(graphic)
+
+        optionEl.style.marginTop = (i++) * 25 + 'px'
+        optionEl.style.width = width
+
+        input.parentElement.appendChild(optionEl);
+      }
+      ADD_EVENTS()
+    }
+  },
+  
+  '.select:blur': function(event) {
+    // var isOption = event.target
+    // if (isOption.classList.contains('option')) return
+    // while (isOption && isOption.classList.contains('option') == false) {
+    //   isOption = isOption.parentElement
+    // }
+    // if (isOption) return
+    // var input = event.srcElement;
+    // var sc = $(event.target).closest('.select-container')
+    // $(sc).removeClass('active');
+    // sc[0].querySelectorAll('.option').forEach(el => el.remove());
+  }
+}
+
 var modalEvents = {
    '#save-this-event:click': (e) => {
     var event = SerializeEvent()
@@ -189,49 +352,6 @@ var events = {
     var id = $(event.srcElement).closest('.tr')[0].id;
     clearTimeout(SerializeAndSave)
     SerializeAndSave = setTimeout(SerializeAndSaveDebt.bind(null, id), 200);
-  },
-
-  '.select:focus': (event) => {
-    var input = event.srcElement;
-    input.classList.add('focusable')
-
-    if (!input.parentElement.classList.contains('active')) {
-      input.parentElement.classList.add('active');
-      var options = eval(input.dataset.options);
-      var width = getComputedStyle(input.parentElement.children[0]).width
-      var i = 0;
-      for (var option of options) {
-        var optionEl = document.createElement('button');
-        optionEl.classList.add('option');
-        optionEl.innerHTML = `<span>${option}</span>`;
-        optionEl.dataset.value = option
-
-        // var graphic = document.createElement('div')
-        // graphic.classList.add('option')
-        // $(graphic).addClass('graphic')
-        // $(graphic).html(input.dataset[option + '-graphic-text'])
-        // optionEl.appendChild(graphic)
-
-        optionEl.style.marginTop = (i++) * 25 + 'px'
-        optionEl.style.width = width
-
-        input.parentElement.appendChild(optionEl);
-      }
-      ADD_EVENTS()
-    }
-  },
-  
-  '.select:blur': function(event) {
-    // var isOption = event.target
-    // if (isOption.classList.contains('option')) return
-    // while (isOption && isOption.classList.contains('option') == false) {
-    //   isOption = isOption.parentElement
-    // }
-    // if (isOption) return
-    // var input = event.srcElement;
-    // var sc = $(event.target).closest('.select-container')
-    // $(sc).removeClass('active');
-    // sc[0].querySelectorAll('.option').forEach(el => el.remove());
   },
 
   'button.option:click': function(event) {
@@ -368,140 +488,6 @@ var events = {
     })
   },
 
-  'window:mousedown': (event) => {
-    var isSelect = event.target
-    while (isSelect && isSelect.classList.contains('select-container') == false) {
-      isSelect = isSelect.parentElement;
-    }
-
-    if (!isSelect && document.querySelector('.select-container .option')) {
-      $('.select-container').removeClass('active')
-      document.querySelectorAll('.option').forEach(option => option.remove())
-    }
-
-    var isModal = event.target
-    while (isModal && isModal.classList.contains('modal') == false) {
-      isModal = isModal.parentElement;
-    }
-
-    var focusable = event.target
-    while (focusable && focusable.classList.contains('focusable') == false) {
-      focusable = focusable.parentElement;
-    }
-
-    if (isModal && !focusable) {
-      isModal.classList.add('gripped')
-      $(isModal).data().offset = JSON.stringify({
-        x: event.clientX - $(isModal).offset().left,
-        y: event.clientY - $(isModal).offset().top
-      });
-    }
-
-    if (!isModal) {
-      if (document.querySelector('.modal')) {
-        document.querySelector('.modal').remove()
-      }
-    }
-
-
-    var eventItem = event.srcElement;
-    while (eventItem && eventItem.classList.contains('event') == false) {
-      eventItem = eventItem.parentElement;
-    }
-
-    if (!eventItem) {
-      if (event.srcElement.dataset.parentSelector) {
-        eventItem = document.querySelector(event.srcElement.dataset.parentSelector)
-      }
-    }
-
-    if (eventItem) {
-      fc.api('GET', Api.GET_EVENT + '/' + eventItem.id).then(res => {
-        if (res.status !== 'success') return alert(res.status)
-
-        var modal = document.createElement('div');
-        modal.classList.add('modal');
-        modal.classList.add('event-modal')
-        modal.innerHTML = res.html;
-
-        body().appendChild(modal);
-
-
-        var width = +getComputedStyle(modal).width.split('px')[0]
-        var height = +getComputedStyle(modal).height.split('px')[0]
-        var top = event.clientY
-        var left = event.clientX
-
-        while (top < 0) {
-          top += 1
-        }
-
-         while (height + top > window.innerHeight) {
-          top -= 1
-        }
-
-        while (width + left > window.innerWidth) {
-          left -= 1
-        }
-
-         while (left < 0) {
-          left += 1
-        }
-
-        modal.style.top = top + 'px';
-        modal.style.left = left + 'px';
-
-
-
-
-        
-
-
-        ADD_EVENTS(modalEvents);
-
-          
-      });
-    } else {
-      var eventModal = event.srcElement;
-      while (eventModal && eventModal.classList.contains('event-modal') == false) {
-        eventModal = eventModal.parentElement;
-      }
-      let modal = null;
-      if (!eventModal && (modal = document.querySelector('.event-modal')) !== null) {
-        modal.remove();
-      }
-    }
-  },
-
-  'window:mousemove': (event) => {
-    var modal = $(event.target).closest('.modal')
-    if (modal.length) {
-      if (modal.hasClass('gripped')) {
-        var offset = JSON.parse(modal.data().offset);
-        var newX = event.clientX - offset.x;
-        var newY = event.clientY - offset.y;
-
-        modal.css({
-            left: `${newX}px`,
-            top: `${newY}px`
-        });
-
-      }
-    }
-  },
-
-  'window:mouseup': (event) => {
-    var focusable = event.target
-    while (focusable && !focusable.classList.contains('focusable')) focusable = focusable.parentElement
-    var modal = event.target
-    while (modal && modal.classList.contains('modal') == false) {
-      modal = modal.parentElement
-    }
-    if (modal) {
-      modal.classList.remove("gripped")
-    }
-  },
-
   '#checking-balance:change': ChangeCheckingBalance,
   '#checking-balance:onpaste': ChangeCheckingBalance,
   '#checking-balance:keyup': ChangeCheckingBalance,
@@ -605,21 +591,28 @@ function REMOVE_EVENTS() {
   }
 }
 
-function ADD_EVENTS(event_to_add = events) {
+function ADD_EVENTS(events_to_add = events) {
   REMOVE_EVENTS();
 
+  for (var key in globalEvents) {
+    events_to_add[key] = globalEvents[key]
+  }
 
-  for (var key in event_to_add) {
+  for (var key in typeEvents) {
+    events_to_add[key] = typeEvents[key]
+  }
+
+  for (var key in events_to_add) {
     const [selector, eventType] = key.split(':');
     let elements;
     if (selector == 'window') {
-      window.addEventListener(eventType, event_to_add[key]);
+      window.addEventListener(eventType, events_to_add[key]);
     } else {
       elements = document.querySelectorAll(selector);
       // console.log(elements.length, selector)
       elements.forEach(element => {
         // console.log('Adding ' + eventType + ' for ' + selector, element)
-        element.addEventListener(eventType, event_to_add[key]);
+        element.addEventListener(eventType, events_to_add[key]);
       });
     }
   }
