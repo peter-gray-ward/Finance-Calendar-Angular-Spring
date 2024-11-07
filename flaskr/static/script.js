@@ -142,19 +142,22 @@ var events = {
     if (!input.parentElement.classList.contains('active')) {
       input.parentElement.classList.add('active');
       var options = eval(input.dataset.options);
+      var width = getComputedStyle(input.parentElement.children[0]).width
+      var i = 0;
       for (var option of options) {
         var optionEl = document.createElement('button');
         optionEl.classList.add('option');
         optionEl.innerHTML = `<span>${option}</span>`;
         optionEl.dataset.value = option
 
-        var graphic = document.createElement('div')
-        graphic.classList.add('option')
-        $(graphic).addClass('graphic')
-        $(graphic).html(input.dataset[option + '-graphic-text'])
-        optionEl.appendChild(graphic)
+        // var graphic = document.createElement('div')
+        // graphic.classList.add('option')
+        // $(graphic).addClass('graphic')
+        // $(graphic).html(input.dataset[option + '-graphic-text'])
+        // optionEl.appendChild(graphic)
 
-        // console.log('adding a graphic')
+        optionEl.style.marginTop = (i++) * 25 + 'px'
+        optionEl.style.width = width
 
         input.parentElement.appendChild(optionEl);
       }
