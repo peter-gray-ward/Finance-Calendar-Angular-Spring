@@ -129,9 +129,9 @@ var globalEvents = {
     while (focusable && focusable.classList.contains('focusable') == false) {
       focusable = focusable.parentElement;
     }
-    var eventItem = event.srcElement;
-    while (eventItem && eventItem.classList.contains('event') == false) {
-      eventItem = eventItem.parentElement;
+    var eventPreviewElement = event.srcElement;
+    while (eventPreviewElement && eventPreviewElement.classList.contains('event') == false) {
+      eventPreviewElement = eventPreviewElement.parentElement;
     }
 
 
@@ -149,8 +149,8 @@ var globalEvents = {
       }
     }
 
-    if (eventItem) {
-      fc.api('GET', Api.GET_EVENT + '/' + eventItem.id).then(res => {
+    if (eventPreviewElement) {
+      fc.api('GET', Api.GET_EVENT + '/' + eventPreviewElement.id).then(res => {
         if (res.status !== 'success') return alert(res.status)
 
         var modal = document.createElement('div');
@@ -188,10 +188,47 @@ var globalEvents = {
 
 
 
+        // load news for the day and type
+        var today = new Date()
+        var type = res.event.summary
+        var date = today.getDate()
+        if (date < 10) {
+          date = '0' + date
+        }
+        var month = today.getMonth()
+        if (month < 10) {
+          month = '0' + month
+        }
+        var url = `https://newsapi.org/v2/everything?q=${type}&from=${today.getFullYear() + '-' + month + '-' + date}&sortBy=publishedAt&apiKey=48b0fbf9821148af8caf19d1685f8d3a`
+        console.log(url)
+        var news = new XMLHttpRequest()
+        news.open("GET", url)
+        news.addEventListener('load', function() {
+          news = JSON.parse(this.response)
+          var newsContainer = document.querySelector("#event-news")
+          newsContainer.innerHTML = !news.articles.length ? '<section>0 articles</section>' : ''
+          var tagRegex = new RegExp(type, 'ig')
+          for (var article of news.articles.filter(art => {
+            return tagRegex.test(art.description) || tagRegex.test(art.content) || tagRegex.test(art.title)
+          })) {
+            var section = document.createElement('section')
+            section.classList.add('news-article')
+            section.innerHTML = `<hr>
+<h3>@${article.source.name}</h3>
+<h5>${article.author}</h5>
+<h1 style="color:rgb(${Math.floor(Math.random() * 255)},
+${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})">${article.title}</h1>
+<p>${article.description}</p>
+<div>${article.content}</div>
+<br/>
+            `
+            newsContainer.appendChild(section)
+          }
+          console.log('news', news)
+          ADD_EVENTS(modalEvents);
+        })
+        news.send()
         
-
-
-        ADD_EVENTS(modalEvents);
 
           
       });
@@ -325,7 +362,7 @@ var modalEvents = {
         document.querySelector('#clude-this-event').innerHTML = newButtonText.replace(' all', '')
       }
     })
-  },
+  }
 }
 
 var events = {
