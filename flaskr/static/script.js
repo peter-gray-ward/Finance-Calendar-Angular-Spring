@@ -535,7 +535,7 @@ var events = {
     while (eventId && !eventId.classList.contains('id')) {
       eventId = eventId.parentElement
     }
-    fc.api('DELETE', Api.DELETE_ALL_THESE_EVENTS + '/' + eventId.dataset.id + '/' + eventId.dataset.recurrenceid).then(res => {
+    fc.api('DELETE', Api.DELETE_ALL_THESE_EVENTS + '/' + eventId.dataset.recurrenceid).then(res => {
       if (res.status == 'success') {
         document.getElementById('calendar').innerHTML = res.html
       }
