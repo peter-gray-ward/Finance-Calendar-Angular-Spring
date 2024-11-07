@@ -94,11 +94,11 @@ function SerializeEvent() {
   return {  
     id: eventEdit.dataset.id,
     recurrenceid: eventEdit.dataset.recurrenceid,
-    summary: $(modalEvent).find('div[name="summary"]').html(),
+    summary: document.querySelector('.upper-div-collection div[name="summary"]').innerHTML,
     date: moment($(modalEvent.querySelector('input[name="date"]')).val()).format('yyyy-MM-DD'),
     recurrenceenddate:  moment($(modalEvent.querySelector('input[name="recurrenceenddate"]')).val()).format('yyyy-MM-DD'), 
-    amount: $(modalEvent.querySelector('input[name="amount"]')).val(),
-    frequency: $(modalEvent.querySelector('input[name="frequency"]')).val()
+    amount: document.querySelector('.upper-div-collection input[name="amount"]').value,
+    frequency: document.getElementById('time-container').querySelector('.select-container input[name="frequency"]').innerHTML
   };
 }
 
@@ -188,46 +188,7 @@ var globalEvents = {
 
 
 
-        // load news for the day and type
-        var today = new Date()
-        var type = res.event.summary
-        var date = today.getDate()
-        if (date < 10) {
-          date = '0' + date
-        }
-        var month = today.getMonth()
-        if (month < 10) {
-          month = '0' + month
-        }
-        var url = `https://newsapi.org/v2/everything?q=${type}&from=${today.getFullYear() + '-' + month + '-' + date}&sortBy=publishedAt&apiKey=48b0fbf9821148af8caf19d1685f8d3a`
-        console.log(url)
-        var news = new XMLHttpRequest()
-        news.open("GET", url)
-        news.addEventListener('load', function() {
-          news = JSON.parse(this.response)
-          var newsContainer = document.querySelector("#event-news")
-          newsContainer.innerHTML = !news.articles.length ? '<section>0 articles</section>' : ''
-          var tagRegex = new RegExp(type, 'ig')
-          for (var article of news.articles.filter(art => {
-            return tagRegex.test(art.description) || tagRegex.test(art.content) || tagRegex.test(art.title)
-          })) {
-            var section = document.createElement('section')
-            section.classList.add('news-article')
-            section.innerHTML = `<hr>
-<h3>@${article.source.name}</h3>
-<h5>${article.author}</h5>
-<h1 style="color:rgb(${Math.floor(Math.random() * 255)},
-${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})">${article.title}</h1>
-<p>${article.description}</p>
-<div>${article.content}</div>
-<br/>
-            `
-            newsContainer.appendChild(section)
-          }
-          console.log('news', news)
-          ADD_EVENTS(modalEvents);
-        })
-        news.send()
+        load_the_news(res.event)
         
 
           
@@ -309,8 +270,8 @@ var typeEvents = {
   }
 }
 
-var modalEvents = {
-   '#save-this-event:click': (e) => {
+var eventEvents = {
+  '#save-this-event:click': (e) => {
     var event = SerializeEvent()
     fc.api('PUT', Api.SAVE_THIS_EVENT + '/' + event.id, event).then(res => {
       if (res.status == 'success') {
@@ -328,6 +289,7 @@ var modalEvents = {
         document.getElementById('calendar').innerHTML = res.html
         $('.modal').addClass('saved')
         setTimeout(() => $('.modal').removeClass('saved'), 1000)
+        load_the_news(event)
       }
     })
   },
@@ -639,6 +601,10 @@ function ADD_EVENTS(events_to_add = events) {
     events_to_add[key] = typeEvents[key]
   }
 
+  for (let key in events) {
+    events_to_add[key] = events[key]
+  }
+
   for (var key in events_to_add) {
     const [selector, eventType] = key.split(':');
     let elements;
@@ -655,6 +621,47 @@ function ADD_EVENTS(events_to_add = events) {
   }
 }
 
-
+function load_the_news(event) {
+  // load news for the day and type
+  var today = new Date()
+  var type = event.summary
+  var date = today.getDate()
+  if (date < 10) {
+    date = '0' + date
+  }
+  var month = today.getMonth()
+  if (month < 10) {
+    month = '0' + month
+  }
+  var url = `https://newsapi.org/v2/everything?q=${type}&from=${today.getFullYear() + '-' + month + '-' + date}&sortBy=publishedAt&apiKey=48b0fbf9821148af8caf19d1685f8d3a`
+  console.log(url)
+  var news = new XMLHttpRequest()
+  news.open("GET", url)
+  news.addEventListener('load', function() {
+    news = JSON.parse(this.response)
+    var newsContainer = document.querySelector("#event-news")
+    newsContainer.innerHTML = !news.articles.length ? '<section>0 articles</section>' : ''
+    var tagRegex = new RegExp(type, 'ig')
+    for (var article of news.articles.filter(art => {
+      return tagRegex.test(art.description) || tagRegex.test(art.content) || tagRegex.test(art.title)
+    })) {
+      var section = document.createElement('section')
+      section.classList.add('news-article')
+      section.innerHTML = `<hr>
+<h3>@${article.source.name}</h3>
+<h5>${article.author}</h5>
+<h1 style="color:rgb(${Math.floor(Math.random() * 255)},
+${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})">${article.title}</h1>
+<p>${article.description}</p>
+<div>${article.content}</div>
+<br/>
+      `
+      newsContainer.appendChild(section)
+    }
+    console.log('news', news)
+    ADD_EVENTS(eventEvents);
+  })
+  news.send()
+}
 
 ADD_EVENTS()

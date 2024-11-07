@@ -1005,27 +1005,9 @@ def save_tafe(event_id):
             event = request.get_json()
             event_id = event.pop('id', None)
 
-
-             ######   ##   ##   ####     #####            #######  ##   ##  #######  ##   ##  ######
-             # ## #   ##   ##    ##     ##   ##            ##   #  ##   ##   ##   #  ###  ##  # ## #
-               ##     ##   ##    ##     #                  ## #     ## ##    ## #    #### ##    ##
-               ##     #######    ##      #####             ####     ## ##    ####    ## ####    ##
-               ##     ##   ##    ##          ##            ## #      ###     ## #    ##  ###    ##
-               ##     ##   ##    ##     ##   ##            ##   #    ###     ##   #  ##   ##    ##
-              ####    ##   ##   ####     #####            #######     #     #######  ##   ##   ####
-
-
             events = save_event(db, event_id, request)
             if not len(events):
                 return jsonify({ 'status': 'error', 'message': 'Error saving the event in the first place...'})
-
-             #######  ##   ##  ######   ##   ##  ######   #######           #######  ##   ##  #######  ##   ##  ######    #####
-              ##   #  ##   ##  # ## #   ##   ##   ##  ##   ##   #            ##   #  ##   ##   ##   #  ###  ##  # ## #   ##   ##
-              ## #    ##   ##    ##     ##   ##   ##  ##   ## #              ## #     ## ##    ## #    #### ##    ##     #
-              ####    ##   ##    ##     ##   ##   #####    ####              ####     ## ##    ####    ## ####    ##      #####
-              ## #    ##   ##    ##     ##   ##   ## ##    ## #              ## #      ###     ## #    ##  ###    ##          ##
-              ##      ##   ##    ##     ##   ##   ##  ##   ##   #            ##   #    ###     ##   #  ##   ##    ##     ##   ##
-             ####      #####    ####     #####   #### ##  #######           #######     #     #######  ##   ##   ####     #####
 
 
             sql = '''
@@ -1340,7 +1322,7 @@ def refresh_calendar():
             db.commit()
             cursor.close()
 
-            html = RenderApp(db, True, g)
+            html = RenderApp(db, True)
             return jsonify({ 'status': 'success', 'html': html })
     except Exception as e:
         res['status'] = 'error'
