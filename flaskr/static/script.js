@@ -110,8 +110,103 @@ var chillout = {
 }
 
 
-var globalEvents = {
 
+var events = {
+  '.select:focus': (event) => {
+    var input = event.srcElement;
+    input.classList.add('focusable')
+
+    if (!input.parentElement.classList.contains('active')) {
+      input.parentElement.classList.add('active');
+      var options = eval(input.dataset.options);
+      var width = getComputedStyle(input.parentElement.children[0]).width
+      var i = 0;
+      for (var option of options) {
+        var optionEl = document.createElement('button');
+        optionEl.classList.add('option');
+        optionEl.innerHTML = `<span>${option}</span>`;
+        optionEl.dataset.value = option
+
+        // var graphic = document.createElement('div')
+        // graphic.classList.add('option')
+        // $(graphic).addClass('graphic')
+        // $(graphic).html(input.dataset[option + '-graphic-text'])
+        // optionEl.appendChild(graphic)
+
+        optionEl.style.marginTop = (i++) * 25 + 'px'
+        optionEl.style.width = width
+
+        input.parentElement.appendChild(optionEl);
+      }
+      ADD_EVENTS()
+    }
+  },
+  
+  '.select:blur': function(event) {
+    // var isOption = event.target
+    // if (isOption.classList.contains('option')) return
+    // while (isOption && isOption.classList.contains('option') == false) {
+    //   isOption = isOption.parentElement
+    // }
+    // if (isOption) return
+    // var input = event.srcElement;
+    // var sc = $(event.target).closest('.select-container')
+    // $(sc).removeClass('active');
+    // sc[0].querySelectorAll('.option').forEach(el => el.remove());
+  },
+  '#save-this-event:click': (e) => {
+    var event = SerializeEvent()
+    fc.api('PUT', Api.SAVE_THIS_EVENT + '/' + event.id, event).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        $('.modal').addClass('saved')
+        setTimeout(() => $('.modal').removeClass('saved'), 1000)
+      }
+    })
+  },
+
+  '#save-this-and-future-events:click': (e) => {
+    var event = SerializeEvent()
+    fc.api('PUT', Api.SAVE_THIS_AND_FUTURE_EVENTS + '/' + event.recurrenceid, event).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        $('.modal').addClass('saved')
+        setTimeout(() => $('.modal').removeClass('saved'), 1000)
+      }
+    })
+  },
+
+  '#clude-this-event:click': e => {
+    var eventId = e.srcElement
+    var newButtonText = eventId.innerHTML == 'include' ? 'exclude' : 'include'
+    while (eventId && !eventId.classList.contains('id')) {
+      eventId = eventId.parentElement
+    }
+    eventId = eventId.dataset.id
+    fc.api('GET', Api.CLUDE_THIS_EVENT + '/' + eventId).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        e.srcElement.innerHTML = newButtonText
+        document.querySelector('#clude-all-these-events').innerHTML = newButtonText + ' all'
+      }
+    })
+  },
+
+  '#clude-all-these-events:click': e => {
+    var eventRecurrenceid = e.srcElement
+    var newButtonText = eventRecurrenceid.innerHTML == 'include all' ? 'exclude all' : 'include all'
+    while (eventRecurrenceid && !eventRecurrenceid.classList.contains('id')) {
+      eventRecurrenceid = eventRecurrenceid.parentElement
+    }
+    eventRecurrenceid = eventRecurrenceid.dataset.recurrenceid
+    fc.api('GET', Api.CLUDE_ALL_THESE_EVENTS + '/' + eventRecurrenceid).then(res => {
+      if (res.status == 'success') {
+        document.getElementById('calendar').innerHTML = res.html
+        e.srcElement.innerHTML = newButtonText
+        document.querySelector('#clude-this-event').innerHTML = newButtonText.replace(' all', '')
+      }
+    })
+  },
   'window:mousedown': (event) => {
     var isSelect = event.target
     while (isSelect && isSelect.classList.contains('select-container') == false) {
@@ -219,111 +314,7 @@ var globalEvents = {
     if (modal) {
       modal.classList.remove("gripped")
     }
-  }
-}
-
-var typeEvents = {
-  '.select:focus': (event) => {
-    var input = event.srcElement;
-    input.classList.add('focusable')
-
-    if (!input.parentElement.classList.contains('active')) {
-      input.parentElement.classList.add('active');
-      var options = eval(input.dataset.options);
-      var width = getComputedStyle(input.parentElement.children[0]).width
-      var i = 0;
-      for (var option of options) {
-        var optionEl = document.createElement('button');
-        optionEl.classList.add('option');
-        optionEl.innerHTML = `<span>${option}</span>`;
-        optionEl.dataset.value = option
-
-        // var graphic = document.createElement('div')
-        // graphic.classList.add('option')
-        // $(graphic).addClass('graphic')
-        // $(graphic).html(input.dataset[option + '-graphic-text'])
-        // optionEl.appendChild(graphic)
-
-        optionEl.style.marginTop = (i++) * 25 + 'px'
-        optionEl.style.width = width
-
-        input.parentElement.appendChild(optionEl);
-      }
-      ADD_EVENTS()
-    }
   },
-  
-  '.select:blur': function(event) {
-    // var isOption = event.target
-    // if (isOption.classList.contains('option')) return
-    // while (isOption && isOption.classList.contains('option') == false) {
-    //   isOption = isOption.parentElement
-    // }
-    // if (isOption) return
-    // var input = event.srcElement;
-    // var sc = $(event.target).closest('.select-container')
-    // $(sc).removeClass('active');
-    // sc[0].querySelectorAll('.option').forEach(el => el.remove());
-  }
-}
-
-var eventEvents = {
-  '#save-this-event:click': (e) => {
-    var event = SerializeEvent()
-    fc.api('PUT', Api.SAVE_THIS_EVENT + '/' + event.id, event).then(res => {
-      if (res.status == 'success') {
-        document.getElementById('calendar').innerHTML = res.html
-        $('.modal').addClass('saved')
-        setTimeout(() => $('.modal').removeClass('saved'), 1000)
-      }
-    })
-  },
-
-  '#save-this-and-future-events:click': (e) => {
-    var event = SerializeEvent()
-    fc.api('PUT', Api.SAVE_THIS_AND_FUTURE_EVENTS + '/' + event.recurrenceid, event).then(res => {
-      if (res.status == 'success') {
-        document.getElementById('calendar').innerHTML = res.html
-        $('.modal').addClass('saved')
-        setTimeout(() => $('.modal').removeClass('saved'), 1000)
-      }
-    })
-  },
-
-  '#clude-this-event:click': e => {
-    var eventId = e.srcElement
-    var newButtonText = eventId.innerHTML == 'include' ? 'exclude' : 'include'
-    while (eventId && !eventId.classList.contains('id')) {
-      eventId = eventId.parentElement
-    }
-    eventId = eventId.dataset.id
-    fc.api('GET', Api.CLUDE_THIS_EVENT + '/' + eventId).then(res => {
-      if (res.status == 'success') {
-        document.getElementById('calendar').innerHTML = res.html
-        e.srcElement.innerHTML = newButtonText
-        document.querySelector('#clude-all-these-events').innerHTML = newButtonText + ' all'
-      }
-    })
-  },
-
-  '#clude-all-these-events:click': e => {
-    var eventRecurrenceid = e.srcElement
-    var newButtonText = eventRecurrenceid.innerHTML == 'include all' ? 'exclude all' : 'include all'
-    while (eventRecurrenceid && !eventRecurrenceid.classList.contains('id')) {
-      eventRecurrenceid = eventRecurrenceid.parentElement
-    }
-    eventRecurrenceid = eventRecurrenceid.dataset.recurrenceid
-    fc.api('GET', Api.CLUDE_ALL_THESE_EVENTS + '/' + eventRecurrenceid).then(res => {
-      if (res.status == 'success') {
-        document.getElementById('calendar').innerHTML = res.html
-        e.srcElement.innerHTML = newButtonText
-        document.querySelector('#clude-this-event').innerHTML = newButtonText.replace(' all', '')
-      }
-    })
-  }
-}
-
-var events = {
 
   '.expenses .td:keyup': function(event) {
     var id = $(event.srcElement).closest('.tr')[0].id;
@@ -618,18 +609,6 @@ function REMOVE_EVENTS() {
 function ADD_EVENTS(events_to_add = events) {
   REMOVE_EVENTS();
 
-  for (var key in globalEvents) {
-    events_to_add[key] = globalEvents[key]
-  }
-
-  for (var key in typeEvents) {
-    events_to_add[key] = typeEvents[key]
-  }
-
-  for (let key in events) {
-    events_to_add[key] = events[key]
-  }
-
   for (var key in events_to_add) {
     const [selector, eventType] = key.split(':');
     let elements;
@@ -690,7 +669,7 @@ function ADD_EVENTS(events_to_add = events) {
                   newsContainer.appendChild(section)
                 }
                 console.log('news', news)
-                ADD_EVENTS(eventEvents);
+                ADD_EVENTS();
               })
               news.send()
             }
