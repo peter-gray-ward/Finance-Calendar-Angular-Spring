@@ -19,7 +19,8 @@ class Page(Enum):
     PRESENTS = 6
     IMAGINE = 7
     LEFTPANEL = 8
-    RIGHTPANEL = 9
+    RIGHTPANEL = 9,
+    DAILYNEWS = 11
 
 Api = {
   'ADD_EXPENSE': 'add-expense',

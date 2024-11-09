@@ -102,15 +102,6 @@ function SerializeEvent() {
   };
 }
 
-
-var chillout = {
-  click: {
-    body: false
-  }
-}
-
-
-
 var events = {
   '.select:focus': (event) => {
     var input = event.srcElement;
@@ -224,14 +215,10 @@ var events = {
     while (focusable && focusable.classList.contains('focusable') == false) {
       focusable = focusable.parentElement;
     }
-    var eventPreviewElement = event.srcElement;
-    while (eventPreviewElement && eventPreviewElement.classList.contains('event') == false) {
-      eventPreviewElement = eventPreviewElement.parentElement;
+    var eventTitle = event.srcElement;
+    while (eventTitle && eventTitle.classList.contains('event') == false) {
+      eventTitle = eventTitle.parentElement;
     }
-
-
-
-
     if (isModal && !focusable) {
       isModal.classList.add('gripped')
       $(isModal).data().offset = JSON.stringify({
@@ -243,9 +230,8 @@ var events = {
         document.querySelector('.modal').remove()
       }
     }
-
-    if (eventPreviewElement) {
-      fc.api('GET', Api.GET_EVENT + '/' + eventPreviewElement.id).then(res => {
+    if (eventTitle) {
+      fc.api('GET', Api.GET_EVENT + '/' + eventTitle.id).then(res => {
         if (res.status !== 'success') return alert(res.status)
 
         var modal = document.createElement('div');
@@ -540,6 +526,18 @@ var events = {
         document.getElementById('calendar').innerHTML = res.html
       }
     })
+  },
+
+  '.day-date:click': e => {
+    var dayBlock = e.srcElement
+    while (dayBlock && !dayBlock.classList.contains('day-block')) {
+      dayBlock = dayBlock.parentElement
+    }
+    fc.render(Page.DAILYNEWS + '/' + dayBlock.dataset.year + '-' + dayBlock.dataset.month + '-' + dayBlock.dataset.date).then(res => {
+      if (res.status == 'success') {
+        console.log('rendering', res.html)
+      }
+    })
   }
 }
 
@@ -648,61 +646,56 @@ function ADD_EVENTS(events_to_add = events) {
   }
 }
 
-            function load_the_news(event) {
-              // load news for the day and type
-              console.log(event)
-              var today = new Date(event.date)
-              var type = event.summary
-              var date = today.getDate() + 1
-              if (date < 10) {
-                date = '0' + date
-              }
-              var month = today.getMonth() + 1
-              if (month < 10) {
-                month = '0' + month
-              }
-              var url = `https://newsapi.org/v2/everything?q=${type}&from=${today.getFullYear() + '-' + month + '-' + date}&sortBy=publishedAt&apiKey=48b0fbf9821148af8caf19d1685f8d3a`
-              console.log(today, url)
-              var news = new XMLHttpRequest()
-              news.open("GET", url)
-              news.addEventListener('load', function() {
-                news = JSON.parse(this.response)
-                var newsContainer = document.querySelector("#event-news")
-                newsContainer.innerHTML = !news.articles || !news.articles.length ? news.message || '' : ''
-                var tagRegex = new RegExp(type, 'ig')
-                let articles = news.articles || []
-                for (var article of articles.filter(art => {
-                  return tagRegex.test(art.description) || tagRegex.test(art.content) || tagRegex.test(art.title)
-                })) {
-                  var section = document.createElement('section')
-                  section.classList.add('news-article')
-                  section.innerHTML = `<hr>
-            <h3 style="background:transparent;
-              padding: 0.25rem;">
-              <span style="font-size: 0.75rem; font-family: system-ui; font-weight: 200">${article.publishedAt}</span>
-              @${article.source.name}
-            </h3>
-            <h5>${article.author}</h5>
-            <h1 style="color: white;background:rgb(${Math.floor(Math.random() * 255)},
-            ${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})">${article.title}</h1>
-            <p>${article.description}</p>
-            <div>${article.content}</div>
-            <br/>
-                  `
-                  newsContainer.appendChild(section)
-                }
-                console.log('news', news)
-                ADD_EVENTS();
-              })
-              news.send()
-            }
+// function load_the_news(event) {
+//   // load news for the day and type
+//   console.log(event)
+//   var today = new Date(event.date)
+//   var type = event.summary
+//   var date = today.getDate() + 1
+//   if (date < 10) {
+//     date = '0' + date
+//   }
+//   var month = today.getMonth() + 1
+//   if (month < 10) {
+//     month = '0' + month
+//   }
+//   var url = `https://newsapi.org/v2/everything?q=${type}&from=${today.getFullYear() + '-' + month + '-' + date}&sortBy=publishedAt&apiKey=48b0fbf9821148af8caf19d1685f8d3a`
+//   console.log(today, url)
+//   var news = new XMLHttpRequest()
+//   news.open("GET", url)
+//   news.addEventListener('load', function() {
+//     news = JSON.parse(this.response)
+//     var newsContainer = document.querySelector("#event-news")
+//     newsContainer.innerHTML = !news.articles || !news.articles.length ? news.message || '' : ''
+//     var tagRegex = new RegExp(type, 'ig')
+//     let articles = news.articles || []
+//     for (var article of articles.filter(art => {
+//       return tagRegex.test(art.description) || tagRegex.test(art.content) || tagRegex.test(art.title)
+//     })) {
+//       var section = document.createElement('section')
+//       section.classList.add('news-article')
+//       section.innerHTML = `<hr>
+// <h3 style="background:transparent;
+//   padding: 0.25rem;">
+//   <span style="font-size: 0.75rem; font-family: system-ui; font-weight: 200">${article.publishedAt}</span>
+//   @${article.source.name}
+// </h3>
+// <h5>${article.author}</h5>
+// <h1 style="color: white;background:rgb(${Math.floor(Math.random() * 255)},
+// ${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})">${article.title}</h1>
+// <p>${article.description}</p>
+// <div>${article.content}</div>
+// <br/>
+//       `
+//       newsContainer.appendChild(section)
+//     }
+//     console.log('news', news)
+//     ADD_EVENTS();
+//   })
+//   news.send()
+// }
 
 ADD_EVENTS()
-
-
-
-
-
 
 class Game {
   element = document.getElementById('game-menu-canvas-container')
@@ -743,18 +736,10 @@ class Game {
   }
 }
 
-
-
-
-
-
 function initgame() {
   let game = new Game()
   window.game = game
 }
-
-
-
 
 function teardowngame() {}
 

@@ -1,0 +1,82 @@
+[
+    {
+        "name": "BBC News - World",
+        "url": "https://feeds.bbci.co.uk/news/world/rss.xml"
+    },
+    {
+        "name": "CNN - Top Stories",
+        "url": "http://rss.cnn.com/rss/edition.rss"
+    },
+    {
+        "name": "Reuters - Top News",
+        "url": "http://feeds.reuters.com/reuters/topNews"
+    },
+    {
+        "name": "The New York Times - World News",
+        "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
+    },
+    {
+        "name": "The Guardian - World News",
+        "url": "https://www.theguardian.com/world/rss"
+    },
+    {
+        "name": "Al Jazeera - Top Stories",
+        "url": "https://www.aljazeera.com/xml/rss/all.xml"
+    },
+    {
+        "name": "Fox News - World",
+        "url": "http://feeds.foxnews.com/foxnews/world"
+    },
+    {
+        "name": "NBC News - Top Stories",
+        "url": "https://feeds.nbcnews.com/nbcnews/public/news"
+    },
+    {
+        "name": "CBS News - World",
+        "url": "https://www.cbsnews.com/latest/rss/world"
+    },
+    {
+        "name": "ABC News - International",
+        "url": "https://abcnews.go.com/abcnews/internationalheadlines"
+    },
+    {
+        "name": "NPR - News",
+        "url": "https://feeds.npr.org/1001/rss.xml"
+    },
+    {
+        "name": "The Wall Street Journal - World News",
+        "url": "https://feeds.a.dj.com/rss/RSSWorldNews.xml"
+    },
+    {
+        "name": "Bloomberg - Top Stories",
+        "url": "https://www.bloomberg.com/feed/podcast/top_stories.xml"
+    },
+    {
+        "name": "Financial Times - World",
+        "url": "https://www.ft.com/world?format=rss"
+    },
+    {
+        "name": "Associated Press - Top News",
+        "url": "https://rsshub.app/apnews/topics/ap-top-news"
+    },
+    {
+        "name": "USA Today - News",
+        "url": "http://rssfeeds.usatoday.com/usatoday-NewsTopStories"
+    },
+    {
+        "name": "The Washington Post - World",
+        "url": "http://feeds.washingtonpost.com/rss/world"
+    },
+    {
+        "name": "Los Angeles Times - World News",
+        "url": "https://www.latimes.com/world/rss2.0.xml"
+    },
+    {
+        "name": "Time - World",
+        "url": "https://feeds2.feedburner.com/time/world"
+    },
+    {
+        "name": "Newsweek - World",
+        "url": "https://www.newsweek.com/rss"
+    }
+]

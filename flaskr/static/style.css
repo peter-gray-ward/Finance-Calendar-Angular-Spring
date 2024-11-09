@@ -621,6 +621,11 @@ header button:hover {
 	user-select: none;
 }
 
+.day-date:hover {
+	cursor: pointer;
+	font-weight: 900;
+}
+
 .opaque .day-date {
 	color: gray;
 }

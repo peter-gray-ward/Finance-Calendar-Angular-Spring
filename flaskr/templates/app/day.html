@@ -9,6 +9,7 @@
      data-month="{{ d.month }}" 
      data-monthname="{{ data.MONTHS[d.month - 1] }}">
   <div class="day-header">
+    
     {% if d.today or (d.todayOrLater and d.events | length > 0) %}
       <div class="total">
         {% if d.today %}
@@ -20,9 +21,11 @@
         {% endif %}
       </div>
     {% endif %}
+    
     <div class="day-date {{ 'today' if d.today else '' }}">
       {{ d.date }}
     </div>
+
   </div>
   <div class="events">
     {% for event in d.events %}

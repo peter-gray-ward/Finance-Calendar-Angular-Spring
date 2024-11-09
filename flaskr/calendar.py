@@ -7,8 +7,10 @@ from flask import (
     session, 
     jsonify, 
     flash,
-    json
+    json,
+    current_app
 )
+import os
 import calendar
 import uuid
 from werkzeug.exceptions import abort
@@ -20,6 +22,8 @@ from flaskr.db import get_db
 from . import enums
 import pprint
 import uuid
+import urllib.request
+import xml.etree.ElementTree as ET
 
 
 cache = {}
@@ -1204,6 +1208,51 @@ def create_payment_plan(debt_id):
     except Exception as e:
         return jsonify({ 'error': f'Execption creating payment plan {e}'})
 
+
+
+@api.route(f'/api/{enums.Page.DAILYNEWS.value}/<date_str>', methods=('GET',))
+@login_required
+def dailynews(date_str):
+    print('dailynews')
+    # Split date string if you want to use date parts
+    date_parts = date_str.split("-")
+    
+    # Load the RSS feed URLs from JSON
+    with open(os.path.join(current_app.root_path, 'static', 'news-rss-feeds.json'), 'r') as nrf:
+        rss_feeds = json.load(nrf)
+    
+    all_feeds_data = {}
+
+    # Parse each RSS feed
+    for feed in rss_feeds:
+        print('processing a feed', feed)
+        feed_data = []
+        try:
+            with urllib.request.urlopen(feed['url']) as response:
+                xml_data = response.read()
+                
+                # Parse XML and collect data
+                root = ET.fromstring(xml_data)
+                
+                # Traverse through each item and collect all available data
+                for item in root.findall(".//item"):  # Finds all item elements
+                    item_data = {}
+                    
+                    for elem in item:
+                        # Use tag as the key and text as the value in JSON output
+                        item_data[elem.tag] = elem.text or ""
+                    
+                    feed_data.append(item_data)
+                
+                # Add parsed data to the dictionary
+                all_feeds_data[feed['name']] = feed_data
+
+        except Exception as e:
+            # Log error if you want to handle individual feed errors
+            all_feeds_data[feed['name']] = {"error": str(e)}
+
+    # Return all feeds data as JSON response
+    return jsonify(all_feeds_data)
 
 
 @api.route('/api/refresh-calendar', methods=('GET',))
