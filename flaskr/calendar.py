@@ -13,6 +13,7 @@ from flask import (
 import os
 import calendar
 import uuid
+import re
 from werkzeug.exceptions import abort
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import *
@@ -25,6 +26,7 @@ import uuid
 import urllib.request
 import xml.etree.ElementTree as ET
 
+date_pattern = re.compile(r"(date|updated)", re.IGNORECASE)
 
 cache = {}
 
@@ -1208,12 +1210,16 @@ def create_payment_plan(debt_id):
     except Exception as e:
         return jsonify({ 'error': f'Execption creating payment plan {e}'})
 
-
+XML_NAMESPACES = {
+    'media': 'http://search.yahoo.com/mrss/',
+    'atom': 'http://www.w3.org/2005/Atom',
+    'content': 'http://purl.org/rss/1.0/modules/content/',
+    'dc': 'http://purl.org/dc/elements/1.1/',
+}
 
 @api.route(f'/api/{enums.Page.DAILYNEWS.value}/<date_str>', methods=('GET',))
 @login_required
 def dailynews(date_str):
-    print('dailynews')
     # Split date string if you want to use date parts
     date_parts = date_str.split("-")
     
@@ -1223,9 +1229,10 @@ def dailynews(date_str):
     
     all_feeds_data = {}
 
+    today = datetime.now()
+
     # Parse each RSS feed
     for feed in rss_feeds:
-        print('processing a feed', feed)
         feed_data = []
         try:
             with urllib.request.urlopen(feed['url']) as response:
@@ -1239,9 +1246,32 @@ def dailynews(date_str):
                     item_data = {}
                     
                     for elem in item:
+                        tag_name = elem.tag
+                        timestamp = None
+                        if date_pattern.search(tag_name):  # Check if the tag name matches the pattern
+                            try:
+                                timestamp = parser.parse(elem.text)  # Parse the date text
+                                today = datetime.today()
+
+                                # Skip this item if its date is older than today
+                                if timestamp.date() < today.date():
+                                    continue
+
+                            except (ValueError, TypeError):
+                                # Handle any date parsing errors here
+                                pass
+
+                        # Check if tag includes a namespace
+                        if '}' in tag_name:
+                            tag_name = tag_name.split('}', 1)[1]  # Remove namespace
+
                         # Use tag as the key and text as the value in JSON output
-                        item_data[elem.tag] = elem.text or ""
-                    
+                        item_data[tag_name] = elem.text or ""
+                        
+                        # Handle any namespaced elements, such as media:thumbnail
+                        if elem.tag == f"{{{XML_NAMESPACES['media']}}}thumbnail":
+                            item_data['thumbnail_url'] = elem.get('url', '')
+
                     feed_data.append(item_data)
                 
                 # Add parsed data to the dictionary
