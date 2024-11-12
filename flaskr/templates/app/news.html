@@ -1,0 +1,21 @@
+{% for news_outlet in data.keys() %}
+	<h1 class="news-outlet">{{ news_outlet }}</h1>
+	<div class="news-outlet-container" id="news-outlet-{{ news_outlet }}">
+		{% for article in data[news_outlet] %}
+			{% for key in article.keys() %}
+				<div class="article-key"><strong>{{ key }}</strong>: 
+					{% if article[key].endswith('.jpg') or article[key].endswith('.jpeg') or article[key].endswith('.png') or article[key].endswith('.gif') %}
+						<img src="{{ article[key] }}" />
+					{% elif key == 'encoded' %}
+						{{ article[key] | safe }}
+					{% elif article[key].startswith("http") %}
+						<a href="{{ article[key] }}">{{ article[key] }}</a>
+					{% else %}
+						{{ article[key] }}
+					{% endif %}
+				</div>
+			{% endfor %}
+			<br />
+		{% endfor %}
+	</div>
+{% endfor %}

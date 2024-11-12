@@ -404,7 +404,7 @@ var events = {
     }
   },
 
-  '#expand-to-game:click': () => {
+  '#expand-to-news:click': () => {
     if (process.expanding) return;
     process.expanding = true;
     if ($('body').hasClass('simple') == false) {
@@ -413,14 +413,14 @@ var events = {
 
 
         $('body').addClass('simple');
-        initgame()
+        initnews()
 
         process.expanding = false;
       }, 0);
     } else {
 
       $('body').removeClass('simple');
-      teardowngame()
+      teardownnews()
 
       setTimeout(function() {
         $('header').removeClass('visible');
@@ -538,6 +538,16 @@ var events = {
         console.log('rendering', res.html)
       }
     })
+  },
+
+  '.news-outlet:click': e => {
+    var outlet = e.srcElement.innerHTML
+    var news_outlet_container = document.getElementById('news-outlet-' + outlet)
+    if (news_outlet_container.classList.contains('active')) {
+      news_outlet_container.classList.remove('active')
+    } else {
+      news_outlet_container.classList.add('active')
+    }
   }
 }
 
@@ -608,8 +618,8 @@ function runTemps() {
       'max-height': height + 'px'
     });
   });
-  if (window.game) {
-    window.game.resize()
+  if (window.news) {
+    window.news.resize()
   }
 }
 
@@ -646,102 +656,35 @@ function ADD_EVENTS(events_to_add = events) {
   }
 }
 
-// function load_the_news(event) {
-//   // load news for the day and type
-//   console.log(event)
-//   var today = new Date(event.date)
-//   var type = event.summary
-//   var date = today.getDate() + 1
-//   if (date < 10) {
-//     date = '0' + date
-//   }
-//   var month = today.getMonth() + 1
-//   if (month < 10) {
-//     month = '0' + month
-//   }
-//   var url = `https://newsapi.org/v2/everything?q=${type}&from=${today.getFullYear() + '-' + month + '-' + date}&sortBy=publishedAt&apiKey=48b0fbf9821148af8caf19d1685f8d3a`
-//   console.log(today, url)
-//   var news = new XMLHttpRequest()
-//   news.open("GET", url)
-//   news.addEventListener('load', function() {
-//     news = JSON.parse(this.response)
-//     var newsContainer = document.querySelector("#event-news")
-//     newsContainer.innerHTML = !news.articles || !news.articles.length ? news.message || '' : ''
-//     var tagRegex = new RegExp(type, 'ig')
-//     let articles = news.articles || []
-//     for (var article of articles.filter(art => {
-//       return tagRegex.test(art.description) || tagRegex.test(art.content) || tagRegex.test(art.title)
-//     })) {
-//       var section = document.createElement('section')
-//       section.classList.add('news-article')
-//       section.innerHTML = `<hr>
-// <h3 style="background:transparent;
-//   padding: 0.25rem;">
-//   <span style="font-size: 0.75rem; font-family: system-ui; font-weight: 200">${article.publishedAt}</span>
-//   @${article.source.name}
-// </h3>
-// <h5>${article.author}</h5>
-// <h1 style="color: white;background:rgb(${Math.floor(Math.random() * 255)},
-// ${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)})">${article.title}</h1>
-// <p>${article.description}</p>
-// <div>${article.content}</div>
-// <br/>
-//       `
-//       newsContainer.appendChild(section)
-//     }
-//     console.log('news', news)
-//     ADD_EVENTS();
-//   })
-//   news.send()
-// }
+
 
 ADD_EVENTS()
 
-class Game {
-  element = document.getElementById('game-menu-canvas-container')
-  g = 50
-  grid = {
-    x: 50,
-    y: 50
-  }
-  constructor() {
-    this.build()
-  }
-  resize() {
-    this.element.innerHTML = ''
-    this.build()
-
-  }
-  build() {
-    let width = +getComputedStyle(this.element).width.split('px')[0]
-    let height = +getComputedStyle(this.element).height.split('px')[0]
-
-    if (height < width) {
-      this.element.style.transform = 'scale(0.85)'
-    } else {
-      this.element.style.transform = 'scale(1)'
-    }
-
-
-    for (var y = 0; y < this.grid.y; y++) {
-      for (var x = 0; x < this.grid.x; x++) {
-        var tile = document.createElement('div')
-        tile.classList.add('tile')
-        tile.style.width = width / this.g + 'px'
-        tile.style.height = tile.style.width
-        tile.id = x + '_' + y
-        this.element.appendChild(tile)
+class News {
+  constructor() {}
+  load_the_news() {
+    var url = `/api/${Page.DAILYNEWS}`
+    var news = new XMLHttpRequest()
+    news.open("GET", url)
+    news.addEventListener('load', function() {
+      var res = JSON.parse(this.response)
+      if (res.status == 'success') {
+        document.getElementById("right").innerHTML = res.html
+        ADD_EVENTS()
       }
-    }
+    })
+    news.send()
   }
 }
 
-function initgame() {
-  let game = new Game()
-  window.game = game
+function initnews() {
+  let news = new News()
+  news.load_the_news()
 }
 
-function teardowngame() {}
+function teardownnews() {
+  document.getElementById('right').innerHTML = '<did class="loading">loading...</did>'
+}
 
 
 

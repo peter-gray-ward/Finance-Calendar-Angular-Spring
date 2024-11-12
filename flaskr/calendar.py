@@ -1217,11 +1217,9 @@ XML_NAMESPACES = {
     'dc': 'http://purl.org/dc/elements/1.1/',
 }
 
-@api.route(f'/api/{enums.Page.DAILYNEWS.value}/<date_str>', methods=('GET',))
+@api.route(f'/api/{enums.Page.DAILYNEWS.value}', methods=('GET',))
 @login_required
-def dailynews(date_str):
-    # Split date string if you want to use date parts
-    date_parts = date_str.split("-")
+def dailynews():
     
     # Load the RSS feed URLs from JSON
     with open(os.path.join(current_app.root_path, 'static', 'news-rss-feeds.json'), 'r') as nrf:
@@ -1281,8 +1279,9 @@ def dailynews(date_str):
             # Log error if you want to handle individual feed errors
             all_feeds_data[feed['name']] = {"error": str(e)}
 
-    # Return all feeds data as JSON response
-    return jsonify(all_feeds_data)
+
+    html = render_template('app/news.html', data = all_feeds_data)
+    return jsonify({ 'status': 'success', 'html': html, 'data': all_feeds_data })
 
 
 @api.route('/api/refresh-calendar', methods=('GET',))

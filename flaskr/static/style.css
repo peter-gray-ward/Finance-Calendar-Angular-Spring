@@ -179,19 +179,42 @@ main#main form * {
 	height: 100%;
 	box-sizing: border-box;
 	padding: 0.5rem;
+	overflow: auto;
 }
 
-#game-menu-canvas-container {
-	height: 70%;
-	background: black;
-	display: flex;
-	flex-wrap: wrap;
-	align-content: start;
+#right .news-outlet:hover {
+	cursor: pointer;
+	font-weight: 900;
 }
 
-#game-menu-controller {
-	height: 30%;
-	background: whitesmoke;
+.news-outlet-container {
+	display: none;
+}
+
+.news-outlet-container.active {
+	display: initial;
+}
+
+.article-key {
+	width: 100%;
+}
+
+.article-key *:not(strong) {
+	word-break: break-word;
+}
+
+
+
+.article-key img {
+	width: 50%;
+}
+
+.article-key strong {
+	font-family: Andale Mono;
+	font-weight: 100;
+	color: red;
+	opacity: 0.7;
+	margin-right: 0.15rem;
 }
 
 .tile {
@@ -445,7 +468,7 @@ header button:hover {
 	z-index: 100;
 }
 
-#expand-to-game {
+#expand-to-news {
 	position: absolute;
 	left: calc(100vw - 2rem);
 	top: calc(100% - 26px);
