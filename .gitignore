@@ -2,5 +2,5 @@ node_modules/
 events.json
 account.json
 balance.json
-flaskr/db.py
+flaskr/.env.json
 .venv/
