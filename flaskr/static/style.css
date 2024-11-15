@@ -658,6 +658,23 @@ header button:hover {
 	color: white;
 }
 
+.new-event {
+    margin: 3px;
+    width: 1.65rem;
+    height: 1.65rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: 0.25s linear all;
+    margin-right: -1.85rem;
+    background: rgba(0,0,0,0.1);
+}
+
+.new-event.visible {
+	margin-right: 0;
+	display: flex;
+}
+
 .modal {
 	position: absolute;
 	width: var(--modal-width);

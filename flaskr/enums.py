@@ -39,7 +39,8 @@ Api = {
   'CLUDE_THIS_EVENT': 'clude-this-event',
   'CLUDE_ALL_THESE_EVENTS': 'clude-all-these-events',
   'DELETE_THIS_EVENT': 'delete-this-event',
-  'DELETE_ALL_THESE_EVENTS': 'delete-all-these-events'
+  'DELETE_ALL_THESE_EVENTS': 'delete-all-these-events',
+  'ADD_EVENT': 'add-event'
 }
 
 

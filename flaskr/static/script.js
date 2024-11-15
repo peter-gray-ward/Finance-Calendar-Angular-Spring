@@ -102,6 +102,49 @@ function SerializeEvent() {
   };
 }
 
+function EditEvent(event, eventId) {
+  fc.api('GET', Api.GET_EVENT + '/' + eventId).then(res => {
+    if (res.status !== 'success') return alert(res.status)
+
+    var modal = document.createElement('div');
+    modal.classList.add('modal');
+    modal.classList.add('event-modal')
+    modal.innerHTML = res.html;
+
+    body().appendChild(modal);
+
+
+    var width = +getComputedStyle(modal).width.split('px')[0]
+    var height = +getComputedStyle(modal).height.split('px')[0]
+    var top = event.clientY
+    var left = event.clientX
+
+    while (top < 0) {
+      top += 1
+    }
+
+     while (height + top > window.innerHeight) {
+      top -= 1
+    }
+
+    while (width + left > window.innerWidth) {
+      left -= 1
+    }
+
+     while (left < 0) {
+      left += 1
+    }
+
+    modal.style.top = top + 'px';
+    modal.style.left = left + 'px';
+
+
+    
+
+    ADD_EVENTS()
+  });
+}
+
 var events = {
   '.select:focus': (event) => {
     var input = event.srcElement;
@@ -145,6 +188,7 @@ var events = {
     // $(sc).removeClass('active');
     // sc[0].querySelectorAll('.option').forEach(el => el.remove());
   },
+
   '#save-this-event:click': (e) => {
     var event = SerializeEvent()
     fc.api('PUT', Api.SAVE_THIS_EVENT + '/' + event.id, event).then(res => {
@@ -198,6 +242,7 @@ var events = {
       }
     })
   },
+
   'window:mousedown': (event) => {
     var isSelect = event.target
     while (isSelect && isSelect.classList.contains('select-container') == false) {
@@ -231,48 +276,10 @@ var events = {
       }
     }
     if (eventTitle) {
-      fc.api('GET', Api.GET_EVENT + '/' + eventTitle.id).then(res => {
-        if (res.status !== 'success') return alert(res.status)
-
-        var modal = document.createElement('div');
-        modal.classList.add('modal');
-        modal.classList.add('event-modal')
-        modal.innerHTML = res.html;
-
-        body().appendChild(modal);
-
-
-        var width = +getComputedStyle(modal).width.split('px')[0]
-        var height = +getComputedStyle(modal).height.split('px')[0]
-        var top = event.clientY
-        var left = event.clientX
-
-        while (top < 0) {
-          top += 1
-        }
-
-         while (height + top > window.innerHeight) {
-          top -= 1
-        }
-
-        while (width + left > window.innerWidth) {
-          left -= 1
-        }
-
-         while (left < 0) {
-          left += 1
-        }
-
-        modal.style.top = top + 'px';
-        modal.style.left = left + 'px';
-
-
-        
-
-        ADD_EVENTS()
-      });
+      EditEvent(event, eventTitle.id)
     }
   },
+
   'window:mousemove': (event) => {
     var modal = $(event.target).closest('.modal')
     if (modal.length) {
@@ -513,6 +520,7 @@ var events = {
     fc.api('DELETE', Api.DELETE_THIS_EVENT + '/' + eventId.dataset.id).then(res => {
       if (res.status == 'success') {
         document.getElementById('calendar').innerHTML = res.html
+        document.querySelector('.modal').remove()
       }
     })
   },
@@ -528,16 +536,24 @@ var events = {
     })
   },
 
-  '.day-date:click': e => {
-    var dayBlock = e.srcElement
-    while (dayBlock && !dayBlock.classList.contains('day-block')) {
-      dayBlock = dayBlock.parentElement
+  '.day-block:dblclick': e => {
+    var isEvent = e.srcElement
+    while (isEvent && !isEvent.classList.contains('event')) {
+      isEvent = isEvent.parentElement
     }
-    fc.render(Page.DAILYNEWS + '/' + dayBlock.dataset.year + '-' + dayBlock.dataset.month + '-' + dayBlock.dataset.date).then(res => {
-      if (res.status == 'success') {
-        console.log('rendering', res.html)
+    if (!isEvent) {
+      var date = e.srcElement
+      while (date && !date.classList.contains('day-block')) {
+        date = date.parentElement
       }
-    })
+
+      fc.api('POST', Api.ADD_EVENT + '/' + date.dataset.year + '-' + date.dataset.month + '-' + date.dataset.date).then(res => {
+        if (res.status == 'success') {
+          document.getElementById('calendar').innerHTML = res.html
+          EditEvent(e, res.eventId)
+        }
+      })
+    }
   },
 
   '.news-outlet:click': e => {
@@ -549,6 +565,7 @@ var events = {
       news_outlet_container.classList.add('active')
     }
   }
+
 }
 
 function ChangeCheckingBalance(e) {

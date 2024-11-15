@@ -1,8 +1,4 @@
-<div class="day-block {{ 
-    'weekend' if d.day == 'Sunday' or d.day == 'Saturday' 
-              else '' }} 
-        {{ 'first-of-month' if d.date == 1 
-        else '' }}"
+<div class="day-block{{' weekend' if d.day == 'Sunday' or d.day == 'Saturday' else '' }}{{ ' first-of-month' if d.date == 1 else '' }}"
      data-date="{{ d.date }}" 
      data-dow="{{ d.day }}" 
      data-year="{{ d.year }}" 
@@ -21,10 +17,13 @@
         {% endif %}
       </div>
     {% endif %}
+
+    <div class="new-event">+</div>
     
-    <div class="day-date {{ 'today' if d.today else '' }}">
+    <div class="day-date{{ ' today' if d.today else '' }}">
       {{ d.date }}
     </div>
+
 
   </div>
   <div class="events">

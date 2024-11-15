@@ -945,40 +945,42 @@ def get_event(event_id):
             'html': html
         })
 
-@api.route('/api/create-event', methods=('POST',))
+@api.route('/api/add-event/<event_date>', methods=('POST',))
 @login_required
-def create_event():
+def add_event(event_date):
     user_id = session.get('user_id')
-    event_date = request.get_json()['date']
+    event_date = event_date.split('-')
     with get_db() as db:
-        data = load_user_info(db, user_id)
+        data = {}
+
+        data['year'] = int(event_date[0])
+        data['month'] = int(event_date[1])
+        data['date'] = int(event_date[2])
+
         event = CreateEvent(data, user_id)
         try:
             cursor = db.cursor()
             cursor.execute(
                 '''
                     INSERT INTO "event"
-                    ({', '.join(event.keys())})
+                    ({})
                     VALUES
-                    ({
-                        ''.join(
-                            [
-                                '%s' + ',' if i < len(event.keys()) - 1 else '%s' 
-                                for i, key in enumerate(event.keys())
-                            ]
-                        )
-                    })
-                ''',
-                event.values()
+                    ({})
+                '''.format(
+                    ', '.join(event.keys()),
+                    ', '.join(['%s' for _ in event.keys()])
+                ),
+                tuple(event.values())  # Convert event.values() to a tuple
             )
             db.commit()
             cursor.close()
 
             html = RenderApp(db, True)
 
-            return jsonify({ 'status': 'success', 'html': html })
+            return jsonify({ 'status': 'success', 'html': html, 'eventId': event['id'] })
         except Exception as e:
             return jsonify({ 'status': 'error', 'message': f'{e}'})
+
 
 
 @api.route('/api/save-this-event/<event_id>', methods=('PUT',))
