@@ -396,6 +396,10 @@ var events = {
   '#expand-to-budget:click': () => {
     if (process.expanding) return;
     process.expanding = true;
+    if ($('body').hasClass('simple')) {
+      $('body').removeClass('simple');
+      teardownnews()
+    }
     if ($('body').hasClass('complex') == false) {
       $('header').addClass('visible');
       setTimeout(function() {
@@ -414,6 +418,13 @@ var events = {
   '#expand-to-news:click': () => {
     if (process.expanding) return;
     process.expanding = true;
+
+
+    if ($('body').hasClass('complex')) {
+      $('body').removeClass('complex');
+      $('header').removeClass('visible');
+      process.expanding = false;
+    }
     if ($('body').hasClass('simple') == false) {
       $('header').addClass('visible');
       setTimeout(function() {

@@ -37,7 +37,7 @@
 	--modal-width: 500px;
 	--modal-label-font-size: 1.15rem;
 	--modal-font-size: 1.5rem;
-	--panel-transition-speed: 0.1s;
+	--panel-transition-speed: 0.05s;
 	--background: #171a17;
 	--color: whitesmoke;
 }
@@ -80,7 +80,7 @@ body.complex #main {
 body.complex #left-panel {
 	width: 100%;
 	z-index: 99;
-    transition: 0.1s linear width;
+    transition: 0.05s linear width;
 }
 main#main {
 	margin: auto;
@@ -121,7 +121,6 @@ main#main form * {
     top: 0px;
     height: 100%;
     background-size: contain;
-    transition: 1s linear width;
     box-sizing: border-box;
 }
 
@@ -136,7 +135,6 @@ main#main form * {
 	box-sizing: border-box;
 	padding: 0.5rem;
 	flex-direction: column;
-	transition: var(--panel-transition-speed) linear all;
 }
 
 #left.visible {
@@ -166,7 +164,6 @@ main#main form * {
     height: 100%;
     float: right;
     background-size: contain;
-    transition: 1s linear width;
 }
 
 #right {
