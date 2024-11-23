@@ -1,0 +1,1713 @@
+#calendar * {
+	font-family: system-ui;
+}
+
+.desc {
+	background: black;
+    padding: 0.6rem;
+    font-weight: 100;
+    color: white;
+    font-family: Helvetica;
+    font-size: 2.3rem;
+    text-align: justify;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 1px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: whitesmoke;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+* {
+	--saveThisInstanceButtonHeight: 100px;
+	--modal-width: 500px;
+	--modal-label-font-size: 1.15rem;
+	--modal-font-size: 1.5rem;
+	--panel-transition-speed: 0.05s;
+	--background: #171a17;
+	--color: whitesmoke;
+}
+
+sup {
+	font-weight: 400;
+    font-size: 0.7rem;
+    font-style: italic;
+    color: maroon;
+    margin-left: 0.2rem;
+}
+
+html, body {
+	margin: 0;
+	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
+}
+
+body {
+	display: flex;
+	flex-direction: row;
+	overflow: auto;
+}
+
+body footer iframe {
+	display: none;
+}
+
+body.complex {
+	justify-content: flex-end;
+	float: right;
+}
+
+body.complex #main {
+	left: 40%;
+}
+
+
+body.complex #left-panel {
+	width: 100%;
+	z-index: 99;
+    transition: 0.05s linear width;
+}
+main#main {
+	margin: auto;
+	padding: 1rem;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	font-family: Charter;
+}
+
+#main.authenticated {
+	width: 100%;
+	height: 100%;
+	transition: var(--panel-transition-speed) linear all;
+	background: white;
+	z-index: 2;
+	float: right;
+	position: absolute;
+	left: 0;
+}
+
+main#main form {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+main#main form * {
+	margin: 0.5rem;
+	font-size: 1.5rem;
+}
+
+#left-panel {
+	width: 40%;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    background-size: contain;
+    box-sizing: border-box;
+}
+
+#left {
+	backdrop-filter: blur(10px);
+	z-index: 1;
+    background: var(--background);
+    color: var(--color);
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	padding: 0.5rem;
+	flex-direction: column;
+}
+
+#left.visible {
+	display: flex;
+	padding: 0.5rem 5vw 5rem 5vw;
+	overflow-y: auto;
+/*	transform: translateX(0%);*/
+}
+
+#left h3, #right h3 {
+    text-align: center;
+    font-family: system-ui;
+    font-weight: 200;
+    margin: 1rem 0.5rem 0.5rem 0.5rem;
+}
+
+#left h3 div, #right h3 div {
+	overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
+}
+
+#right-panel {
+	width: 40%;
+    position: absolute;
+    left: 60%;
+    height: 100%;
+    float: right;
+    background-size: contain;
+}
+
+#right {
+	z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: space-between;
+    width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	padding: 0.5rem;
+	overflow: auto;
+}
+
+#right .news-outlet:hover {
+	cursor: pointer;
+	font-weight: 900;
+}
+
+.news-outlet-container {
+	display: none;
+}
+
+.news-outlet-container.active {
+	display: initial;
+}
+
+.article-key {
+	width: 100%;
+}
+
+.article-key *:not(strong) {
+	word-break: break-word;
+}
+
+
+
+.article-key img {
+	width: 50%;
+}
+
+.article-key strong {
+	font-family: Andale Mono;
+	font-weight: 100;
+	color: red;
+	opacity: 0.7;
+	margin-right: 0.15rem;
+}
+
+.tile {
+	border: 1px dotted white;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+#top {
+	position: absolute;
+	left: 5px;
+	top: 5px;
+}
+
+
+body.grabbing {
+	cursor: grabbing;
+}
+
+body.grabbing * {
+	user-select: none;
+	cursor: grabbing;
+}
+
+body.grabbing .day-block:hover {
+	box-shadow: inset 0 0 10px 0 black;
+}
+
+.vertical-table {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+}
+
+.vertical-table .th, .vertical-table .td {
+	display: flex;
+	align-items: center;
+	color: white;
+}
+
+.vertifcal-table .th {
+	justify-content: end;
+	background: rgba(0, 0, 0, 0.5);
+}
+
+.vertical-table .td {
+	flex-grow: 1;
+	color: black;
+	justify-content: center;
+	background: white;
+	white-space: pre;
+}
+
+.vertical-table .column:nth-child(even) .td:nth-child(even) {
+	background: #EBEDEF;
+	padding: 0.25rem;
+	box-sizing: border-box;
+}
+
+.vertical-table .column:first-of-type {
+	width: 40%;
+}
+
+.vertical-table .column:last-of-type {
+	width: 60%;
+}
+
+.table {
+	width: 100%;
+	background: black;
+}
+
+.tr {
+	width: 100%;
+	display: flex;
+}
+
+.td, .tr, .th {
+	min-height: 1.5rem;
+}
+
+.th {
+	font-family: Andale Mono;
+	background: black;
+	color: white;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: pre;
+	box-sizing: border-box;
+}
+
+.button-row-right {
+	justify-content: flex-end;
+}
+
+#month-name, #year-name {
+	font-family: system-ui;
+	font-weight: 400;
+	font-size: 2.05rem;
+}
+
+#year-name {
+
+	font-weight: 300 !important;
+}
+
+#expenses .tr .th:nth-child(1),
+#expenses .tr .td:nth-child(1) {
+	width: 40%;
+}
+#expenses .tr .th:nth-child(2),
+#expenses .tr .td:nth-child(2) {
+	width: 15%;
+}
+#expenses .tr .th:nth-child(3),
+#expenses .tr .td:nth-child(3) {
+	width: 15%;
+}
+#expenses .tr .th:nth-child(4),
+#expenses .tr .td:nth-child(4) {
+	width: 15%;
+}
+#expenses .tr .th:nth-child(5),
+#expenses .tr .td:nth-child(5) {
+	width: 15%;
+}
+
+#debts .tr .th:nth-child(1),
+#debts .tr .td:nth-child(1) {
+	width: 16.667%;
+}
+#debts .tr .th:nth-child(2),
+#debts .tr .td:nth-child(2) {
+	width: 16.667%;
+}
+#debts .tr .th:nth-child(3),
+#debts .tr .td:nth-child(3) {
+	width: 16.667%;
+}
+#debts .tr .th:nth-child(4),
+#debts .tr .td:nth-child(4) {
+	width: 16.667%;
+}
+#debts .tr .th:nth-child(5),
+#debts .tr .td:nth-child(5) {
+	width: 16.667%;
+}
+
+#debts .tr .th:nth-child(6),
+#debts .tr .td:nth-child(6) {
+	width: 16.667%;
+}
+
+.create-debt-event {
+	font-size: 1.35vw;
+	height: 100%;
+}
+
+input.td {
+	border: none;
+	border-bottom: 1px solid lightgray;
+	border-right: 1px solid lightgray;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.td button {
+	font-size: 1rem;
+	height: 100%;
+}
+
+input.td:first-of-type {
+	border-left: 1px solid lightgray;
+}
+
+input.td:active, input.td:focus {
+	outline: none;
+}
+
+.tr:nth-child(even) input.td {
+	background: #EBEDEF;
+}
+
+.tr:nth-child(odd) input.td {
+	background: white;
+}
+
+.delete-expense {
+	border: none !important;
+	text-align: center;
+	margin-left: 2px;
+	display: flex;
+	padding: 1px 2px;
+	align-items: start;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-bottom: 1px dotted;
+/*	padding: 0 3px 0 0;*/
+	color: white;
+	line-height: 1rem;
+}
+
+body.complex #main,
+body.simple #main {
+	width: 60%;
+/*	transform: translateX(66.69%);*/
+}
+
+footer {
+	background: var(--background);
+	color: var(--color);
+	width: 0;
+	height: 100%;
+	transition: var(--panel-transition-speed) linear all;
+}
+
+.visible {
+	display: inherit;
+}
+
+body.complex header,
+body.simple footer {
+	width: 40%;
+	height: 100%;
+}
+
+header button {
+	border: none;
+	background: none;
+	font-size: 1.5rem;
+	font-weight: 100;
+	font-family: system-ui;
+	color: var(--color);
+}
+
+header button:hover {
+	cursor: pointer;
+}
+
+#footer {
+
+}
+
+#expand-to-budget {
+	position: absolute;
+	left: 5px;
+	top: calc(100% - 26px);
+	z-index: 100;
+}
+
+#expand-to-news {
+	position: absolute;
+	left: calc(100vw - 2rem);
+	top: calc(100% - 26px);
+	z-index: 100;
+}
+
+#calendar {
+	width: 100%;
+	height: calc(100% - 5rem);
+	overflow: hidden;
+	background: rgba(0, 0, 0, 0.13);
+}
+
+#calendar-month-header {
+	height: 3rem;
+	idth: 100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0 1rem;
+	box-sizing: border-box;
+	background: white;
+}
+
+#calendar-month-header div {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#calendar-month-header h2 {
+	margin: 0;
+	padding: 0;
+}
+
+#calendar-week-header {
+	display: flex;
+	height: 2rem;
+	border-bottom: 1px solid rgba(0,0,0,0.3);
+	background: white;
+}
+
+#calendar-week-header > div {
+	width: calc(100% / 7 - 1px);
+	display: flex;
+	font-weight: 300;
+	align-items: center;
+	justify-content: flex-end;
+	height: 2rem;
+	/*text-shadow: 0px 1px 2px grey;*/
+	font-family: system-ui;
+}
+
+#prev-month, #go-to-today, #next-month, #expand, #simple {
+	background: white;
+	margin: 0.5px;
+	border: none;
+	outline: none;
+    height: 20px;
+	color: black;
+	border-radius: 5px;
+	box-shadow: 0 0.35px 1px 0.55px rgb(0 0 0 / 23%);
+}
+
+
+
+#prev-month:active,
+#go-to-today:active,
+#next-month:active,
+#expand:active,
+#simple:active {
+	background: white;
+}
+
+#prev-month:hover, #go-to-today:hover, #next-month:hover, #expand:hover, #simple:hover {
+	cursor: pointer;
+}
+
+#prev-month:active, #go-to-today:active, #next-month:active, #expand:active, #simple:active {
+	background: rgb(0 0 0 / 6%);
+}
+
+#prev-month {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+}
+
+#prev-month span,
+#next-month span {
+	font-size: 0.75rem;
+}
+
+#prev-month span {
+	transform: rotate(45deg);
+}
+
+#next-month {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+#next-month span {
+	transform: rotate(225deg);
+}
+
+.week {
+	height: calc(100% / 6);
+	background: transparent;
+}
+
+.day-block {
+	display: inline-flex;
+	flex-direction: column;
+	width: calc(100% / 7 - 1px);
+	height: calc(100% - 1px);
+	margin: 0 1px 0 0;
+	background: white;
+	float: left;
+	overflow-x: hidden;
+}
+
+.day-block:hover {
+	
+}
+
+.day-block.opaque .day-date {
+
+    color: lightgray;
+}
+
+.day-block.weekend {
+	
+    opacity: 0.75;
+    background: rgba(255,253,251,1);
+
+}
+
+.weekend .day-date {
+	color: rgba(0, 0, 0, 0.7);
+}
+
+.day-block.selected {
+	background: lightyellow;
+}
+
+.day-header {
+	height: 25%;
+    width: 100%;
+    justify-content: flex-end;
+    display: flex;
+    transform-style: preserve-3d;
+/*    perspective: 1000px;*/
+}
+
+.day-header * {
+  font-family: cursive !important;
+}
+
+.day-date {
+	height: calc(100% - 6px);
+	margin: 3px;
+    width: 1.65rem;
+    height: 1.65rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0,0,0,0.0);
+	border-radius: 100%;
+	user-select: none;
+}
+
+.day-date:hover {
+	cursor: pointer;
+	font-weight: 900;
+}
+
+.opaque .day-date {
+	color: gray;
+}
+
+.day-date.today {
+	background: maroon;
+	color: white;
+}
+
+.new-event {
+    margin: 3px;
+    width: 1.65rem;
+    height: 1.65rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: 0.25s linear all;
+    margin-right: -1.85rem;
+    background: rgba(0,0,0,0.1);
+}
+
+.new-event.visible {
+	margin-right: 0;
+	display: flex;
+}
+
+.modal {
+	position: absolute;
+	width: var(--modal-width);
+	box-shadow: 0 0 3px 0;
+	border-radius: 5px;
+	background: url(/static/waternormals.jpg);
+	z-index: 2;
+}
+
+.modal label {
+	color: gray;
+	font-size: var(--modal-label-font-size);
+}
+
+.modal * {
+	font-family: system-ui;
+	transition: 0.5s linear outline;
+}
+
+
+.modal.gripped {
+	cursor: grabbing;
+}
+
+.modal.saved {
+/*	outline: 3px solid lawngreen;*/
+}
+
+.modal.gripped * {
+	cursor: grabbing !important;
+}
+
+
+/*
+<div class="modal-content">
+	<div id="modal-day-header">
+		pDayHeader
+	</div>
+	<div id="account-of-day">
+		
+	</div>    
+</div>
+*/
+
+.modal-content {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	font-size: 0.75rem;
+	overflow: auto;
+	background: transparent;
+	background-size: cover;
+	width: 100%;
+	height: 100%;
+	border-radius: 5px;
+}
+
+.summary-textarea {
+	border: 1px solid red;
+}
+
+
+.summary-textarea.edit {
+	position: absolute;
+    font-size: 1.5rem;
+    width: 100% !important;
+    border-bottom: 1px dotted gray;
+    padding: 1px;
+    margin-top: -3.85rem;
+}
+
+.summary-textarea:hover {
+	cursor: text;
+}
+
+#summary-div textarea {
+	/*
+
+		Summarize what the event
+		represents to you. Briefly.
+	
+	 */
+	position: absolute;
+/*    margin-left: -220px;
+    margin-top: -300px;*/
+    width: 220px;
+    height: 200px !important;
+    background: black;
+    color: white;
+    resize: none;
+    padding: 1rem;
+    height: 1.75rem;
+    font-size: 1.5rem;
+    border-bottom: 1px dotted gray;
+}
+
+#summary-div textarea:focus {
+	outline: none;
+}
+
+#modal-day-header {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	padding: 0.1rem;
+}
+
+#todays-date {
+	cursor: pointer;
+	z-index: 1;
+}
+
+#todays-date:active {
+	background: darkred;
+}
+
+#go-to-today {
+	float: right;
+	font-size: 0.8rem;
+    padding: 0 15px;
+}
+
+#scroll-mark {
+	background: red;
+	width: 100%;
+	height: 1px;
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+
+.events {
+	display: flex;
+	flex-direction: column;
+	height: 75%;
+	padding: 0.5rem 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+
+.event {
+	height: 1rem;
+    /* line-height: 1rem; */
+    width: calc(100% - 0.75rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0.5px 0.25rem;
+    padding: 0.1rem;
+    font-size: 0.75rem;
+    border-radius: 5px;
+}
+
+.event.exclude {
+	opacity: 0.3;
+}
+
+.modal-flex {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.modal-flex > div {
+	flex-grow: 1;
+	width: 50%;
+}
+
+.summary {
+	flex-grow: 1;
+    text-indent: 0.25rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: pre;
+    user-select: none;
+    cursor: zoom-in;
+}
+
+.modal-content label {
+    color: rgba(0,0,0,0.25);
+    font-weight: 100;
+    font-size: var(--modal-label-font-size);
+}
+
+.modal-content select {
+	width: 99.5%;
+}
+
+.modal-content input[type='date'] {
+	/*width: 96.5%;*/
+}
+
+.modal-content input, .modal-content select {
+	background: transparent;
+    border-width: 1px;
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    /* padding: 2px; */
+    font-size: var(--modal-font-size);
+    border-bottom: 1px dotted gray;
+}
+
+.modal-content input:focus, .modal-content select:focus {
+	outline: none;
+}
+
+.total {
+	display: flex;
+ 	align-items: start; 
+	justify-content: space-around;
+	flex-grow: 1;
+    text-align: center;
+    padding: 0.25rem 0;
+    font-weight: 700;
+    font-size: 1.25rem;
+    width: 50%;
+    height: 1.5rem;
+/*    transform: translateZ(390px) rotateY(22deg) skew(21deg, 0deg);*/
+}
+
+.total input {
+    font-size: 1.5rem;
+    flex-grow: 1;
+    border: none;
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    display: flex;
+}
+
+.total input:focus {
+	outline: none;
+}
+
+.positive {
+	color: green;
+}
+
+.negative {
+	color: red;
+}
+
+.button-footer {
+	box-sizing: content-box;
+}
+.button-footer button {
+	background: whitesmoke;
+	border: none;
+	outline: none;
+	flex-grow: 1;
+	font-size: .88rem;
+	color: darkblue;
+	font-family: Charter;
+	text-align: justify;
+	margin-left: 0.2rem;
+}
+
+.button-footer button:first-of-type {
+	border-top-right-radius: 5px;
+}
+
+.button-footer button:last-of-type {
+	border-bottom-right-radius: 5px;
+}
+
+.button-footer button:hover {
+	cursor: pointer;
+	background: transparent;
+	color: white;
+}
+
+.button-footer button:active, .button-footer button.active {
+	cursor: pointer;
+	background: url(/static/waternormals.jpg);
+	color: white;
+}
+
+.mistyrose {
+	background: mistyrose;
+	color: black;
+}
+.lavender {
+	background: lavender;
+	color: black;
+}
+
+
+#refresh-calendar, .add-expense {
+	padding: 0;
+	width: 1rem;
+	height: 1rem;
+	margin: .5rem;
+	align-items: center;
+	line-height: 1.4rem;
+}
+#refresh-calendar {
+	height: 2rem;
+    font-size: 1.25rem;
+    transition: 0.5s; /* This will control non-infinite transitions, like when adding/removing the class */
+}
+
+#refresh-calendar.refreshing {
+    animation: rotate 1s linear infinite; /* Use animation for infinite looping */
+}
+
+/* Define the keyframes for the rotation */
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+
+.chat-screen {
+	flex-grow: 1;
+	overflow: auto;
+}
+.chat-screen img {
+	width: 80%; 
+	margin: 0 auto;
+}
+.chat-interface {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem;
+}
+#think {
+	flex-grow: 1;
+	border: 3px dotted white;
+	resize: none;
+	height: 1rem;
+	background: transparent;
+	color: white;
+}
+#think:focus {
+	outline: none;
+	border: 3px dotted red;
+}
+#chat {
+	box-sizing: border-box;
+    width: 30%;
+    background: aqua;
+    border: 3px solid white;
+    border-radius: 10px;
+    height: 100%;
+    margin: 0 0 0 0.2rem;
+}
+#chat:focus {
+	outline: none;
+	border: 3px solid red;
+}
+
+.response-message, .message {
+	padding: 0.5rem;
+	margin: 0.25rem;
+	width: 75%;
+	border-radius: 10px;
+	color: black;
+}
+
+.response-message {
+	background: lightcoral;
+	float: left;
+	align-self: left;
+	display: flex;
+	flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.message {
+	background: aquamarine;
+	float: right;
+	align-self: right;
+}
+
+html.dark .modal {
+	background: #353538;
+}
+
+html.dark .modal button {
+	background: #5a5b5d;
+	color: #ededed;
+	margin: 0.5px;
+	border: none;
+	outline: none;
+    height: 20px;
+	border-radius: 5px;
+	box-shadow: 0 0.35px 1px 0.55px rgb(0 0 0 / 23%);
+}
+
+html.dark .modal-content input,
+html.dark .modal-content textarea,
+html.dark .modal-content #summary-textarea,
+html.dark .modal-content select {
+	color: white;
+}
+
+html.dark .modal-content label {
+	color: gray;
+}
+
+html.dark #calendar-month-header,
+html.dark #calendar-week-header,
+html.dark .day-block {
+	background: #232427;
+	color: #ededed;
+}
+
+html.dark #calendar-week-header {
+	border-bottom: 1px solid #5a5b5d;
+	color: rgba(255,255,255,0.85);
+}
+
+html.dark #calendar-week-header .weekend {
+	color: rgba(255,255,255,0.55);;
+}
+
+html.dark #prev-month,
+html.dark #go-to-today,
+html.dark #next-month,
+html.dark #expand,
+html.dark #simple {
+	background: #5a5b5d;
+	color: #ededed;
+}
+
+html.dark #prev-month:active,
+html.dark #go-to-today:active,
+html.dark #next-month:active,
+html.dark #expand:active,
+html.dark #simple:active {
+	background: #414142;
+}
+
+html.dark .mistyrose {
+/*	background: #300007;*/
+	background: mistyrose;
+	color: black;
+}
+
+html.dark .lavender {
+/*	background: #034338;*/
+	background: lavender;
+	color: black;
+}
+
+html.dark #calendar {
+	background: #414142;
+}
+
+html.dark .weekend.day-block {
+	background: #2a2b2d;
+	opacity: 1;
+}
+
+html.dark .weekend .day-date {
+	color: #a0a1a3;
+}
+
+html.dark .opaque .day-date {
+	color: #5a5b5d;
+}
+
+html.dark #todays-date {
+	color: black;
+	background: rgb(255,50,50);
+}
+
+html.dark #checking-balance {
+	color: white;
+}
+
+#checking-balance {
+	font-size: 1.25rem;
+	background: transparent;
+}
+
+#calendar *, label {
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+#search-results {
+	background: #5a5b5d;
+	box-shadow: 0 10px 40px 0px;
+}
+
+#savings-input {
+	background: transparent;
+    color: white;
+    border: none;
+    font-size: 2rem;
+    font-weight: 100;
+    width: 33%;
+    text-align: center;
+}
+
+@keyframes waveAnimation {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 100% 0%;
+    }
+}
+
+
+#left.pinstripe.wave {
+	background: repeating-linear-gradient(
+        90deg,
+        #ffffff,
+        #ffffff 1px,
+        #000000 1px,
+        #000000 2px
+    );
+	animation: waveAnimation 5s infinite; /* Adjust the duration (5s here) as needed */
+    background-size: 200% 100%; /* Stretching the background to make the wave animation visible */
+}
+
+#left.pinstripe {
+    background: repeating-linear-gradient(
+        90deg,
+        #ffffff,
+        #ffffff 1px,
+        #000000 1px,
+        #000000 2px
+    );
+}
+
+#left.floral {
+    background: radial-gradient(circle at 25% 25%, #f06, #fff 4px, transparent 4px) 0 0,
+                radial-gradient(circle at 75% 75%, #f06, #fff 4px, transparent 4px) 50% 50%;
+    background-size: 50% 50%;
+}
+
+.combined {
+    position: relative;
+    z-index: 1;
+    /* Pinstripe background */
+    background: repeating-linear-gradient(
+        90deg,
+        #ffffff,
+        #ffffff 1px,
+        #000000 1px,
+        #000000 2px
+    );
+}
+
+.combined::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    /* Floral background */
+    background: radial-gradient(circle at 25% 25%, #f06, #fff 4px, transparent 4px) 0 0,
+                radial-gradient(circle at 75% 75%, #f06, #fff 4px, transparent 4px) 50% 50%;
+    background-size: 50% 50%;
+}
+
+
+
+#add-savings {
+	opacity: 0.25;
+	border: none;
+	background: none;
+}
+
+#add-savings.active {
+	opacity: 1;
+}
+
+
+.select-container {
+	overflow: visible;
+	max-height: initial;
+}
+
+.select-container.active {
+	z-index: 8;
+}
+
+.select-container input {
+	border: none;
+}
+
+.tr .select-container input {
+	font-size: 1rem;
+	border-bottom: 1px solid lightgray;
+	border-right: 1px solid lightgray;
+}
+
+.select {
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.tr .select-container input[type="date"] {
+	font-size: .5rem;
+}
+input.select:focus, input.select:active {
+	outline: none;
+}
+
+
+.event-modal, .modal-content {
+	border-radius: 5px;
+}
+
+#modal-event, .modal #modal-event div.option {
+	box-sizing: border-box;
+	color: black;
+	box-sizing: content-box;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	background: transparent;
+	justify-content: space-between;
+	background: whitesmoke;
+
+}
+
+#modal-event {
+	border-top-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+
+#modal-event, .modal #modal-event div.option:hover div.graphic {
+	color: pink;
+	opacity: 1;
+}
+
+#modal-event, .modal #modal-event div.graphic {
+	color: maroon;
+}
+
+div.graphic {
+	width: auto;
+	font-family: PT Mono;
+	background: transparent !important;
+	opacity: 0.8;
+
+}
+
+.select-container {
+	max-height: 2rem;
+}
+
+
+#time-container {
+	padding: 2.25rem;
+}
+
+.select-container, #frequency-container, #time-container, #modal-event, .modal-content, #event-edit, .event-modal {
+	overflow: visible;
+}
+
+.select-container .option:hover {
+	cursor: pointer;
+	background: #EBEDEF;
+}
+
+.select-container .option {
+	background: whitesmoke;
+	display: flex;
+	justify-content: space-between;
+}
+
+.select-container .option {
+	color: black;
+	box-sizing: border-box;
+	padding: 0.02rem;
+	position: absolute;
+	height: 25px;
+	box-shadow: 0 0 3px 0;
+}
+
+.select-container .option:last-of-type {
+	box-shadow: 10px 0 3px 0x;
+}
+
+.select .option.selected {
+	display: flex;
+}
+
+.select .option .graphic {
+	font-size: 1rem;
+	font-family: system-ui;
+	font-weight: 100;
+	color: blue;
+	margin-left: 2rem;
+}
+
+
+
+
+
+
+
+#event-edit {
+	margin: 0;
+	display: flex;
+	flex-direction: row;
+}
+
+#event-edit .button-footer {
+	display: flex;
+    flex-direction: column;
+}
+
+#event-edit #frequency-container {
+	width: 50%;
+	padding-right: 0.15rem;
+}
+#event-edit #frequency-container > * {
+/*	padding: 0 0.25rem;*/
+}
+#event-edit #time-container {
+	display: flex;
+	flex-direction: row;
+}
+.recurrenceid {
+	margin-top: 1rem;
+}
+#event-edit #summary-div div:first-of-type {
+	font-size: 1.75rem;
+	background: url(/static/waternormals.jpg);
+	color: white;
+	font-family: Andale Mono;
+}
+#event-edit #time-container div:last-of-type input {
+	color: white;
+	background: url(/static/waternormals.jpg);
+}
+
+#event-news-container {
+	min-height: 388.5625px;
+	max-height: 388.5625px;
+	overflow: auto;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+}
+
+#event-news {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.news-article {
+	width: 100%;
+	text-align: justify;
+	word-wrap: break-word;
+	padding: .5rem;
+	box-sizing: border-box;
+	font-family: Charter;
+	font-size: 0.85rem;
+}
+
+.news-article h5, .news-article h3, .news-article h1, .news-article p, .news-article div {
+	background: white;
+	padding: .2rem;
+	box-sizing: border-box;
+	margin: 0;
+}
+
+.news-article h3 {
+	font-size: 2.2rem;
+	padding: 2rem 0 0 0;
+	font-family: Chalkduster;
+	font-weight: 900;
+	background: transparent;
+}
+
+.news-article h5 {
+	background: transparent;
+	color: white;
+	text-align: right;
+	font-family: system-ui;
+	font-weight: 100;
+	font-size: 1rem;
+	margin: 0;
+}
+
+.news-article p {
+	background: rgba(0,0,0,0.5);
+	color: white;
+	font-family: system-ui;
+	font-weight: 100;
+	padding: 1rem;
+	box-sizing: border-box;
+}
+
+.news-article div {
+	box-sizing: border-box;
+	padding: 0.2rem;
+	font-famiy: Charter;
+}
+
+#event-edit #summary-div {
+	background: whitesmoke;
+	width: 100%;
+	align-self: start;
+}
+#event-edit input:nth-of-type(1) {
+	color: white;
+	background: url(/static/waternormals.jpg);
+	flex-grow: 1;
+	font-size: 1rem;
+	padding: 0.15rem;
+}
+#event-edit label {
+	color: #162136;
+}
+#event-edit label {
+	line-height: 2rem;
+}
+div[contenteditable] {
+	padding: 0.25rem 0.5rem;
+}
+div[contenteditable]:focus {
+	outline: none;
+}
+.foliage {
+	min-height: 46px;
+	cursor: grabbing;
+	flex-grow: 1;
+	transition: 0.1s linear all;
+}
+.foliage:hover {
+	outline: 2px solid;
+}
+#event-edit div#amount-div {
+	align-self: start;
+	margin: auto;
+	background: whitesmoke;
+	display: flex;
+	box-sizing: content-box;
+	flex-direction: column;
+	align-items: start;
+	padding: 0;
+	display: flex;
+}
+.upper-div-collection {
+	display: flex;
+	flex-direction: column;
+}
+#event-edit #amount-div label {
+	color: black;
+	font-weight: 100;
+	font-family: system-ui;
+}
+#event-edit #amount-div input {
+	background: url(/static/waternormals.jpg);
+	color: white !important;
+	font-size: 1.75rem;
+	text-alignt: center;
+	font-family: Menlo;
+	width: 100%;
+}
+#event-edit input:nth-of-type(2) {
+	align-self: flex-end;
+/*	margin-right: -1.5rem;*/
+}
+#event-edit #date-container {
+	padding-left: 0rem;
+	-webkit-user-select: none;
+	user-select: none;
+}
+#event-edit #date-container input {
+	color: #4388ab;
+
+	-webkit-user-select: none;
+	user-select: none;
+}
+#event-edit input:nth-of-type(4) {
+	color: #00CCDD;
+}
+#event-edit input:nth-of-type(5) {
+	color: #00CCDD;
+}
+#event-edit input:nth-of-type(6) {
+	color: #00CCDD;
+}
+#event-edit input:nth-of-type(7) {
+	color: #00CCDD;
+}
+
+#event-edit .recurrenceid::before {
+	content: "RecurrenceID: ";
+	font-family: system-ui;
+	font-weight: 100;
+	color: purple;
+}
+
+
+
+#modal-event {
+	width: calc(85% - 0.2rem);
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+	margin: 0;
+	background: whitesmoke;
+	background-size: contain;
+
+}
+
+#modal-event > div:first-of-type {
+	align-items: start;
+	justify-content: start;
+	padding-top: 2.25rem;
+	padding-left: 2.25rem;
+	padding-right: 2.25rem;
+}
+
+#after-summary .chess-block, #before-amount .chess-block {
+	margin: 0;
+	display: inline-flex;
+}
+
+.chess-block {
+	border: none;
+	background-size: contain !important;
+	background-repeat: no repeat !important;
+}
+
+
+
+#modal-event div:nth-of-type(3) {
+	background: #2d497a;
+/*	margin-right: 2rem;*/
+}
+
+#modal-event div:nth-of-type(3) {
+	background: black;
+	color: lawngreen;
+}
+
+
+#modal-event input[type="date"] {
+	font-size: 0.85rem !important;
+	border: none;
+}
+
+.graphic {
+	background: transparent !important;
+}
+
+#debt-payment-plan  {
+	position: absolute;
+	width: 80vw;
+	height: 80vh;
+	left: 10vw;
+	top: 10vh;
+	z-index: 999999;
+	background: white;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	border: 1px solid;
+	box-shadow: 0 0 10px 0;
+}
+
+#debt-payment-plan > div:first-of-type {
+	background: black;
+}
+
+#debt-payment-plan > div:first-of-type h1 {
+	display: inline-block;
+	width: 50%;
+	float: left;
+	padding: 1rem;
+	box-sizing: border-box;
+	color: white;
+}
+
+.debt-payment-options {
+	display: flex;
+	width: 100%;
+	height: 100%;
+}
+
+.debt-payment-options > div {
+	width: calc(100% / 3);
+	box-sizing: border-box;
+	padding: 0.75rem;
+}
+
+.debt-payment-options > div:nth-of-type(1) {
+	background: aliceblue;
+}
+.debt-payment-options > div:nth-of-type(2) {
+	background: lightskyblue;
+}
+.debt-payment-options > div:nth-of-type(3) {
+	background: lightblue;
+}
+
+#debt-payment-plan h1, #debt-payment-plan h2 {
+	font-family: system-ui;
+	font-weight: 100;
+}
+
+
+.debt-payment-options .th {
+	color: gray;
+	background: transparent;
+	font-weight: 100;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

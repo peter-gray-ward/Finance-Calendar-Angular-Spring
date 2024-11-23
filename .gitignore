@@ -4,3 +4,8 @@ account.json
 balance.json
 flaskr/.env.json
 .venv/
+.gradle
+gradle
+build
+venv
+flaskr/__pycache__

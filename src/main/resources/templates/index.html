@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Calendar</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="text/javascript" src="/lib/jquery.min.js"></script>
+    <script type="text/javascript" src="/lib/moment.min.js"></script>
+</head>
+<body>
+    <button id="expand-to-budget">☰</button>
+    <div id="left-panel">
+        <header id="left" style="background:url(/wallpaper01.webp)">
+            <h3>
+                <div>Regular Expenses</div>
+            </h3>
+            <div class="table" id="expenses">
+                <div class="tr">
+                    <div class="th">Expense</div>
+                    <div class="th">Frequency</div>
+                    <div class="th">Amount</div>
+                    <div class="th">Start Date</div>
+                    <div class="th">End Date</div>
+                </div>
+                <div>
+                    <div th:each="expense : ${data.account.expenses}">
+                        <div th:insert="~{app/expense :: expense(expense)}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="tr button-row-right">
+                <button class="add-expense">+</button>
+                <button id="refresh-calendar">↺</button>
+            </div>
+            <h3>Debts</h3>
+            <div class="table" id="debts">
+                <div class="tr">
+                    <div class="th">Creditor</div>
+                    <div class="th">Account Number</div>
+                    <div class="th">Balance</div>
+                    <div class="th">Interest</div>
+                    <div class="th">Payoff Date</div>
+                    <div class="th">Event</div>
+                </div>
+                <div th:each="debt : ${data.account.debt}">
+                    <div th:insert="~{app/debt :: debt(debt)}"></div>
+                </div>
+            </div>
+            <div class="tr button-row-right">
+                <button id="add-debt">+</button>
+            </div>
+        </header>
+    </div>
+    <div id="main" class="authenticated">
+        <div id="calendar-month-header" data-year="${data.account.year}" data-month="${data.account.month}">
+            <div>
+              <h1 id="month-name">${data.MONTHS[data.account.month - 1]}</h1>&nbsp;&nbsp;
+              <h1 id="year-name" style="font-weight:100">${data.account.year}</h1>
+            </div>
+            <div id="data" class="search">
+                <input style="display:none;" type="test" placeholder="Go for it!" />
+            </div>
+            <div>
+                <button id="prev-month">
+                    <span>
+                        ∟
+                    </span>
+                </button>
+                <button id="go-to-today">
+                    Today
+                </button>
+                <button id="next-month">
+                    <span>
+                        ∟
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <div id="calendar-week-header">
+            <div class="weekend">Sun</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div class="weekend">Sat</div>
+        </div>
+
+        <div id="calendar">
+            {% include 'app/calendar.html' %}
+        </div>
+    </div>
+    <button id="expand-to-news">N</button>
+    <div id="right-panel">
+        <footer id="right">
+            <did class="loading">loading...</did>
+        </footer> 
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+</html>

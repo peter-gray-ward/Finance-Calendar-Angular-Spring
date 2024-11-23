@@ -1,0 +1,22 @@
+<div th:fragment="expense (expense)"
+		class="tr data id expenses" 
+		id="${expense.id}" 
+		data-name="expense">
+	<input value="${expense.name}" name="name" class="td" type="text">
+	<div class="td select-container td">
+		<input name="frequency" 
+			   value="${expense.frequency}"
+			   class="select" 
+			   type="text" 
+			   placeholder="frequency" 
+			   data-option="" 
+			   data-options="${FREQUENCIES}">
+	</div>
+	<input name="amount" class="td" type="number" value="${expense.amount}">
+	<input name="startdate" class="td" type="date" value="${datetime.now().strftime('%Y-%m-%d') if expense.startdate == None else expense.startdate}">
+	<input name="recurrenceenddate" 
+		   class="td" 
+		   type="date" 
+		   value="${datetime.now().strftime('%Y-%m-%d') if expense.recurrenceenddate == None else expense.recurrenceenddate}">
+	<button class="delete-expense">-</button>
+</div>
