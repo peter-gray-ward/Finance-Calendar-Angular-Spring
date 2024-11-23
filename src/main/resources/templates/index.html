@@ -24,9 +24,9 @@
                     <div class="th">End Date</div>
                 </div>
                 <div>
-                    <div th:each="expense : ${data.account.expenses}">
+                   <!-- <div th:each="expense : ${data.account.expenses}">
                         <div th:insert="~{app/expense :: expense(expense)}"></div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <div class="tr button-row-right">
@@ -43,9 +43,9 @@
                     <div class="th">Payoff Date</div>
                     <div class="th">Event</div>
                 </div>
-                <div th:each="debt : ${data.account.debt}">
+               <!-- <div th:each="debt : ${data.account.debt}">
                     <div th:insert="~{app/debt :: debt(debt)}"></div>
-                </div>
+                </div> -->
             </div>
             <div class="tr button-row-right">
                 <button id="add-debt">+</button>
@@ -55,7 +55,7 @@
     <div id="main" class="authenticated">
         <div id="calendar-month-header" data-year="${data.account.year}" data-month="${data.account.month}">
             <div>
-              <h1 id="month-name">${data.MONTHS[data.account.month - 1]}</h1>&nbsp;&nbsp;
+              <!-- <h1 id="month-name">${data.MONTHS[data.account.month - 1]}</h1>&nbsp;&nbsp; -->
               <h1 id="year-name" style="font-weight:100">${data.account.year}</h1>
             </div>
             <div id="data" class="search">
@@ -89,7 +89,7 @@
         </div>
 
         <div id="calendar">
-            {% include 'app/calendar.html' %}
+
         </div>
     </div>
     <button id="expand-to-news">N</button>
