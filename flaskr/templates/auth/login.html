@@ -23,4 +23,12 @@
 			<input type="submit" value="Log In">
 		</form>
 	</main>
+	<script>
+		{% if access_token %}
+			document.cookie = 'fcAccessToken=' + '{{ access_token }}';
+			document.cookie = 'fcUserId=' + '{{ userId }}';
+
+			location.replace("/");
+		{% endif %}
+	</script>
 {% endblock %}
