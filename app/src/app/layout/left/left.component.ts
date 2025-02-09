@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Sync } from '../../models/Sync';
 import { Expense } from '../../models/Expense';
 import { ExpenseComponent } from '../../features/expense/expense.component';
+import { HttpService } from '../../core/http.service';
 
 @Component({
   selector: 'app-left',
@@ -16,9 +17,15 @@ export class LeftComponent {
   @Input() sync!: Sync;
   @Output() expenseChange = new EventEmitter<Expense>();
 
+  constructor(private http: HttpService) {}
+
   updateExpenseLeft(expense: Expense) {
     console.log("calling updateExpenseLeft from Left");
     console.log("emitting updateExpense from Left");
     this.expenseChange.emit(expense);
+  }
+
+  logout() {
+    this.http.logout().subscribe(() => {});
   }
 }

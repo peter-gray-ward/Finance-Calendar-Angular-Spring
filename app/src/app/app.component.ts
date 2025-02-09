@@ -1,5 +1,5 @@
 import { Component, Inject, Renderer2 } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { 
   LeftComponent
@@ -7,6 +7,7 @@ import {
 import { Expense } from './models/Expense';
 import { Sync } from './models/Sync';
 import { HttpService } from './core/http.service';
+
 
 @Component({
   selector: 'app-root',
@@ -27,13 +28,22 @@ export class AppComponent {
   constructor(
     private http: HttpService,
     private renderer: Renderer2, 
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    private router: Router
   ) {}
 
   ngOnInit() {
-    this.http.sync().subscribe(sync => {
-      this.sync = sync;
+    console.log('in app init...')
+    this.http.checkAuth().subscribe(isAuthenticated => {
+      if (isAuthenticated) {
+        this.http.sync().subscribe(sync => {
+          this.sync = sync;
+        });
+      } else {
+        this.router.navigate(['/auth/login']);
+      }
     });
+    
   }
 
   updateExpense(expense: Expense) {

@@ -1,0 +1,31 @@
+<main id="login">
+	<section>
+		<h1>Log In</h1>
+		<section>
+			<label for="name">Username</label>
+			<input [(ngModel)]="user.name" name="name" id="username" required>
+			<label for="password">Password</label>
+			<input [(ngModel)]="user.password" type="password" name="password" id="password" required>
+			<button (click)="login()">Log In</button>
+		</section>
+		@if (error) {
+			<p>{{ error }}</p>
+		}
+	</section>
+	<section>
+		<h1>Register</h1>
+		<section>
+			<label for="name">Username</label>
+			<input [(ngModel)]="user.name" name="name" id="username" required>
+			<label for="password">Password</label>
+			<input [(ngModel)]="user.password" type="password" name="password" id="password" required>
+			<button (click)="register()">Register</button>
+		</section>
+		@if (error) {
+			<p>{{ error }}</p>
+		}
+		@if (message) {
+			<p>{{ message }}</p>
+		}
+	</section>
+</main>
