@@ -1,0 +1,42 @@
+#left-panel {
+	width: 40%;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    background-size: contain;
+    box-sizing: border-box;
+}
+
+#left {
+	backdrop-filter: blur(10px);
+	z-index: 1;
+    background: var(--background);
+    color: var(--color);
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	padding: 0.5rem;
+	flex-direction: column;
+}
+
+#left.visible {
+	display: flex;
+	padding: 0.5rem 5vw 5rem 5vw;
+	overflow-y: auto;
+/*	transform: translateX(0%);*/
+}
+
+#left h3, #right h3 {
+    text-align: center;
+    font-family: system-ui;
+    font-weight: 200;
+    margin: 1rem 0.5rem 0.5rem 0.5rem;
+}
+
+#left h3 div, #right h3 div {
+	overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
+}

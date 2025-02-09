@@ -1,0 +1,39 @@
+<header *ngIf="sync" id="left" style="background:url(http://localhost:5000/static/wallpaper01.webp)">
+	<h3>
+		<div>Regular Expenses</div>
+	</h3>
+	<div class="table" id="expenses">
+		<div class="tr">
+			<div class="th">Expense</div>
+			<div class="th">Frequency</div>
+			<div class="th">Amount</div>
+			<div class="th">Start Date</div>
+			<div class="th">End Date</div>
+		</div>
+		@for (expense of sync.account.expenses; track expense.id) {
+			<expense [expense]="expense" (expenseChange)="updateExpenseLeft($event)"
+				[FREQUENCIES]="sync.FREQUENCIES"></expense>
+		}
+	</div>
+	<div class="tr button-row-right">
+		<button class="add-expense">+</button>
+		<button id="refresh-calendar">↺</button>
+	</div>
+	<h3>Debts</h3>
+	<div class="table" id="debts">
+		<div class="tr">
+			<div class="th">Creditor</div>
+			<div class="th">Account Number</div>
+			<div class="th">Balance</div>
+			<div class="th">Interest</div>
+			<div class="th">Payoff Date</div>
+			<div class="th">Event</div>
+		</div>
+		@for (debt of sync.account.debts; track debt.id) {
+			
+		}
+	</div>
+	<div class="tr button-row-right">
+		<button id="add-debt">+</button>
+	</div>
+</header>

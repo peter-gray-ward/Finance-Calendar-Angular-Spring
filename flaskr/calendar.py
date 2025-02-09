@@ -196,6 +196,7 @@ def load_user_info(db, user_id):
     expenses = []
     debts = []
     frequencies = []
+    cursor = None
 
     try:
         cursor = db.cursor()
@@ -237,15 +238,20 @@ def load_user_info(db, user_id):
         }
 
         cursor.close()
+    
     except Exception as e:
         print(f'{e}')
         return sync_data
     else:
         return sync_data
+    finally:
+        if cursor != None:
+            cursor.close()
 def select_events(db, data, user_id):
     current_month = data['account']['month']
     current_year = data['account']['year']
-     
+    cursor = None
+
     try:
         cursor = db.cursor()
         cursor.execute(
@@ -277,6 +283,9 @@ def select_events(db, data, user_id):
         return events
     except Exception as e:
         print(f'Exception selecting events {e}')
+    finally:
+        if cursor != None:
+            cursor.close()
 def build_months(data, events):
     current_month = data['account']['month']
     current_year = data['account']['year']
@@ -692,45 +701,42 @@ def delete_expense(expense_id):
     error = None
     data = {}
 
-    db = None
     cursor = None
 
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute(
-            'DELETE FROM "expense" '
-            'WHERE user_id = %s AND id = %s',
-            (user_id,expense_id,)
-        )
-        db.commit()
-    except Exception as e:
-        return jsonify({ 'status': 'error', 'error': f'Error deleting expense: {e}' }), 500
-    else:
-        return jsonify({ 'status': 'success' }), 200
-    finally:
-        if cursor:
-            cursor.close()
-        if db:
-            db.close()
+    with get_db() as db:
+        try:
+            cursor = db.cursor()
+            cursor.execute(
+                'DELETE FROM "expense" '
+                'WHERE user_id = %s AND id = %s',
+                (user_id,expense_id,)
+            )
+            db.commit()
+        except Exception as e:
+            return jsonify({ 'status': 'error', 'error': f'Error deleting expense: {e}' }), 500
+        else:
+            return jsonify({ 'status': 'success' }), 200
+        finally:
+            if cursor:
+                cursor.close()
 
-@api.route('/api/update-expense/<expense_id>', methods=('POST',))
+@api.route('/api/update-expense', methods=('POST',))
 @login_required
-def update_expense(expense_id):
+def update_expense():
     user_id = session.get('user_id')
     error = None
 
     if request.is_json == False:
         return jsonify({'status': 'error', 'error': f'Bad request Content-Type'}), 400
 
-    body = json.loads(request.get_json())
+    body = request.get_json()
 
     name = body['name']
     amount = body['amount']
     startdate = body['startdate']
     recurrenceenddate = body['recurrenceenddate']
     frequency = body['frequency']
-    expense_id = body['expense_id']
+    expense_id = body['id']
 
     # Validation
     if len(name) > 255:
@@ -755,31 +761,23 @@ def update_expense(expense_id):
         return jsonify({'status': 'error', 'error': f'Frequency must be one of {valid_frequencies}.'}), 400
 
 
-    db = None
-    cursor = None
-
-    try:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute(
-            '''
-            UPDATE "expense"
-            SET name = %s, amount = %s, startdate = %s, recurrenceenddate = %s, frequency = %s
-            WHERE id = %s
-            AND user_id = %s
-            ''',
-            (name, amount, startdate, recurrenceenddate, frequency, expense_id, user_id,)
-        )
-        db.commit()
-    except Exception as e:
-        return jsonify({ 'status': 'error', 'error': f'Error updating expense: {e}' }), 500
-    else:
-        return jsonify({ 'status': 'success' }), 200
-    finally:
-        if cursor:
-            cursor.close()
-        if db:
-            db.close()
+    with get_db() as db:
+        try:
+            cursor = db.cursor()
+            cursor.execute(
+                '''
+                UPDATE "expense"
+                SET name = %s, amount = %s, startdate = %s, recurrenceenddate = %s, frequency = %s
+                WHERE id = %s
+                AND user_id = %s
+                ''',
+                (name, amount, startdate, recurrenceenddate, frequency, expense_id, user_id,)
+            )
+            db.commit()
+        except Exception as e:
+            return jsonify({ 'status': 'error', 'error': f'Error updating expense: {e}' }), 500
+        else:
+            return jsonify({ 'status': 'success' }), 200
 
 @api.route('/api/add-debt', methods=('POST',))
 @login_required
@@ -1005,6 +1003,7 @@ def save_this_event(event_id):
 @login_required
 def save_tafe(event_id):
     user_id = session.get('user_id')
+    cursor = None
     with get_db() as db:
         try:
             data = load_user_info(db, user_id)
@@ -1080,6 +1079,9 @@ def save_tafe(event_id):
         except Exception as e:
             print(e)
             return jsonify({ 'status': 'error' })
+        finally:
+            if cursor:
+                cursor.close()
 
 @api.route('/api/save-checking-balance/<float:checking_balance>', methods=('POST',))
 @login_required
@@ -1404,6 +1406,9 @@ def refresh_calendar():
         print(e)
         code = 500
         return jsonify(res), code
+    finally:
+        if cursor:
+            cursor.close()
 
 
 

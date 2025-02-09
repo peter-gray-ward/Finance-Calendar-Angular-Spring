@@ -1,0 +1,32 @@
+<div class="tr data id expenses" id="{{ expense.id }}" [attr.data-name]="expense">
+	
+	<input [ngModel]="expense.name"
+			(ngModelChange)="updateExpense('name', $event)" 
+			name="name" class="td" type="text">
+	
+	<div class="td select-container td">
+		<input name="frequency" 
+	       [ngModel]="expense.frequency"
+	       (ngModelChange)="updateExpense('frequency', $event)" 
+	       class="select" 
+	       type="text" 
+	       placeholder="frequency" 
+	       [attr.data-option]="expense.frequency"
+	       [attr.data-options]="FREQUENCIES | json">
+
+	</div>
+	
+	<input name="amount" class="td" type="number" 
+		[ngModel]="expense.amount"
+		(ngModelChange)="updateExpense('amount', $event)">
+	
+	<input name="startdate" class="td" type="date" 
+		[ngModel]="formatDate(expense.startdate)"
+		(ngModelChange)="updateExpense('startdate', $event)">
+	
+	<input name="recurrenceenddate" class="td" type="date" 
+		[ngModel]="formatDate(expense.recurrenceenddate)"
+		(ngModelChange)="updateExpense('recurrenceenddate', $event)">
+	
+	<button class="delete-expense" (click)="deleteExpense($event)">-</button>
+</div>

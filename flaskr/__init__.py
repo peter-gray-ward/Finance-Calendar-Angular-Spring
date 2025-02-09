@@ -3,10 +3,12 @@ import uuid
 from datetime import datetime
 from flaskr.db import get_db
 import os
+from flask_cors import CORS
 
 
 def create_app():
 	app = Flask(__name__, instance_relative_config=True)
+	CORS(app, origins=["http://localhost:5000"])
 
 
 	SECRET_KEY = os.getenv('SECRET_KEY', 'd7155f54-8cc8-11ef-8bd5-784f43a6850a')
