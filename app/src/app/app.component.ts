@@ -4,6 +4,9 @@ import { DOCUMENT } from '@angular/common';
 import { 
   LeftComponent
 } from './layout/left/left.component'
+import { 
+  MainComponent
+} from './layout/main/main.component'
 import { Expense } from './models/Expense';
 import { Sync } from './models/Sync';
 import { HttpService } from './core/http.service';
@@ -14,7 +17,8 @@ import { DataService } from './core/data.service';
   standalone: true,
   imports: [
     RouterOutlet, 
-    LeftComponent
+    LeftComponent,
+    MainComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -36,9 +40,11 @@ export class AppComponent {
   ngOnInit() {
     console.log('in app init...')
     this.http.checkAuth().subscribe(isAuthenticated => {
+      console.log('is authenticated', isAuthenticated)
       if (isAuthenticated) {
         this.data.fetchSyncData().subscribe(sync => {
           this.sync = sync;
+          this.data.fetchEvents().subscribe();
         });
       } else {
         this.router.navigate(['/auth/login']);

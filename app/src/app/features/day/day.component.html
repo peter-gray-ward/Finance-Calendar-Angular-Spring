@@ -1,0 +1,33 @@
+<div class="day-block"
+	[class.weekend]="day.day == 'Sunday' || day.day == 'Saturday'"
+	[class.first-of-month]="day.date == 1"
+	[attr.data-date]="day.date" 
+	[attr.data-dow]="day.day" 
+	[attr.data-year]="day.year" 
+	[attr.data-month]="day.month">
+  <div class="day-header">
+    
+    @if (day.today || (day.todayOrLater && day.events && day.events.length > 0)) {  
+      <div class="total">
+        @if (checking_balance) {
+            <input type="number"
+                   value="{{ checking_balance }}" 
+                   id="checking-balance" />
+        } @else {
+          {{ day.total }}
+        }
+      </div>
+    }
+
+    <div class="new-event">+</div>
+    
+    <div class="day-date" [class.today]="day.today">
+      {{ day.date }}
+    </div>
+
+
+  </div>
+  <div class="events">
+    
+  </div>
+</div>

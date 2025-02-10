@@ -1,6 +1,5 @@
 <button id="expand-to-budget" (click)="expandToBudget()">☰</button>
-<div id="left-panel">
-  <app-left [expanding]="expanding"></app-left>
-  <main id="main" [class.authenticated]="authenticated"></main>
-</div>
+<app-left [expanding]="expanding"></app-left>
+<app-main [expanding]="expanding"></app-main>
+
 <router-outlet></router-outlet>

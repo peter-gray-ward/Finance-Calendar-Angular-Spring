@@ -2,7 +2,7 @@ import { Debt } from './Debt';
 import { Expense } from './Expense';
 
 export interface Account {
-	checkingBalance: number;
+	checking_balance: number;
 	debts: Debt[];
 	expenses: Expense[];
 	id: string;

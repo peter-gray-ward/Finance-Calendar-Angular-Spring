@@ -48,3 +48,5 @@ def close_db(error=None):
             connection_pool.putconn(db, close=False)  # ✅ Return connection to pool without closing
         except Exception as e:
             print(f"❌ Error returning connection to pool: {e}")
+        finally:
+            print('closed db')

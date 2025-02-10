@@ -26,8 +26,8 @@ export class ExpenseComponent {
 
   updateExpense(field: keyof Expense, value: any) {
 
-    this.expense.startdate = this.formatDate(this.expense.startdate);
-    this.expense.recurrenceenddate = this.formatDate(this.expense.recurrenceenddate);
+    this.expense.startdate = this.formatDate(this.expense.startdate || new Date());
+    this.expense.recurrenceenddate = this.formatDate(this.expense.recurrenceenddate || new Date());
 
     // this.expenseChange.emit({
     //   ...this.expense,

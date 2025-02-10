@@ -177,8 +177,9 @@ def load_logged_in_user():
             )
             g.user = cursor.fetchone()
         finally:
-            cursor.close()  # ✅ Close cursor
-            close_db()  # ✅ Manually return connection to the pool
+            cursor.close() 
+            close_db()
+            
     except jwt.ExpiredSignatureError:
         g.user = None
     except jwt.InvalidTokenError:

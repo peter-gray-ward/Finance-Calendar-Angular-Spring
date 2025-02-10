@@ -19,7 +19,7 @@ from datetime import datetime, timedelta, date
 from dateutil.relativedelta import *
 from dateutil import parser
 from flaskr.auth import login_required
-from flaskr.db import get_db
+from flaskr.db import get_db, close_db
 from . import enums
 import pprint
 import uuid
@@ -52,6 +52,35 @@ class Expense:
             "frequency": self.frequency
         }
 
+class Event:
+    def __init__(self, id, recurrenceid, summary, date, recurrenceenddate, amount, total, balance, exclude, frequency, user_id):
+        self.id = id
+        self.recurrenceid = recurrenceid
+        self.summary = summary
+        self.date = date
+        self.recurrenceenddate = recurrenceenddate
+        self.amount = amount
+        self.total = total
+        self.balance = balance
+        self.exclude = exclude
+        self.frequency = frequency
+        self.user_id = user_id
+
+    def to_dict(self):
+        """Convert expense object to dictionary format for JSON serialization."""
+        return {
+            "id": self.id,
+            "recurrenceid": self.recurrenceid,
+            "summary": self.summary,
+            "date": self.date,
+            "recurrenceenddate": self.recurrenceenddate,
+            "amount": self.amount,
+            "total": self.total,
+            "balance": self.balance,
+            "exclude": self.exclude,
+            "frequency": self.frequency,
+            "user_id": self.user_id
+        }
 
 DOW = [
   'Monday','Tuesday',
@@ -157,60 +186,36 @@ def fetchall_as_dict(cursor):
     return [as_dict(row) for row in cursor.fetchall()]
 def calculate_totals(events, checking_balance):
     user_id = g.user[0]
-    if not user_id in cache:
-        cache[user_id] = { 'balance_map': {} }
+    if user_id not in cache:
+        cache[user_id] = {'balance_map': {}}
     try:
-        events = sorted(events, key = lambda e: e['date'])
+        events = sorted(events, key=lambda e: e['date'])
 
-        for event in events:
-            event_date = event['date']
-            recurrenceenddate = event['recurrenceenddate']
-            # event date preferenced above recurrencend date
-            # so we always ensure start before end
-            if event_date > recurrenceenddate:
-                event['recurrenceenddate'] = event['date']
-            event['total'] = 0
+        print(f'Processing {len(events)} events')
 
         today = datetime.now().date()
-        twodaysfromnow = today + timedelta(days=2)
-
         start = False
+
         for event in events:
-            if event['balance'] != 0:
-                if event['recurrenceid'] not in cache[user_id]['balance_map']:
-                    cache[user_id]['balance_map'][event['recurrenceid']] = event['balance']
-                else:
-                    event['balance'] = cache[user_id]['balance_map'][event['recurrenceid']] + event['amount']
-                    cache[user_id]['balance_map'][event['recurrenceid']]['count'] += 1
-                    cache[user_id]['balance_map'][event['recurrenceid']] = event
-                    if event['balance'] <= 0 and cache[user_id]['balance_map'][event['recurrenceid']]['months'] == None:
-                        cache[user_id]['balance_map'][event['recurrenceid']]['month'] = cache[user_id]['balance_map'][event['recurrenceid']]['count']
-                        cache[user_id]['balance_map'][event['recurrenceid']]['balanceEndDate'] = event['date']
-                        events = [
-                            {
-                                **e,
-                                'months': cache[user_id]['balance_map'][e['recurrenceid']]['months'],
-                                'balanceEndDate': cache[user_id]['balance_map'][e['recurrenceid']]['balanceEndDate']
-                            } if e['recurrenceid'] in cache[user_id]['balance_map'] else e
-                            for e in events
-                        ]
             if event['date'] >= today:
                 start = True
-            if start == True:
+            if start:
+                print('Started')
                 if event['exclude'] == '0':
                     checking_balance += event['amount']
                 event['total'] = checking_balance
+            else:
+                event['total'] = 0
         return events
     except Exception as e:
-        errormessage = f'Error calculating totals {e}'
-        return jsonify({ 'status': 'error', 'message': errormessage }), 500
+        errormessage = f'Error calculating totals: {e}'
+        print(errormessage)
+        return {'status': 'error', 'message': errormessage}, 500
     finally:
         cache[user_id]['balance_map'] = {}
+        
 def load_user_info(db):
-    print('load_user_info', g.user)
     user_id = g.user[0]
-
-    print('user_id', user_id)
 
     sync_data = {
         'Page': { page.name: page.value for page in enums.Page },
@@ -241,8 +246,6 @@ def load_user_info(db):
         )
         user_data = cursor.fetchone()
 
-        print('FOUND USER DATA', user_data)
-
         cursor.execute(
             '''
             SELECT * FROM public.expense
@@ -262,8 +265,6 @@ def load_user_info(db):
 
         now = datetime.now().date()
 
-        print('CREATING ACCOUNT', user_data)
-
         sync_data['account'] = {
             'id': user_data[0],
             'name': user_data[1],
@@ -273,19 +274,17 @@ def load_user_info(db):
             'month': session.get('selected_month', now.month),
             'year': session.get('selected_year', now.year)
         }
-
-        print(sync_data)
     
     except Exception as e:
         print(f'{e}')
         return sync_data
     else:
-        print(sync_data)
         return sync_data
     finally:
         if cursor:
             cursor.close()
 def select_events(db, data, user_id):
+
     current_month = data['account']['month']
     current_year = data['account']['year']
     cursor = None
@@ -305,10 +304,7 @@ def select_events(db, data, user_id):
             (user_id, current_year, current_month, current_year, current_month)
         )
 
-        events = fetchall_as_dict(cursor)
-        print(f'fetched {len(events)} events')
-
-        cursor.close()
+        events = list(map(lambda e: Event(*e).to_dict(), cursor.fetchall()))
 
         try:
             events = calculate_totals(events, data['account']['checking_balance'])
@@ -799,7 +795,7 @@ def update_expense():
         return jsonify({'status': 'error', 'error': f'Frequency must be one of {valid_frequencies}.'}), 400
 
 
-    with get_db() as db:
+    with get_db('update_expense') as db:
         try:
             cursor = db.cursor()
             cursor.execute(
@@ -958,6 +954,28 @@ def update_account():
     else:
         html = RenderApp(None, True)
         return jsonify({ 'status': 'success', 'html': html, 'month': MONTHS[month - 1], 'year': year })
+
+@api.route('/api/get-events', methods=('GET',))
+@login_required
+def get_events():
+    print('Get Events')
+    user_id = g.user[0]
+    db = None
+    cursor = None
+    try:
+        with get_db('get events') as db:
+            data = load_user_info(db)
+            events = select_events(db, data, user_id)
+            (months, events) = build_months(data, events)
+
+            return jsonify({ 'months': months, 'events': events }), 200
+    except Exception as e:
+        return jsonify({ 'error': f'{e}', 'months': [], 'events': [] }), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if db:
+            close_db()
 
 @api.route('/api/get-event/<event_id>', methods=('GET',))
 @login_required

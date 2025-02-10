@@ -5,6 +5,7 @@ import { Observable, map, catchError, of } from 'rxjs';
 import { Sync } from '../models/Sync';
 import { Expense } from '../models/Expense';
 import { User } from '../models/User';
+import { Event } from '../models/Event';
 
 @Injectable({
   providedIn: 'root',
@@ -58,6 +59,10 @@ export class HttpService {
 
   updateExpense(expense: Expense): Observable<Expense> {
     return this.http.post<Expense>("/api/update-expense", expense, { headers: this.headers });
+  }
+
+  getEvents(): Observable<Event[]> {
+    return this.http.get<Event[]>("/api/get-events", { headers: this.headers });
   }
 
 }

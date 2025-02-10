@@ -1,0 +1,13 @@
+<div *ngIf="months && sync" id="calendar">
+	@for (week of months; track $index; let i = $index) {
+		<div class="week">
+			@for (day of week; track $index; let j = $index) {
+				@if (day.today) {
+					<app-day [day]="day" [checking_balance]="sync.account.checking_balance"></app-day>
+				} @else {
+					<app-day [day]="day"></app-day>
+				}
+			}
+		</div>
+	}
+</div>

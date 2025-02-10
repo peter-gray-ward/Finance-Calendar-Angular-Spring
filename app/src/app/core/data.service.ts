@@ -9,13 +9,21 @@ import { Expense } from '../models/Expense';
 })
 export class DataService {
   private syncSubject = new BehaviorSubject<any | null>(null);
+  private eventsSubject = new BehaviorSubject<any | null>(null);
   public sync$ = this.syncSubject.asObservable();
+  public events$ = this.eventsSubject.asObservable();
 
   constructor(private http: HttpService) {}
 
   fetchSyncData(): Observable<any> {
     return this.http.sync().pipe(
       tap(syncData => this.syncSubject.next(syncData)) // Store sync data
+    );
+  }
+
+  fetchEvents(): Observable<any> {
+    return this.http.getEvents().pipe(
+      tap(events => this.eventsSubject.next(events))
     );
   }
 
@@ -46,7 +54,7 @@ export class DataService {
     const currentSync = this.syncSubject.value;
     if (!currentSync) return;
 
-    const updatedExpenses = currentSync.expenses.map((e: Expense) => {
+    const updatedExpenses = currentSync.account.expenses.map((e: Expense) => {
       return e.id == expense.id ? expense : e
     });
 

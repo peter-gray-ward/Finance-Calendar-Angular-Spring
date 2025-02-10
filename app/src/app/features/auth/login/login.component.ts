@@ -20,19 +20,12 @@ export class LoginComponent {
   };
   error?: string;
   message?: string;
-  sync?: Sync;
 
   constructor(
     private http: HttpService,
     private data: DataService,
     private router: Router
   ) {}
-
-  ngOnInit() {
-    this.data.sync$.subscribe(sync => {
-      this.sync = sync;
-    });
-  }
 
   login() {
     console.log(this.user)
