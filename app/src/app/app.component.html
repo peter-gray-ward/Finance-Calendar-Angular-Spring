@@ -1,9 +1,6 @@
 <button id="expand-to-budget" (click)="expandToBudget()">☰</button>
 <div id="left-panel">
-  <app-left 
-    [expanding]="expanding" 
-    [sync]="sync"
-    (expenseChange)="updateExpense($event)"></app-left>
+  <app-left [expanding]="expanding"></app-left>
   <main id="main" [class.authenticated]="authenticated"></main>
 </div>
 <router-outlet></router-outlet>

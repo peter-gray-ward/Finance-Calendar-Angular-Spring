@@ -4,6 +4,7 @@ import { Sync } from '../../models/Sync';
 import { Expense } from '../../models/Expense';
 import { ExpenseComponent } from '../../features/expense/expense.component';
 import { HttpService } from '../../core/http.service';
+import { DataService } from '../../core/data.service';
 
 @Component({
   selector: 'app-left',
@@ -14,18 +15,22 @@ import { HttpService } from '../../core/http.service';
 })
 export class LeftComponent {
   @Input() expanding!: boolean;
-  @Input() sync!: Sync;
-  @Output() expenseChange = new EventEmitter<Expense>();
+  sync?: Sync;
 
-  constructor(private http: HttpService) {}
+  constructor(private http: HttpService, private data: DataService) {}
 
-  updateExpenseLeft(expense: Expense) {
-    console.log("calling updateExpenseLeft from Left");
-    console.log("emitting updateExpense from Left");
-    this.expenseChange.emit(expense);
+  ngOnInit() {
+    this.data.sync$.subscribe(sync => {
+      console.log('left sync', sync)
+      this.sync = sync;
+    });
   }
 
   logout() {
     this.http.logout().subscribe(() => {});
+  }
+
+  addExpense() {
+    this.data.addExpense();
   }
 }

@@ -52,6 +52,10 @@ export class HttpService {
     return this.http.get<Sync>("/sync", { headers: this.headers });
   }
 
+  addExpense(): Observable<any> {
+    return this.http.post<any>("/api/add-expense", { headers: this.headers });
+  }
+
   updateExpense(expense: Expense): Observable<Expense> {
     return this.http.post<Expense>("/api/update-expense", expense, { headers: this.headers });
   }

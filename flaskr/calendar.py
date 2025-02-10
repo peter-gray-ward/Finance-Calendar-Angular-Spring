@@ -30,6 +30,29 @@ date_pattern = re.compile(r"(date|updated)", re.IGNORECASE)
 
 cache = {}
 
+class Expense:
+    def __init__(self, id, name, amount, start_date, recurrence_end_date, user_id, frequency):
+        self.id = id
+        self.name = name
+        self.amount = amount
+        self.start_date = start_date
+        self.recurrence_end_date = recurrence_end_date
+        self.user_id = user_id
+        self.frequency = frequency
+
+    def to_dict(self):
+        """Convert expense object to dictionary format for JSON serialization."""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "amount": self.amount,
+            "start_date": self.start_date,
+            "recurrence_end_date": self.recurrence_end_date,
+            "user_id": self.user_id,
+            "frequency": self.frequency
+        }
+
+
 DOW = [
   'Monday','Tuesday',
   'Wednesday','Thursday','Friday',
@@ -133,7 +156,7 @@ def fetchall_as_dict(cursor):
     # Fetch all rows and convert each row into a dictionary
     return [as_dict(row) for row in cursor.fetchall()]
 def calculate_totals(events, checking_balance):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     if not user_id in cache:
         cache[user_id] = { 'balance_map': {} }
     try:
@@ -183,7 +206,12 @@ def calculate_totals(events, checking_balance):
         return jsonify({ 'status': 'error', 'message': errormessage }), 500
     finally:
         cache[user_id]['balance_map'] = {}
-def load_user_info(db, user_id):
+def load_user_info(db):
+    print('load_user_info', g.user)
+    user_id = g.user[0]
+
+    print('user_id', user_id)
+
     sync_data = {
         'Page': { page.name: page.value for page in enums.Page },
         'Api': enums.Api,
@@ -191,6 +219,10 @@ def load_user_info(db, user_id):
         'MONTHS': MONTHS,
         'DOW': DOW
     }
+
+    if user_id == None:
+        return sync_data
+
     error = None
     user_data = {}
     expenses = []
@@ -209,6 +241,8 @@ def load_user_info(db, user_id):
         )
         user_data = cursor.fetchone()
 
+        print('FOUND USER DATA', user_data)
+
         cursor.execute(
             '''
             SELECT * FROM public.expense
@@ -216,36 +250,40 @@ def load_user_info(db, user_id):
             ''',
             (user_id,)
         )
-        expenses = fetchall_as_dict(cursor)
+        expenses = cursor.fetchall()
+
 
         cursor.execute(
             'SELECT * FROM "debt"'
             ' WHERE user_id = %s',
             (user_id,)
         )
-        debts = fetchall_as_dict(cursor)
+        debts = cursor.fetchall()
 
         now = datetime.now().date()
 
+        print('CREATING ACCOUNT', user_data)
+
         sync_data['account'] = {
-            'id': user_data['id'],
-            'name': user_data['name'],
-            'checking_balance': user_data['checking_balance'],
-            'expenses': [as_dict(expense) for expense in expenses],
+            'id': user_data[0],
+            'name': user_data[1],
+            'checking_balance': user_data[2],
+            'expenses': [Expense(*expense).to_dict() for expense in expenses],
             'debts': debts,
             'month': session.get('selected_month', now.month),
             'year': session.get('selected_year', now.year)
         }
 
-        cursor.close()
+        print(sync_data)
     
     except Exception as e:
         print(f'{e}')
         return sync_data
     else:
+        print(sync_data)
         return sync_data
     finally:
-        if cursor != None:
+        if cursor:
             cursor.close()
 def select_events(db, data, user_id):
     current_month = data['account']['month']
@@ -309,10 +347,11 @@ def build_months(data, events):
 
     return (months, events)
 def RenderApp(db = None, just_calendar = False):
-    user_id = session.get('user_id')
+    print('RenderApp')
+    user_id = g.user_id
     try:
         if db != None:
-            data = load_user_info(db, user_id)
+            data = load_user_info(db)
             events = select_events(db, data, user_id)
             (months, events) = build_months(data, events)
 
@@ -327,8 +366,8 @@ def RenderApp(db = None, just_calendar = False):
 
             return html
         else:
-            with get_db() as db:
-                data = load_user_info(db, user_id)
+            with get_db('RenderApp') as db:
+                data = load_user_info(db)
                 events = select_events(db, data, user_id)
                 (months, events) = build_months(data, events)
 
@@ -341,8 +380,6 @@ def RenderApp(db = None, just_calendar = False):
                     today = datetime.now().date(),
                     FREQUENCIES = FREQUENCIES
                 )
-
-                print(5)
 
                 return html
     except Exception as e:
@@ -384,7 +421,7 @@ def CreateEventFromExpense(recurrenceid, data, user_id, expense=None):
         'user_id': user_id
     }
 def save_event(db, event_id, request):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     try:
         event = request.get_json()
         event.pop('id', None)
@@ -437,7 +474,7 @@ def save_event(db, event_id, request):
         db.commit()
         cursor.close()
 
-        data = load_user_info(db, user_id)
+        data = load_user_info(db)
         events = select_events(db, data, user_id)
 
         
@@ -653,18 +690,18 @@ def set_session_info():
 @api.route('/sync')
 @login_required
 def sync():
-    user_id = session.get('user_id')
     try:
-        with get_db() as db:
-            sync_data = load_user_info(db, user_id)
+        with get_db('sync') as db:
+            sync_data = load_user_info(db)
             return jsonify(sync_data)
     except Exception as e:
         return f'500: {e}'
 
+
 @api.route('/api/add-expense', methods=('POST',))
 @login_required
 def add_expense():
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     error = None
     inserted_row = {}
 
@@ -672,7 +709,7 @@ def add_expense():
 
     try:
         
-        with get_db() as db:
+        with get_db('add_expense') as db:
             cursor = db.cursor()
             cursor.execute(
                 '''
@@ -689,15 +726,16 @@ def add_expense():
     except Exception as e:
         return jsonify({ 'status': 'error', 'error': f'Error adding expense: {e}' }), 500
     else:
-        expense = as_dict(inserted_row)
-        print(f'making a row for expense {expense}')
-        rendered_row = render_template('app/expense.html', expense = expense, FREQUENCIES = FREQUENCIES, datetime = datetime)
-        return jsonify({ 'status': 'success', 'html': rendered_row }), 201          
+        print('inserted row', inserted_row)
+        
+        expense = Expense(*inserted_row)
+
+        return jsonify({ 'status': 'success', 'expense': expense.to_dict() }), 201          
 
 @api.route('/api/delete-expense/<expense_id>', methods=('DELETE',))
 @login_required
 def delete_expense(expense_id):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     error = None
     data = {}
 
@@ -723,7 +761,7 @@ def delete_expense(expense_id):
 @api.route('/api/update-expense', methods=('POST',))
 @login_required
 def update_expense():
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     error = None
 
     if request.is_json == False:
@@ -782,7 +820,7 @@ def update_expense():
 @api.route('/api/add-debt', methods=('POST',))
 @login_required
 def add_debt():
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     error = None
     inserted_row = {}
 
@@ -815,7 +853,7 @@ def add_debt():
 @api.route('/api/update-debt/<debt_id>', methods=('POST',))
 @login_required
 def update_debt(debt_id):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     try:
         body = json.loads(request.get_json())
         creditor = body['creditor']
@@ -847,7 +885,7 @@ def update_debt(debt_id):
 @api.route('/api/delete-debt/<debt_id>', methods=('DELETE',))
 @login_required
 def delete_debt(debt_id):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     error = None
     data = {}
 
@@ -876,7 +914,7 @@ def delete_debt(debt_id):
 @api.route('/api/update-month-year', methods=('POST',))
 @login_required
 def update_account():
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     body = request.get_json()
     print(user_id, body)
     try:
@@ -924,7 +962,7 @@ def update_account():
 @api.route('/api/get-event/<event_id>', methods=('GET',))
 @login_required
 def get_event(event_id):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     with get_db() as db:
         cursor = db.cursor()
         cursor.execute(
@@ -946,7 +984,7 @@ def get_event(event_id):
 @api.route('/api/add-event/<event_date>', methods=('POST',))
 @login_required
 def add_event(event_date):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     event_date = event_date.split('-')
     with get_db() as db:
         data = {}
@@ -1002,7 +1040,7 @@ def save_this_event(event_id):
 @api.route('/api/save-this-and-future-events/<event_id>', methods=('PUT',))
 @login_required
 def save_tafe(event_id):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     cursor = None
     with get_db() as db:
         try:
@@ -1086,7 +1124,7 @@ def save_tafe(event_id):
 @api.route('/api/save-checking-balance/<float:checking_balance>', methods=('POST',))
 @login_required
 def save_checking_balance(checking_balance):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     with get_db() as db:
         try:
             cursor = db.cursor()
@@ -1151,7 +1189,7 @@ def clude_all_these_events(event_recurrenceid):
 @api.route('/api/delete-this-event/<event_id>', methods=('DELETE',))
 @login_required
 def delete_this_event(event_id):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     with get_db() as db:
         try:
             cursor = db.cursor()
@@ -1173,7 +1211,7 @@ def delete_this_event(event_id):
 @api.route('/api/delete-all-these-events/<recurrenceid>', methods=('DELETE',))
 @login_required
 def delete_all_these_events(recurrenceid):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     with get_db() as db:
         try:
             cursor = db.cursor()
@@ -1196,7 +1234,7 @@ def delete_all_these_events(recurrenceid):
 @api.route('/api/create-payment-plan/<debt_id>', methods=('GET',))
 @login_required
 def create_payment_plan(debt_id):
-    user_id = session.get('user_id')
+    user_id = g.user[0]
     try:
         with get_db() as db:
             plan = CalculatePaymentPlans(db, user_id, debt_id)
@@ -1291,7 +1329,7 @@ def dailynews():
 @api.route('/api/refresh-calendar', methods=('GET',))
 @login_required
 def refresh_calendar():
-    user_id = session.get('user_id')
+    user_id = g.user[0]
 
     print(f'Refreshing calendar for user {user_id}')
 

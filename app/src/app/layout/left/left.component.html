@@ -12,12 +12,11 @@
 			<div class="th">End Date</div>
 		</div>
 		@for (expense of sync.account.expenses; track expense.id) {
-			<expense [expense]="expense" (expenseChange)="updateExpenseLeft($event)"
-				[FREQUENCIES]="sync.FREQUENCIES"></expense>
+			<expense [expense]="expense" [FREQUENCIES]="sync.FREQUENCIES"></expense>
 		}
 	</div>
 	<div class="tr button-row-right">
-		<button class="add-expense">+</button>
+		<button class="add-expense" (click)="addExpense()">+</button>
 		<button id="refresh-calendar">↺</button>
 	</div>
 	<h3>Debts</h3>

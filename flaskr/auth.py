@@ -7,7 +7,7 @@ from flask import (
 import jwt
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta
-from flaskr.db import get_db
+from flaskr.db import get_db, close_db
 import uuid
 
 SECRET_KEY = "supersecretkey"
@@ -49,7 +49,7 @@ def register():
         if not password:
             return jsonify({"status": "failure", "error": "Password is required."}), 400
 
-        with get_db() as db:
+        with get_db('register') as db:
             cursor = db.cursor()
             try:
                 cursor.execute(
@@ -84,7 +84,7 @@ def login():
         print(f"Logging in... {name} : {password}")
         cursor = None
 
-        with get_db() as db:
+        with get_db('login') as db:
             try:
                 cursor = db.cursor()
                 cursor.execute(
@@ -97,17 +97,17 @@ def login():
                 )
                 user = cursor.fetchone()
                 
+                print('found user', user)
 
                 if user:
-                    user = as_dict(user)
 
-                    if not check_password_hash(user['password'], password):
+                    if not check_password_hash(user[1], password):
                         return jsonify({"authenticated": False, "error": "Incorrect name or password"}), 401
                     
                     print('Generating JWT...')
 
                     # Generate JWT token
-                    token = generate_jwt(user['id'])
+                    token = generate_jwt(user[0])
 
                     print(f"JWT for {name} : {token}")
 
@@ -128,6 +128,7 @@ def login():
 
 @api.route('/check-auth')
 def check_auth():
+    print('checking auth')
     token = request.cookies.get("auth_token")
     if not token:
         return jsonify({"authenticated": False}), 401  # Not authenticated
@@ -149,10 +150,9 @@ def login_required(view):
         return view(**kwargs)
     return wrapped_view
 
-
-
 @api.before_app_request
 def load_logged_in_user():
+    """Ensure database connection is properly released after checking user."""
     if request.path.startswith('/static/'):
         return
 
@@ -164,27 +164,28 @@ def load_logged_in_user():
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         user_id = payload.get("user_id")
-        cursor = None
 
-        
-        with get_db() as db:
-            try:
-                cursor = db.cursor()
-                cursor.execute(
-                    '''
-                    SELECT id, name FROM "user" WHERE id = %s
-                    ''', 
-                    (user_id,)
-                )
-                g.user = cursor.fetchone()
-            finally:
-                if cursor:
-                    cursor.close()
+        db = get_db('load_logged_in_user')  # ✅ Get DB connection
+        cursor = db.cursor()
 
+        try:
+            cursor.execute(
+                '''
+                SELECT id, name FROM "user" WHERE id = %s
+                ''', 
+                (user_id,)
+            )
+            g.user = cursor.fetchone()
+        finally:
+            cursor.close()  # ✅ Close cursor
+            close_db()  # ✅ Manually return connection to the pool
     except jwt.ExpiredSignatureError:
-        g.user = None  # Token expired
+        g.user = None
     except jwt.InvalidTokenError:
-        g.user = None  # Invalid token
+        g.user = None
+
+
+
 
 
 @api.route('/logout')

@@ -7,7 +7,7 @@ import {
 import { Expense } from './models/Expense';
 import { Sync } from './models/Sync';
 import { HttpService } from './core/http.service';
-
+import { DataService } from './core/data.service';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +27,7 @@ export class AppComponent {
 
   constructor(
     private http: HttpService,
+    private data: DataService,
     private renderer: Renderer2, 
     @Inject(DOCUMENT) private document: Document,
     private router: Router
@@ -36,7 +37,7 @@ export class AppComponent {
     console.log('in app init...')
     this.http.checkAuth().subscribe(isAuthenticated => {
       if (isAuthenticated) {
-        this.http.sync().subscribe(sync => {
+        this.data.fetchSyncData().subscribe(sync => {
           this.sync = sync;
         });
       } else {
@@ -44,13 +45,6 @@ export class AppComponent {
       }
     });
     
-  }
-
-  updateExpense(expense: Expense) {
-    console.log("calling update expense from App");
-    this.http.updateExpense(expense).subscribe(expense => {
-      console.log("expense updated!!!", expense);
-    });
   }
 
   expandToBudget() {
