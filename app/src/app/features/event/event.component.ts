@@ -1,12 +1,27 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { DataService } from '../../core/data.service';
+import { Event } from '../../models/Event';
 
 @Component({
   selector: 'app-event',
+  imports: [CommonModule],
   standalone: true,
-  imports: [],
   templateUrl: './event.component.html',
-  styleUrl: './event.component.scss'
+  styleUrls: ['./event.component.scss']
 })
-export class EventComponent {
+export class EventComponent implements OnInit {
+  eventId!: string;
+  event!: Event | null;
 
+  constructor(private route: ActivatedRoute, private data: DataService) {}
+
+  ngOnInit(): void {
+    this.eventId = this.route.snapshot.paramMap.get('id') || '';
+    this.data.fetchEvent(this.eventId).subscribe(event => {
+      console.log("fetched event", event)
+      this.event = event;
+    });
+  }
 }

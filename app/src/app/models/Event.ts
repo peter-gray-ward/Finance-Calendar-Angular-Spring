@@ -1,13 +1,13 @@
 export interface Event {
-	id: string;// id
-    recurrenceid: string;// recurrenceid
-    summary: string;// summary
-    date: string;// date
-    recurrenceenddate: string;// recurrenceenddate
-    amount: number;// amount
-    total: number;// total
-    balance: number;// balance
-    exclude: number;// exclude
-    frequency: string;// frequency
-    user_id: string;// user_id
+	id: string;
+    recurrenceid: string;
+    summary: string;
+    date: string;
+    recurrenceenddate: string;
+    amount: number;
+    total: number;
+    balance: number;
+    exclude: number;
+    frequency: string;
+    user_id: string;
 }

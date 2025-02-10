@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { HttpService } from './http.service';
 import { Expense } from '../models/Expense';
+import { Account } from '../models/Account';
+import { Event } from '../models/Event';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +27,17 @@ export class DataService {
     return this.http.getEvents().pipe(
       tap(events => this.eventsSubject.next(events))
     );
+  }
+
+  fetchEvent(eventId: string): Observable<Event | null> {
+    const val = this.eventsSubject.value;
+    if (val) {
+      const event = val.events.find((e: any) => e.id === eventId);
+      if (event) {
+        return of(event);
+      }
+    }
+    return of(null); // Return null if the event is not found
   }
 
   addExpense(): void {
@@ -69,5 +82,9 @@ export class DataService {
 
   getCurrentSyncData(): any | null {
     return this.syncSubject.value;
+  }
+
+  getAccount(): Account {
+    return this.syncSubject.value.account;
   }
 }

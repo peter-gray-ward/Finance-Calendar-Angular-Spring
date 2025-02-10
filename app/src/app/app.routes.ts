@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/auth/login/login.component';
 import { AppComponent } from './app.component';
+import { EventComponent } from './features/event/event.component';
 
 export const routes: Routes = [
   {
@@ -10,8 +11,8 @@ export const routes: Routes = [
     ]
   },
   {
-    path: '',
-    component: AppComponent
+    path: 'event/:id',
+    component: EventComponent
   },
-  { path: '**', redirectTo: 'auth/login' } // Default route
+  { path: '**', redirectTo: '' } // Default route
 ];
