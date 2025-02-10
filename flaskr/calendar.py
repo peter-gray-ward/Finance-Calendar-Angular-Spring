@@ -200,7 +200,6 @@ def calculate_totals(events, checking_balance):
             if event['date'] >= today:
                 start = True
             if start:
-                print('Started')
                 if event['exclude'] == '0':
                     checking_balance += event['amount']
                 event['total'] = checking_balance

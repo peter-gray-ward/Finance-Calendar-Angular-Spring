@@ -1,6 +1,7 @@
 import { Component, Inject, Renderer2 } from '@angular/core';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
+import { filter } from 'rxjs/operators';
 import { 
   LeftComponent
 } from './layout/left/left.component'
@@ -26,7 +27,7 @@ import { DataService } from './core/data.service';
 export class AppComponent {
   title = 'app';
   expanding: boolean = false;
-  authenticated: boolean = true;
+  authenticated: boolean = false;
   sync!: Sync;
 
   constructor(
@@ -35,13 +36,28 @@ export class AppComponent {
     private renderer: Renderer2, 
     @Inject(DOCUMENT) private document: Document,
     private router: Router
-  ) {}
+  ) {
+    console.log('AppComponent.constructor')
+  }
 
-  ngOnInit() {
-    console.log('in app init...')
+   ngOnInit(): void {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      console.log('Route change detected:', event.url);
+      this.checkAuthentication();
+    });
+  }
+
+  ngAfterViewInit() {
+    console.log('AppComponent.ngAfterViewInit')
+  }
+
+
+  checkAuthentication() {
     this.http.checkAuth().subscribe(isAuthenticated => {
-      console.log('is authenticated', isAuthenticated)
       if (isAuthenticated) {
+        this.authenticated = true;
         this.data.fetchSyncData().subscribe(sync => {
           this.sync = sync;
           this.data.fetchEvents().subscribe();
@@ -50,7 +66,6 @@ export class AppComponent {
         this.router.navigate(['/auth/login']);
       }
     });
-    
   }
 
   expandToBudget() {

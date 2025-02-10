@@ -28,15 +28,12 @@ export class LoginComponent {
   ) {}
 
   login() {
-    console.log(this.user)
     this.http.login(this.user).subscribe(authorization => {
-      console.log(authorization)
       switch (authorization.authenticated) {
         case true:
           this.router.navigate(['/']);
           break;
         default:
-          console.log(authorization)
           this.error = authorization.error;
           break;
       }
