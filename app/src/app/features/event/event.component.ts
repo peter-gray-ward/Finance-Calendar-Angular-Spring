@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { DataService } from '../../core/data.service';
 import { Event } from '../../models/Event';
 
 @Component({
   selector: 'app-event',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   standalone: true,
   templateUrl: './event.component.html',
   styleUrls: ['./event.component.scss']
@@ -14,6 +15,7 @@ import { Event } from '../../models/Event';
 export class EventComponent implements OnInit {
   eventId!: string;
   event!: Event | null;
+  activity: any = {};
 
   constructor(private route: ActivatedRoute, private data: DataService) {}
 
@@ -22,6 +24,18 @@ export class EventComponent implements OnInit {
     this.data.fetchEvent(this.eventId).subscribe(event => {
       console.log("fetched event", event)
       this.event = event;
+
+    });
+    this.data.activity$.subscribe(activity => {
+      this.activity = activity;
+      var modalWidth = window.innerWidth / 2.5;
+      var modalHeight = window.innerHeight / 3;
+      if (this.activity.left > window.innerWidth - modalWidth) {
+        this.activity.left -= (this.activity.left + modalWidth) - window.innerWidth
+      }
+      if (this.activity.top > window.innerHeight - modalHeight) {
+        this.activity.top -= (this.activity.top + modalHeight) - window.innerHeight
+      }
     });
   }
 

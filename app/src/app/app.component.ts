@@ -63,6 +63,7 @@ export class AppComponent {
           this.data.fetchEvents().subscribe();
         });
       } else {
+        alert('navigating to auth login')
         this.router.navigate(['/auth/login']);
       }
     });

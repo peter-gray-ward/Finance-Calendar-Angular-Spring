@@ -990,27 +990,6 @@ def get_events():
         if db:
             close_db()
 
-@api.route('/api/get-event/<event_id>', methods=('GET',))
-@login_required
-def get_event(event_id):
-    user_id = g.user[0]
-    with get_db() as db:
-        cursor = db.cursor()
-        cursor.execute(
-            '''
-                SELECT *
-                FROM "event"
-                WHERE id = %s
-            ''',
-            (event_id,)
-        )
-        event = cursor.fetchone()
-        html = render_template('app/event.html', event = event, datetime = datetime, FREQUENCIES = FREQUENCIES)
-        return jsonify({
-            'status': 'success',
-            'event': event,
-            'html': html
-        })
 
 @api.route('/api/add-event/<event_date>', methods=('POST',))
 @login_required
@@ -1047,26 +1026,10 @@ def add_event(event_date):
             return jsonify({ 'status': 'success', 'html': html, 'eventId': event['id'] })
         except Exception as e:
             return jsonify({ 'status': 'error', 'message': f'{e}'})
+        finally:
+            close_db()
 
 
-
-@api.route('/api/save-this-event/<event_id>', methods=('PUT',))
-@login_required
-def save_this_event(event_id):
-    with get_db() as db:
-
-        if len(save_event(db, event_id, request)):
-            html = RenderApp(db, True)
-
-            return jsonify({
-                'status': 'success',
-                'html': html
-            })
-        else:
-            return jsonify({
-                'status': 'error',
-                'message': f'Didn\'t save this event {event_id}'
-            })
 
 @api.route('/api/save-this-and-future-events/<event_id>', methods=('PUT',))
 @login_required
@@ -1151,6 +1114,7 @@ def save_tafe(event_id):
         finally:
             if cursor:
                 cursor.close()
+            close_db()
 
 @api.route('/api/save-checking-balance/<float:checking_balance>', methods=('POST',))
 @login_required
@@ -1173,6 +1137,8 @@ def save_checking_balance(checking_balance):
         except Exception as e:
             print(e)
             return jsonify({ 'status': 'error' })
+        finally:
+            close_db()
 
 
 @api.route('/api/clude-this-event/<event_id>', methods=('GET',))
@@ -1195,6 +1161,8 @@ def clude_event(event_id):
             return jsonify({ 'status': 'success', 'html': html })
     except Exception as e:
         return jsonify({ 'status': 'error', 'message': f'{e}' })
+    finally:
+        close_db()
 
 @api.route('/api/clude-all-these-events/<event_recurrenceid>', methods=('GET',))
 def clude_all_these_events(event_recurrenceid):
@@ -1216,6 +1184,8 @@ def clude_all_these_events(event_recurrenceid):
             return jsonify({ 'status': 'success', 'html': html })
     except Exception as e:
         return jsonify({ 'status': 'error', 'message': f'{e}' })
+    finally:
+        close_db()
 
 @api.route('/api/delete-this-event/<event_id>', methods=('DELETE',))
 @login_required
@@ -1238,6 +1208,8 @@ def delete_this_event(event_id):
             return jsonify({ 'status': 'success', 'html': html })
         except Exception as e:
             return jsonify({ 'status': 'error', message: f'{e}' })
+        finally:
+            close_db()
 
 @api.route('/api/delete-all-these-events/<recurrenceid>', methods=('DELETE',))
 @login_required
@@ -1260,6 +1232,8 @@ def delete_all_these_events(recurrenceid):
             return jsonify({ 'status': 'success', 'html': html })
         except Exception as e:
             return jsonify({ 'status': 'error', message: f'{e}' })
+        finally:
+            close_db()
 
 
 @api.route('/api/create-payment-plan/<debt_id>', methods=('GET',))
@@ -1478,6 +1452,7 @@ def refresh_calendar():
     finally:
         if cursor:
             cursor.close()
+        close_db()
 
 
 

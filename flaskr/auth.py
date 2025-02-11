@@ -182,12 +182,13 @@ def load_logged_in_user():
             g.user = cursor.fetchone()
         finally:
             cursor.close() 
-            close_db()
             
     except jwt.ExpiredSignatureError:
         g.user = None
     except jwt.InvalidTokenError:
         g.user = None
+    finally:
+        close_db()
 
 
 

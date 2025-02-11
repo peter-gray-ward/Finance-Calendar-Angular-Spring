@@ -35,7 +35,8 @@
 
 * {
 	--saveThisInstanceButtonHeight: 100px;
-	--modal-width: 500px;
+	--modal-width: 40vw;
+	--modal-height: 30vh;
 	--modal-label-font-size: 1.15rem;
 	--modal-font-size: 1.5rem;
 	--panel-transition-speed: 0.05s;
@@ -677,6 +678,7 @@ header button:hover {
 .modal {
 	position: absolute;
 	width: var(--modal-width);
+	height: var(--modal-height);
 	box-shadow: 0 0 3px 0;
 	border-radius: 5px;
 	background: url(/static/waternormals.jpg);
@@ -726,7 +728,7 @@ header button:hover {
 	justify-content: flex-start;
 	font-size: 0.75rem;
 	overflow: auto;
-	background: transparent;
+	background: white;
 	background-size: cover;
 	width: 100%;
 	height: 100%;
@@ -767,7 +769,7 @@ header button:hover {
     color: white;
     resize: none;
     padding: 1rem;
-    height: 1.75rem;
+    height: 2vw;
     font-size: 1.5rem;
     border-bottom: 1px dotted gray;
 }
@@ -946,7 +948,7 @@ header button:hover {
 .button-footer button:hover {
 	cursor: pointer;
 	background: transparent;
-	color: white;
+	color: black;
 }
 
 .button-footer button:active, .button-footer button.active {
@@ -1172,7 +1174,7 @@ html.dark #checking-balance {
 
 #savings-input {
 	background: transparent;
-    color: white;
+    color: black;
     border: none;
     font-size: 2rem;
     font-weight: 100;
@@ -1337,7 +1339,7 @@ div.graphic {
 
 
 #time-container {
-	padding: 2.25rem;
+	padding: 0.5vw;
 }
 
 .select-container, #frequency-container, #time-container, #modal-event, .modal-content, #event-edit, .event-modal {
@@ -1399,6 +1401,7 @@ div.graphic {
 
 #event-edit #frequency-container {
 	width: 50%;
+
 	padding-right: 0.15rem;
 }
 #event-edit #frequency-container > * {
@@ -1406,19 +1409,19 @@ div.graphic {
 }
 #event-edit #time-container {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 }
 .recurrenceid {
 	margin-top: 1rem;
 }
 #event-edit #summary-div div:first-of-type {
-	font-size: 1.75rem;
+	font-size: 2vw;
 	background: url(/static/waternormals.jpg);
-	color: white;
+	color: black;
 	font-family: Andale Mono;
 }
 #event-edit #time-container div:last-of-type input {
-	color: white;
+	color: black;
 	background: url(/static/waternormals.jpg);
 }
 
@@ -1494,7 +1497,7 @@ div.graphic {
 	align-self: start;
 }
 #event-edit input:nth-of-type(1) {
-	color: white;
+	color: black;
 	background: url(/static/waternormals.jpg);
 	flex-grow: 1;
 	font-size: 1rem;
@@ -1504,10 +1507,10 @@ div.graphic {
 	color: #162136;
 }
 #event-edit label {
-	line-height: 2rem;
+
 }
 div[contenteditable] {
-	padding: 0.25rem 0.5rem;
+	padding: 0.25vw 0.5vw;
 }
 div[contenteditable]:focus {
 	outline: none;
@@ -1523,7 +1526,6 @@ div[contenteditable]:focus {
 }
 #event-edit div#amount-div {
 	align-self: start;
-	margin: auto;
 	background: whitesmoke;
 	display: flex;
 	box-sizing: content-box;
@@ -1531,10 +1533,14 @@ div[contenteditable]:focus {
 	align-items: start;
 	padding: 0;
 	display: flex;
+	width: 100%;
 }
 .upper-div-collection {
 	display: flex;
 	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
 }
 #event-edit #amount-div label {
 	color: black;
@@ -1543,8 +1549,8 @@ div[contenteditable]:focus {
 }
 #event-edit #amount-div input {
 	background: url(/static/waternormals.jpg);
-	color: white !important;
-	font-size: 1.75rem;
+	color: black !important;
+	font-size: 2vw;
 	text-alignt: center;
 	font-family: Menlo;
 	width: 100%;
@@ -1587,9 +1593,9 @@ div[contenteditable]:focus {
 
 
 #modal-event {
-	width: calc(85% - 0.2rem);
+	flex-grow: 1;
+	overflow: auto;
 	display: flex;
-	flex-direction: column;
 	padding: 0;
 	margin: 0;
 	background: whitesmoke;
@@ -1599,10 +1605,11 @@ div[contenteditable]:focus {
 
 #modal-event > div:first-of-type {
 	align-items: start;
-	justify-content: start;
-	padding-top: 2.25rem;
-	padding-left: 2.25rem;
-	padding-right: 2.25rem;
+	justify-content: center;
+	padding-top: 0.5vw;
+	padding-left: 0.5vw;
+	padding-right: 0.5vw;
+	box-sizing: border-box;
 }
 
 #after-summary .chess-block, #before-amount .chess-block {

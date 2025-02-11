@@ -19,6 +19,8 @@ export class DataService {
     map((sync: Sync) => sync?.account),
     distinctUntilChanged() 
   );
+  private activitySubject = new BehaviorSubject<any | null>({});
+  public activity$ = this.activitySubject.asObservable();
 
   constructor(private http: HttpService) {}
 
@@ -107,5 +109,12 @@ export class DataService {
 
   getAccount(): Account {
     return this.syncSubject.value.account;
+  }
+
+  setActivity(obj: any) {
+    this.activitySubject.next({
+      ...this.activitySubject,
+      ...obj
+    });
   }
 }

@@ -40,8 +40,6 @@ def get_db(which):
     return g.db  # Return the connection object
 
 
-
-
 def close_db(error=None):
     """Return the database connection to the pool instead of closing it."""
     db = g.pop("db", None)
@@ -56,7 +54,9 @@ def close_db(error=None):
                 AND state = 'idle'
                 AND now() - state_change > interval '10 seconds';
             ''', (env['user'],))
-            connection_pool.putconn(db, close=False)  # ✅ Return connection to pool without closing
+            cursor.close()
+            db.commit()  # ✅ Ensure any open transactions are committed
+            connection_pool.putconn(db, close=False)  # ✅ Return connection to pool
         except Exception as e:
             print(f"❌ Error returning connection to pool: {e}")
         finally:
