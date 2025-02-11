@@ -24,4 +24,18 @@ export class EventComponent implements OnInit {
       this.event = event;
     });
   }
+
+  mousedown(event: any) {
+     // isModal.classList.add('gripped')
+     //  $(isModal).data().offset = JSON.stringify({
+     //    x: event.clientX - $(isModal).offset().left,
+     //    y: event.clientY - $(isModal).offset().top
+     //  });
+  }
+  mousemove(event: any) {
+
+  }
+  mouseup(event: any) {
+    
+  }
 }

@@ -11,7 +11,7 @@ with open(os.path.join(os.path.dirname(__file__), '.env.json'), 'r') as env_file
 
 # Create a global database connection pool
 connection_pool = SimpleConnectionPool(
-    1, 20,  # Min & max connections
+    1, 15,  # Min & max connections
     host=env['host'],
     database=env['database'],
     user=env['user'],
@@ -24,6 +24,12 @@ def init_db(app):
     app.teardown_appcontext(close_db)  # ✅ Flask will call this automatically
 
 
+def get_cursor(which):
+    """Retrieve a cursor with RealDictCursor for easy result handling."""
+    db = get_db(which)
+    return db.cursor(cursor_factory=RealDictCursor)  # Explicit cursor creation
+
+
 def get_db(which):
     """Retrieve a database connection from the pool."""
     print('--> get_db(' + which + ')')
@@ -34,17 +40,22 @@ def get_db(which):
     return g.db  # Return the connection object
 
 
-def get_cursor(which):
-    """Retrieve a cursor with RealDictCursor for easy result handling."""
-    db = get_db(which)
-    return db.cursor(cursor_factory=RealDictCursor)  # Explicit cursor creation
 
 
 def close_db(error=None):
     """Return the database connection to the pool instead of closing it."""
     db = g.pop("db", None)
+    print('closing -> ', db)
     if db is not None:
         try:
+            cursor = db.cursor()
+            cursor.execute('''
+                SELECT pg_terminate_backend(pid)
+                FROM pg_stat_activity
+                WHERE usename = %s
+                AND state = 'idle'
+                AND now() - state_change > interval '10 seconds';
+            ''', (env['user'],))
             connection_pool.putconn(db, close=False)  # ✅ Return connection to pool without closing
         except Exception as e:
             print(f"❌ Error returning connection to pool: {e}")

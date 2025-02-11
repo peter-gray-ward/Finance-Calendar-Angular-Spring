@@ -68,6 +68,7 @@ def register():
 
             finally:
                 cursor.close()
+                close_db()
 
     except Exception as e:
         return jsonify({"status": "failure", "error": str(e)}), 500
@@ -123,6 +124,7 @@ def login():
             finally:
                 if cursor:
                     cursor.close()
+                close_db()
 
     except Exception as e:
         return jsonify({"authenticated": False, "error": str(e)}), 500

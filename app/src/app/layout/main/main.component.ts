@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { DataService } from '../../core/data.service';
 import { Sync } from '../../models/Sync';
 import { CalendarComponent } from '../../features/calendar/calendar.component';
@@ -14,7 +15,7 @@ import { CalendarComponent } from '../../features/calendar/calendar.component';
 export class MainComponent {
   sync!: Sync;
   @Input() expanding: boolean = false;
-  constructor(private data: DataService) {}
+  constructor(private data: DataService, private router: Router) {}
   ngOnInit() {
     this.data.sync$.subscribe(sync => {
       this.sync = sync;
@@ -31,5 +32,14 @@ export class MainComponent {
   }
   currentMonth(): void {
     this.data.updateMonthYear('current').subscribe();
+  }
+  blurEvent(event: any): void {
+    let src = event.srcElement;
+    while (src && !src.classList.contains("event")) {
+      src = src.parentElement;
+    }
+    if (!src || !src.classList.contains('event')) {
+      this.router.navigate(["/"]);
+    }
   }
 }
