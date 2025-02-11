@@ -104,16 +104,18 @@ def login():
                     if not check_password_hash(user[1], password):
                         return jsonify({"authenticated": False, "error": "Incorrect name or password"}), 401
                     
-                    print('Generating JWT...')
-
                     # Generate JWT token
                     token = generate_jwt(user[0])
-
-                    print(f"JWT for {name} : {token}")
 
                     # Create response with token stored in HTTP-only cookie
                     response = make_response(jsonify({"authenticated": True}))
                     response.set_cookie("auth_token", token, httponly=True, secure=False, samesite='Lax')
+
+
+                    # set session variables for user
+                    now = datetime.now().date()
+                    session[user[0] + ':selected_month'] = now.month
+                    session[user[0] + ':selected_year'] = now.year
 
                     return response  # Return JSON response
                 else:

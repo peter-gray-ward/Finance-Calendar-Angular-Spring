@@ -24,6 +24,7 @@ export class CalendarComponent {
       this.sync = sync;
     });
     this.data.events$.subscribe(res => {
+      console.log("events$ subscription change", res)
       this.events = res.events;
       this.months = res.months;
     });

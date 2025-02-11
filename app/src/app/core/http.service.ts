@@ -61,8 +61,16 @@ export class HttpService {
     return this.http.post<Expense>("/api/update-expense", expense, { headers: this.headers });
   }
 
-  getEvents(): Observable<Event[]> {
-    return this.http.get<Event[]>("/api/get-events", { headers: this.headers });
+  getEvents(): Observable<any[]> {
+    return this.http.get<any[]>("/api/get-events", { headers: this.headers });
+  }
+
+  updateMonthYear(which: string): Observable<any[]> {
+    console.log("http.updateMonthYear")
+    return this.http.post<any[]>("/api/update-month-year",
+      { which },
+      { headers: this.headers }
+    );
   }
 
 }

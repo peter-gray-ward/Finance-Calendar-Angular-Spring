@@ -8,15 +8,15 @@
 			<input style="display:none;" type="test" placeholder="Go for it!" />
 		</div>
 		<div>
-			<button id="prev-month">
+			<button id="prev-month" (click)="prevMonth()">
 				<span>
 					∟
 				</span>
 			</button>
-			<button id="go-to-today">
+			<button id="go-to-today" (click)="currentMonth()">
 				Today
 			</button>
-			<button id="next-month">
+			<button id="next-month" (click)="nextMonth()">
 				<span>
 					∟
 				</span>

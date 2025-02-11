@@ -12,12 +12,24 @@ import { CalendarComponent } from '../../features/calendar/calendar.component';
   styleUrl: './main.component.scss'
 })
 export class MainComponent {
-  sync?: Sync;
+  sync!: Sync;
   @Input() expanding: boolean = false;
   constructor(private data: DataService) {}
   ngOnInit() {
     this.data.sync$.subscribe(sync => {
       this.sync = sync;
     });
+    this.data.account$.subscribe(account => {
+      this.sync.account = account;
+    });
+  }
+  prevMonth(): void {
+    this.data.updateMonthYear('prev').subscribe();
+  }
+  nextMonth(): void {
+    this.data.updateMonthYear('next').subscribe();
+  }
+  currentMonth(): void {
+    this.data.updateMonthYear('current').subscribe();
   }
 }

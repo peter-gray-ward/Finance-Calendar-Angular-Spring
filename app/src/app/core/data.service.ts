@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, map, distinctUntilChanged } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { HttpService } from './http.service';
 import { Expense } from '../models/Expense';
 import { Account } from '../models/Account';
+import { Sync } from '../models/Sync';
 import { Event } from '../models/Event';
 
 @Injectable({
@@ -14,6 +15,10 @@ export class DataService {
   private eventsSubject = new BehaviorSubject<any | null>(null);
   public sync$ = this.syncSubject.asObservable();
   public events$ = this.eventsSubject.asObservable();
+  public account$ = this.sync$.pipe(
+    map((sync: Sync) => sync?.account),
+    distinctUntilChanged() 
+  );
 
   constructor(private http: HttpService) {}
 
@@ -26,6 +31,22 @@ export class DataService {
   fetchEvents(): Observable<any> {
     return this.http.getEvents().pipe(
       tap(events => this.eventsSubject.next(events))
+    );
+  }
+
+  updateMonthYear(which: string): Observable<any> {
+    return this.http.updateMonthYear(which).pipe(
+      tap((events: any) => {
+        this.syncSubject.next({
+          ...this.syncSubject.value,
+          account: {
+            ...this.syncSubject.value.account,
+            year: events.year,
+            month: events.month
+          }
+        })
+        return this.eventsSubject.next(events)
+      })
     );
   }
 

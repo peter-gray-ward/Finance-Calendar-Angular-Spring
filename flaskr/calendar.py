@@ -270,8 +270,8 @@ def load_user_info(db):
             'checking_balance': user_data[2],
             'expenses': [Expense(*expense).to_dict() for expense in expenses],
             'debts': debts,
-            'month': session.get('selected_month', now.month),
-            'year': session.get('selected_year', now.year)
+            'month': session.get(user_data[0] + ':selected_month', now.month),
+            'year': session.get(user_data[0] + ':selected_year', now.year)
         }
     
     except Exception as e:
@@ -913,18 +913,11 @@ def update_account():
     body = request.get_json()
     print(user_id, body)
     try:
-        if 'selected_month' not in session:
-            now = datetime.now().date()
-            session['selected_month'] = now.month
-            session['selected_year'] = now.year
-
-
-        month = int(session['selected_month'])
-        year = int(session['selected_year'])
 
         which = body['which']
+        month = int(session[user_id + ':selected_month'])
+        year = int(session[user_id + ':selected_year'])
 
-        print(which, month, year)
 
         if which == 'prev':
             if month == 1:
@@ -943,16 +936,37 @@ def update_account():
             month = now.month
             year = now.year
 
-        
-        session['selected_month'] = month
-        session['selected_year'] = year
 
-        print(session)
+        # update session per user with new month/year
+        session[user_id + ':selected_month'] = month
+        session[user_id + ':selected_year'] = year
+
     except Exception as e:
         return jsonify({ 'status': f'error {e}' })
     else:
-        html = RenderApp(None, True)
-        return jsonify({ 'status': 'success', 'html': html, 'month': MONTHS[month - 1], 'year': year })
+        db = None
+        cursor = None
+        try:
+            with get_db('get events') as db:
+                data = load_user_info(db)
+                events = select_events(db, data, user_id)
+                (months, events) = build_months(data, events)
+
+
+                return jsonify({ 
+                    'months': months,
+                    'events': events,
+                    'month': month,
+                    'year': year
+                }), 200
+
+        except Exception as e:
+            return jsonify({ 'error': f'{e}', 'months': [], 'events': [] }), 500
+        finally:
+            if cursor:
+                cursor.close()
+            if db:
+                close_db()
 
 @api.route('/api/get-events', methods=('GET',))
 @login_required

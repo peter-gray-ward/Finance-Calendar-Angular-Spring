@@ -40,7 +40,7 @@ export class AppComponent {
     console.log('AppComponent.constructor')
   }
 
-   ngOnInit(): void {
+  ngOnInit(): void {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
