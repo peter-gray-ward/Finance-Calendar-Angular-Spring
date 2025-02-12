@@ -1,6 +1,6 @@
 <div class="day-block"
 	[class.weekend]="day.day == 'Sunday' || day.day == 'Saturday'"
-	[class.first-of-month]="day.date == 1"
+	[class.first-of-month]="day.date == 1 && day.month == month"
 	[attr.data-date]="day.date" 
 	[attr.data-dow]="day.day" 
 	[attr.data-year]="day.year" 
@@ -9,10 +9,12 @@
     
     @if (day.today || (day.todayOrLater && day.events && day.events.length > 0)) {  
       <div class="total">
-        @if (checking_balance) {
+        @if (day.today) {
             <input type="number"
                    value="{{ checking_balance }}" 
-                   id="checking-balance" />
+                   id="checking-balance"
+                   [(ngModel)]="checking_balance"
+                   (ngModelChange)="updateCheckingBalance()" />
         } @else {
           {{ day.total }}
         }

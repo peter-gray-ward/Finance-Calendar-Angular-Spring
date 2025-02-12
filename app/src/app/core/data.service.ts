@@ -122,6 +122,24 @@ export class DataService {
     this.http.updateExpense(expense).subscribe();
   }
 
+  deleteExpense(expense: Expense): void {
+    this.http.deleteExpense(expense).subscribe({
+      next: response => {
+        console.log('deleted expense')
+        this.syncSubject.next({
+          ...this.syncSubject.value,
+          account: {
+            ...this.syncSubject.value.account,
+            expenses: this.syncSubject.value.account.expenses.filter((e: Expense) => e.id !== expense.id)
+          }
+        });
+      },
+      error: err => {
+        console.log('error deleting expense', err)
+      }
+    })
+  }
+
   getCurrentSyncData(): any | null {
     return this.syncSubject.value;
   }
@@ -135,5 +153,23 @@ export class DataService {
       ...this.activitySubject,
       ...obj
     });
+  }
+
+  saveCheckingBalance(balance: number) {
+    this.http.saveCheckingBalance(balance).pipe(
+      tap((res: any) => {
+        this.syncSubject.next({
+          ...this.syncSubject.value,
+          account: {
+            ...this.syncSubject.value.account,
+            checking_balance: balance
+          }
+        });
+        return this.eventsSubject.next({
+          ...this.eventsSubject.value,
+          months: res.months
+        });
+      })
+    ).subscribe();
   }
 }

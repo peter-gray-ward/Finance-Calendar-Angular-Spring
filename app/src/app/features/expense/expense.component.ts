@@ -40,6 +40,6 @@ export class ExpenseComponent {
   }
 
   deleteExpense(event: any) {
-
+    this.data.deleteExpense(this.expense);
   }
 }

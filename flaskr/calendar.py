@@ -745,7 +745,7 @@ def delete_expense(expense_id):
 
     cursor = None
 
-    with get_db() as db:
+    with get_db('delete_expense') as db:
         try:
             cursor = db.cursor()
             cursor.execute(
@@ -761,6 +761,7 @@ def delete_expense(expense_id):
         finally:
             if cursor:
                 cursor.close()
+            close_db()
 
 @api.route('/api/update-expense', methods=('POST',))
 @login_required
@@ -1140,7 +1141,7 @@ def save_this_event(event_id):
 @login_required
 def save_checking_balance(checking_balance):
     user_id = g.user[0]
-    with get_db() as db:
+    with get_db('save_checking_balance') as db:
         try:
             cursor = db.cursor()
             cursor.execute(
@@ -1152,13 +1153,13 @@ def save_checking_balance(checking_balance):
                 (checking_balance,user_id,)
             )
             db.commit()
-            html = RenderApp(db, True)
-            return jsonify({ 'status': 'success', 'html': html })
         except Exception as e:
             print(e)
             return jsonify({ 'status': 'error' })
         finally:
             close_db()
+
+    return get_events()
 
 
 @api.route('/api/clude-this-event/<event_id>', methods=('GET',))

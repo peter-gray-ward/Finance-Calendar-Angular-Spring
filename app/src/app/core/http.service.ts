@@ -61,6 +61,10 @@ export class HttpService {
     return this.http.post<Expense>("/api/update-expense", expense, { headers: this.headers });
   }
 
+  deleteExpense(expense: Expense): Observable<Expense> {
+    return this.http.delete<Expense>("/api/delete-expense/" + expense.id, { headers: this.headers });
+  }
+
   getEvents(): Observable<any[]> {
     return this.http.get<any[]>("/api/get-events", { headers: this.headers });
   }
@@ -75,6 +79,10 @@ export class HttpService {
 
   saveThisEvent(event: Event): Observable<Event> {
     return this.http.put<Event>("/api/save-this-event/" + event.id, event, { headers: this.headers });
+  }
+
+  saveCheckingBalance(balance: number): Observable<any> {
+    return this.http.post<number>(`/api/save-checking-balance/${balance}.0`, { headers: this.headers });
   }
 
 }
