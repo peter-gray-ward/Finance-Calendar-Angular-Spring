@@ -172,4 +172,16 @@ export class DataService {
       })
     ).subscribe();
   }
+
+  refreshCalendar() {
+    this.http.refreshCalendar().pipe(
+      tap((res: any) => {
+        console.log("saved this event", res);
+        return this.eventsSubject.next({
+          ...this.eventsSubject.value,
+          months: res.months
+        });
+      })
+    ).subscribe();
+  }
 }

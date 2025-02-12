@@ -31,12 +31,12 @@ date_pattern = re.compile(r"(date|updated)", re.IGNORECASE)
 cache = {}
 
 class Expense:
-    def __init__(self, id, name, amount, start_date, recurrence_end_date, user_id, frequency):
+    def __init__(self, id, name, amount, startdate, recurrenceenddate, user_id, frequency):
         self.id = id
         self.name = name
         self.amount = amount
-        self.start_date = start_date
-        self.recurrence_end_date = recurrence_end_date
+        self.startdate = startdate
+        self.recurrenceenddate = recurrenceenddate
         self.user_id = user_id
         self.frequency = frequency
 
@@ -46,8 +46,8 @@ class Expense:
             "id": self.id,
             "name": self.name,
             "amount": self.amount,
-            "start_date": self.start_date,
-            "recurrence_end_date": self.recurrence_end_date,
+            "startdate": self.startdate,
+            "recurrenceenddate": self.recurrenceenddate,
             "user_id": self.user_id,
             "frequency": self.frequency
         }
@@ -999,8 +999,7 @@ def get_events():
     finally:
         if cursor:
             cursor.close()
-        if db:
-            close_db()
+        close_db()
 
 
 @api.route('/api/add-event/<event_date>', methods=('POST',))
@@ -1361,24 +1360,27 @@ def refresh_calendar():
 
     res = {}
     code = 200
-
     cursor = None
 
     try:
-        with get_db() as db:
+        with get_db('refresh_calendar') as db:
             expenses = []
             cursor = db.cursor()
             cursor.execute(
                 '''
-                    SELECT *
+                    SELECT id, name, amount, startdate, recurrenceenddate, user_id, frequency
                     FROM "expense"
                     WHERE user_id = %s
                 ''',
                 (user_id,)
             )
-            expenses = fetchall_as_dict(cursor)
+            expenses = cursor.fetchall()
 
-            print(f'Found {len(expenses)} expenses to recur')
+            print(f'Found {len(expenses)} expenses to recur', expenses[0])
+
+            expenses = list(map(lambda e: Expense(*e).to_dict(), expenses))
+
+            print(f'Processing {len(expenses)} expenses to recur', expenses[0])
 
             today = datetime.now()
             events = []
@@ -1461,10 +1463,6 @@ def refresh_calendar():
                 ]
             )
             db.commit()
-            cursor.close()
-
-            html = RenderApp(db, True)
-            return jsonify({ 'status': 'success', 'html': html })
     except Exception as e:
         res['status'] = 'error'
         print(e)
@@ -1474,6 +1472,8 @@ def refresh_calendar():
         if cursor:
             cursor.close()
         close_db()
+
+    return get_events()
 
 
 

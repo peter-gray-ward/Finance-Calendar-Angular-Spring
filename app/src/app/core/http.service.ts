@@ -85,4 +85,8 @@ export class HttpService {
     return this.http.post<number>(`/api/save-checking-balance/${balance}.0`, { headers: this.headers });
   }
 
+  refreshCalendar(): Observable<any> {
+    return this.http.get<any>("/api/refresh-calendar", { headers: this.headers });
+  }
+
 }

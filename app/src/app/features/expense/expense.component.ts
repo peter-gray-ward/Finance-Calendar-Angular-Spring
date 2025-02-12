@@ -19,7 +19,10 @@ export class ExpenseComponent {
   constructor(private data: DataService) {}
 
   formatDate(date: Date | string | null): string {
+    console.log('formatting expense date', date, this.expense)
+
     if (!date) return '';
+
     const d = new Date(date);
     return d.toISOString().split('T')[0]; // ✅ Converts Date to yyyy-MM-dd
   }

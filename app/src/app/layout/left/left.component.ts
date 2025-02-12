@@ -33,4 +33,8 @@ export class LeftComponent {
   addExpense() {
     this.data.addExpense();
   }
+
+  refreshCalendar() {
+    this.data.refreshCalendar();
+  }
 }
