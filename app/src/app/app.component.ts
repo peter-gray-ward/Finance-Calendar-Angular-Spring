@@ -55,18 +55,20 @@ export class AppComponent {
 
 
   checkAuthentication() {
-    this.http.checkAuth().subscribe(isAuthenticated => {
-      if (isAuthenticated) {
-        this.authenticated = true;
-        this.data.fetchSyncData().subscribe(sync => {
-          this.sync = sync;
-          this.data.fetchEvents().subscribe();
-        });
-      } else {
-        alert('navigating to auth login')
-        this.router.navigate(['/auth/login']);
-      }
-    });
+    if (!this.authenticated) {
+      this.http.checkAuth().subscribe(isAuthenticated => {
+        if (isAuthenticated) {
+          this.authenticated = true;
+          this.data.fetchSyncData().subscribe(sync => {
+            this.sync = sync;
+            this.data.fetchEvents().subscribe();
+          });
+        } else {
+          alert('navigating to auth login')
+          this.router.navigate(['/auth/login']);
+        }
+      });
+    }
   }
 
   expandToBudget() {

@@ -52,15 +52,34 @@ export class DataService {
     );
   }
 
-  fetchEvent(eventId: string): Observable<Event | null> {
-    const val = this.eventsSubject.value;
-    if (val) {
-      const event = val.events.find((e: any) => e.id === eventId);
-      if (event) {
-        return of(event);
+  fetchEvent(eventId: string): Observable<Event> {
+    const events = this.eventsSubject.value;
+    if (events) {
+      for (var week of events.months) {
+        for (var day of week) {
+          if (day.events) {
+            for (var event of day.events) {
+              if (event.id == eventId) {
+                return of(event);
+              }
+            }
+          }
+        }
       }
     }
-    return of(null); // Return null if the event is not found
+    return of({} as Event);
+  }
+
+  saveThisEvent(event: Event): Observable<any> {
+    return this.http.saveThisEvent(event).pipe(
+      tap((res: any) => {
+        console.log("saved this event", res);
+        return this.eventsSubject.next({
+          ...this.eventsSubject.value,
+          months: res.months
+        });
+      })
+    );
   }
 
   addExpense(): void {

@@ -14,14 +14,14 @@ import { Event } from '../../models/Event';
 })
 export class EventComponent implements OnInit {
   eventId!: string;
-  event!: Event | null;
+  event!: Event;
   activity: any = {};
 
   constructor(private route: ActivatedRoute, private data: DataService) {}
 
   ngOnInit(): void {
     this.eventId = this.route.snapshot.paramMap.get('id') || '';
-    this.data.fetchEvent(this.eventId).subscribe(event => {
+    this.data.fetchEvent(this.eventId).subscribe((event: Event) => {
       console.log("fetched event", event)
       this.event = event;
 
@@ -51,5 +51,9 @@ export class EventComponent implements OnInit {
   }
   mouseup(event: any) {
     
+  }
+
+  saveThisEvent() {
+    this.data.saveThisEvent(this.event).subscribe();
   }
 }

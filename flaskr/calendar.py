@@ -415,69 +415,78 @@ def CreateEventFromExpense(recurrenceid, data, user_id, expense=None):
         'exclude': '1' if expense and 'exclude' in expense else '0',
         'user_id': user_id
     }
-def save_event(db, event_id, request):
+def save_event(request):
     user_id = g.user[0]
+    print('saving event for ', user_id)
     try:
-        event = request.get_json()
-        event.pop('id', None)
-        cursor = db.cursor()
+        cursor = None
+        with get_db('save_event') as db:
+            event = request.get_json()
+            event_id = event['id']
+            event.pop('id', None)
+            cursor = db.cursor()
 
-        previous_fields = {}
-        cursor.execute(
-            '''
-                SELECT *
-                FROM "event"
-                WHERE id = %s
-            ''',
-            (event_id,)
-        )
-
-        previous_fields = fetchall_as_dict(cursor)[0]
-
-        for field_name in event.keys():
+            previous_fields = {}
             cursor.execute(
                 '''
-                    INSERT INTO "event_field_lock"
-                    (id, user_id, event_id, field_name)
-                    SELECT %s, %s, %s, %s
-                    WHERE NOT EXISTS (
-                        SELECT 1
-                        FROM "event_field_lock"
-                        WHERE event_id = %s AND field_name = %s
-                    )
+                    SELECT *
+                    FROM "event"
+                    WHERE id = %s
                 ''',
-                (
-                    str(uuid.uuid1()),
-                    user_id, 
-                    event_id, 
-                    field_name, 
-                    event_id, 
-                    field_name
-                )
+                (event_id,)
             )
 
+            previous_fields = cursor.fetchall()
 
-        sqlquery = '''UPDATE "event" SET '''
-        sqlquery += ', '.join([f'{key} = %({key})s' for key in event.keys()])
-        sqlquery += '''
-            WHERE id = %(id)s
-            AND user_id = %(user_id)s
-        '''
+            previous_fields = Event(*previous_fields[0]).to_dict()
 
-        cursor.execute(sqlquery, {**event, 'id': event_id, 'user_id': user_id})
+            for field_name in event.keys():
+                cursor.execute(
+                    '''
+                        INSERT INTO "event_field_lock"
+                        (id, user_id, event_id, field_name)
+                        SELECT %s, %s, %s, %s
+                        WHERE NOT EXISTS (
+                            SELECT 1
+                            FROM "event_field_lock"
+                            WHERE event_id = %s AND field_name = %s
+                        )
+                    ''',
+                    (
+                        str(uuid.uuid1()),
+                        user_id, 
+                        event_id, 
+                        field_name, 
+                        event_id, 
+                        field_name
+                    )
+                )
 
-        db.commit()
-        cursor.close()
 
-        data = load_user_info(db)
-        events = select_events(db, data, user_id)
+            sqlquery = '''UPDATE "event" SET '''
+            sqlquery += ', '.join([f'{key} = %({key})s' for key in event.keys()])
+            sqlquery += '''
+                WHERE id = %(id)s
+                AND user_id = %(user_id)s
+            '''
 
-        
+            cursor.execute(sqlquery, {**event, 'id': event_id, 'user_id': user_id})
 
-        return calculate_totals(events, data['account']['checking_balance'])
+            db.commit()
+            cursor.close()
+
+            data = load_user_info(db)
+            events = select_events(db, data, user_id)      
+
+            return calculate_totals(events, data['account']['checking_balance'])
     except Exception as e:
         print(e)
         return  []
+    finally:
+        if cursor:
+            cursor.close()
+        close_db()
+
 
 
 
@@ -942,6 +951,7 @@ def update_account():
         session[user_id + ':selected_year'] = year
 
     except Exception as e:
+        print(e)
         return jsonify({ 'status': f'error {e}' })
     else:
         db = None
@@ -981,9 +991,10 @@ def get_events():
             events = select_events(db, data, user_id)
             (months, events) = build_months(data, events)
 
-            return jsonify({ 'months': months, 'events': events }), 200
+            return jsonify({ 'months': months }), 200
     except Exception as e:
-        return jsonify({ 'error': f'{e}', 'months': [], 'events': [] }), 500
+        print(e)
+        return jsonify({ 'error': f'{e}', 'months': [] }), 500
     finally:
         if cursor:
             cursor.close()
@@ -1030,12 +1041,12 @@ def add_event(event_date):
             close_db()
 
 
-
 @api.route('/api/save-this-and-future-events/<event_id>', methods=('PUT',))
 @login_required
 def save_tafe(event_id):
     user_id = g.user[0]
     cursor = None
+    events = save_event(request)
     with get_db() as db:
         try:
             data = load_user_info(db, user_id)
@@ -1044,7 +1055,7 @@ def save_tafe(event_id):
             event = request.get_json()
             event_id = event.pop('id', None)
 
-            events = save_event(db, event_id, request)
+            
             if not len(events):
                 return jsonify({ 'status': 'error', 'message': 'Error saving the event in the first place...'})
 
@@ -1094,18 +1105,7 @@ def save_tafe(event_id):
                 )
             )
 
-            events = select_events(db, data, user_id)
-
-            calculate_totals(events, data['account']['checking_balance'])
-
-            html = RenderApp(db, True)
-
-            print('done')
-
-            return jsonify({
-                'status': 'success',
-                'html': html
-            })
+            return get_events()
 
 
         except Exception as e:
@@ -1115,6 +1115,26 @@ def save_tafe(event_id):
             if cursor:
                 cursor.close()
             close_db()
+
+@api.route('/api/save-this-event/<event_id>', methods=('PUT',))
+@login_required
+def save_this_event(event_id):
+    try:
+        events = save_event(request)
+        if len(events):
+            print('saved event... now getting events')
+            close_db()
+            return get_events()
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': f'Didn\'t save this event {event_id}'
+            })
+    except:
+        return jsonify({
+            'status': 'error',
+            'message': f'Didn\'t save this event {event_id}'
+        })
 
 @api.route('/api/save-checking-balance/<float:checking_balance>', methods=('POST',))
 @login_required

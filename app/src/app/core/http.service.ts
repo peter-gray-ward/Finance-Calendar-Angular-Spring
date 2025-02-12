@@ -73,4 +73,8 @@ export class HttpService {
     );
   }
 
+  saveThisEvent(event: Event): Observable<Event> {
+    return this.http.put<Event>("/api/save-this-event/" + event.id, event, { headers: this.headers });
+  }
+
 }
