@@ -28,13 +28,16 @@ export class LoginComponent {
   ) {}
 
   login() {
-    this.http.login(this.user).subscribe(authorization => {
-      switch (authorization.authenticated) {
-        case true:
-          this.router.navigate(['/']);
+    this.http.login(this.user).subscribe(res => {
+      switch (res.status) {
+        case "success":
+          this.message = `${this.user.name} successfully logged-in!`
+          setTimeout(() => {
+            this.router.navigate(['/']);
+          }, 500)
           break;
         default:
-          this.error = authorization.error;
+          this.error = res.message
           break;
       }
     })
@@ -43,8 +46,9 @@ export class LoginComponent {
   register() {
     console.log(this.user)
     this.http.register(this.user).subscribe(res => {
-      if (res.error) {
-        this.error = res.error; 
+      console.log(res)
+      if (res.status !== 'success') {
+        this.error = res.message; 
       } else {
         this.message = `${this.user.name} successfully registered!`
       }

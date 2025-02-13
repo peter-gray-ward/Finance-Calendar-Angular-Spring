@@ -56,18 +56,20 @@ export class AppComponent {
 
   checkAuthentication() {
     if (!this.authenticated) {
-      this.http.checkAuth().subscribe(isAuthenticated => {
-        if (isAuthenticated) {
+      console.log("...")
+      this.http.checkAuth().subscribe(res => {
+        console.log(res)
+        if (res) {
           this.authenticated = true;
           this.data.fetchSyncData().subscribe(sync => {
             this.sync = sync;
             this.data.fetchEvents().subscribe();
           });
         } else {
-          alert('navigating to auth login')
           this.router.navigate(['/auth/login']);
         }
       });
+
     }
   }
 

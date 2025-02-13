@@ -17,40 +17,33 @@ export class HttpService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  checkAuth(): Observable<boolean> {
-    return this.http.get<{ authenticated: boolean }>(`/auth/check-auth`, { withCredentials: true })
-      .pipe(
-        map(response => {
-          console.log('checking auth', response)
-          return response.authenticated
-        }),
-        catchError(() => of(false)) // If an error occurs, return false
-      );
+  checkAuth(): Observable<any> {
+    return this.http.get<any>(`/api/user/check-auth`, { withCredentials: true });
   }
 
   login(user: User): Observable<any> {
-    return this.http.post<User>("/auth/login", user, { 
+    return this.http.post<User>("/api/user/login", user, { 
       headers: this.headers,
       withCredentials: true
     });
   }
 
   logout(): Observable<any> {
-    return this.http.get('/auth/logout', { withCredentials: true }).pipe(
+    return this.http.get('/api/user/logout', { withCredentials: true }).pipe(
       map(() => {
         document.location.reload(); // 🔹 Hard refresh to clear everything
-        this.router.navigate(['/auth/login']);  // Redirect to login page
+        this.router.navigate(['/api/user/login']);  // Redirect to login page
       })
     );
   }
 
 
   register(user: User): Observable<any> {
-    return this.http.post<User>("/auth/register", user, { headers: this.headers });
+    return this.http.post<User>("/api/user/register", user, { headers: this.headers });
   }
 
   sync(): Observable<Sync> {
-    return this.http.get<Sync>("/sync", { headers: this.headers });
+    return this.http.get<Sync>("/api/user/sync", { headers: this.headers });
   }
 
   addExpense(): Observable<any> {
@@ -70,11 +63,7 @@ export class HttpService {
   }
 
   updateMonthYear(which: string): Observable<any[]> {
-    console.log("http.updateMonthYear")
-    return this.http.post<any[]>("/api/update-month-year",
-      { which },
-      { headers: this.headers }
-    );
+    return this.http.post<any[]>("/api/update-month-year", { which }, { headers: this.headers });
   }
 
   saveThisEvent(event: Event): Observable<Event> {
