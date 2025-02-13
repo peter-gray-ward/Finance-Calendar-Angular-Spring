@@ -13,7 +13,7 @@ import { DataService } from '../../core/data.service';
 })
 export class ExpenseComponent {
   @Input() expense!: Expense;
-  @Input() FREQUENCIES!: string[];
+  @Input() frequencies!: string[];
   // @Output() expenseChange = new EventEmitter<Expense>();
 
   constructor(private data: DataService) {}

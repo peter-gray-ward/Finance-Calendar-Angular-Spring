@@ -15,7 +15,7 @@ export class DayComponent {
   @Input() day: any;
   @Input() month!: number;
   @Input() year!: number;
-  @Input() checking_balance: number = 0;
+  @Input() checkingBalance: number = 0;
 
   saveCheckingBalanceTimeout: number = 0;
 
@@ -35,8 +35,8 @@ export class DayComponent {
   }
 
   saveCheckingBalance() {
-      console.log("Saving:", this.checking_balance);
-      this.data.saveCheckingBalance(this.checking_balance);
+      console.log("Saving:", this.checkingBalance);
+      this.data.saveCheckingBalance(this.checkingBalance);
   }
 
 }

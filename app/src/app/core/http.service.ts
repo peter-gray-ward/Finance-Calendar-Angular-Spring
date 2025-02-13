@@ -47,35 +47,35 @@ export class HttpService {
   }
 
   addExpense(): Observable<any> {
-    return this.http.post<any>("/api/add-expense", { headers: this.headers });
+    return this.http.post<any>("/api/expense/add-expense", { headers: this.headers });
   }
 
   updateExpense(expense: Expense): Observable<Expense> {
-    return this.http.post<Expense>("/api/update-expense", expense, { headers: this.headers });
+    return this.http.post<Expense>("/api/expense/update-expense", expense, { headers: this.headers });
   }
 
   deleteExpense(expense: Expense): Observable<Expense> {
-    return this.http.delete<Expense>("/api/delete-expense/" + expense.id, { headers: this.headers });
+    return this.http.delete<Expense>("/api/expense/delete-expense/" + expense.id, { headers: this.headers });
   }
 
-  getEvents(): Observable<any[]> {
-    return this.http.get<any[]>("/api/get-events", { headers: this.headers });
+  getCalendar(): Observable<any[]> {
+    return this.http.get<any[]>("/api/event/calendar", { headers: this.headers });
   }
 
   updateMonthYear(which: string): Observable<any[]> {
-    return this.http.post<any[]>("/api/update-month-year", { which }, { headers: this.headers });
+    return this.http.post<any[]>("/api/user/update-month-year", { which }, { headers: this.headers });
   }
 
   saveThisEvent(event: Event): Observable<Event> {
-    return this.http.put<Event>("/api/save-this-event/" + event.id, event, { headers: this.headers });
+    return this.http.put<Event>("/api/event/save-this-event/" + event.id, event, { headers: this.headers });
   }
 
   saveCheckingBalance(balance: number): Observable<any> {
-    return this.http.post<number>(`/api/save-checking-balance/${balance}.0`, { headers: this.headers });
+    return this.http.post<number>(`/api/user/save-checking-balance/${balance}`, { headers: this.headers });
   }
 
   refreshCalendar(): Observable<any> {
-    return this.http.get<any>("/api/refresh-calendar", { headers: this.headers });
+    return this.http.get<any>("/api/event/refresh-calendar", { headers: this.headers });
   }
 
 }

@@ -39,7 +39,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     public static final String COOKIE_NAME = "fcToken";
     private static final String AUTH_ERROR_MESSAGE = "User authentication failed.";
 
-    @Value("${jwt.secret}") // 🔥 Load key from properties/env
+    @Value("${jwt.secret}")
     private String secretKey;
 
     private Key getSigningKey() {

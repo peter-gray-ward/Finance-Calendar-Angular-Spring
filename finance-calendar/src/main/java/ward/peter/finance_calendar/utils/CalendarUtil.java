@@ -62,6 +62,7 @@ public class CalendarUtil {
             day.setTodayOrLater(isAfterToday);
 
             if (isToday) {
+                System.out.println("found today");
                 day.setTotal(user.getCheckingBalance());
             } else if (!day.hasEvents) {
                 day.setTotal(0.0);

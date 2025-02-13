@@ -11,11 +11,22 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import ward.peter.finance_calendar.repositories.UserRepository;
+import ward.peter.finance_calendar.models.User;
+
 @Component
 public class AuthUtil {
 
-    @Value("${jwt.secret}") // 🔥 Load key from properties/env
+    private UserRepository userRepository;
+
+    @Value("${jwt.secret}")
     private String secretKey;
+
+    public AuthUtil(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
@@ -56,5 +67,14 @@ public class AuthUtil {
                 .flatMap(cookies -> Arrays.stream(cookies)
                         .filter(cookie -> name.equals(cookie.getName()))
                         .findFirst());
+    }
+
+    public User getRequestUser(HttpServletRequest request) {
+        Optional<Cookie> fcTokenCookie = getCookie(request, "fcToken");
+        String fcToken = fcTokenCookie.get().getValue();
+        Claims claims = validateToken(fcToken);
+        String username = claims.getSubject();
+        User user = userRepository.findByName(username);
+        return user;
     }
 }

@@ -11,9 +11,9 @@
       <div class="total">
         @if (day.today) {
             <input type="number"
-                   value="{{ checking_balance }}" 
+                   value="{{ checkingBalance }}" 
                    id="checking-balance"
-                   [(ngModel)]="checking_balance"
+                   [(ngModel)]="checkingBalance"
                    (ngModelChange)="updateCheckingBalance()" />
         } @else {
           {{ day.total }}

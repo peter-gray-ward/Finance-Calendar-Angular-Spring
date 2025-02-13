@@ -1,7 +1,7 @@
 <div *ngIf="sync" id="main" class="authenticated" (click)="blurEvent($event)">
 	<div id="calendar-month-header" [attr.data-year]="sync.account.year" [attr.data-month]="sync.account.month">
         <div>
-          <h1 id="month-name">{{ sync.MONTHS[sync.account.month - 1] }}</h1>&nbsp;&nbsp;
+          <h1 id="month-name">{{ sync.months[sync.account.month - 1] }}</h1>&nbsp;&nbsp;
           <h1 id="year-name" style="font-weight:100">{{ sync.account.year }}</h1>
         </div>
 		<div id="data" class="search">

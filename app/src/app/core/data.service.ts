@@ -31,7 +31,7 @@ export class DataService {
   }
 
   fetchEvents(): Observable<any> {
-    return this.http.getEvents().pipe(
+    return this.http.getCalendar().pipe(
       tap(events => this.eventsSubject.next(events))
     );
   }
