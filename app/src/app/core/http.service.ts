@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { Sync } from '../models/Sync';
 import { Expense } from '../models/Expense';
-import { User } from '../models/User';
+import { User, Authentication } from '../models/User';
 import { Event } from '../models/Event';
 
 @Injectable({
@@ -21,8 +21,8 @@ export class HttpService {
     return this.http.get<any>(`/api/user/check-auth`, { withCredentials: true });
   }
 
-  login(user: User): Observable<any> {
-    return this.http.post<User>("/api/user/login", user, { 
+  login(user: Authentication): Observable<any> {
+    return this.http.post<Authentication>("/api/user/login", user, { 
       headers: this.headers,
       withCredentials: true
     });
@@ -37,9 +37,8 @@ export class HttpService {
     );
   }
 
-
-  register(user: User): Observable<any> {
-    return this.http.post<User>("/api/user/register", user, { headers: this.headers });
+  register(user: Authentication): Observable<any> {
+    return this.http.post<Authentication>("/api/user/register", user, { headers: this.headers });
   }
 
   sync(): Observable<Sync> {
@@ -63,7 +62,7 @@ export class HttpService {
   }
 
   updateMonthYear(which: string): Observable<any[]> {
-    return this.http.post<any[]>("/api/user/update-month-year", { which }, { headers: this.headers });
+    return this.http.get<any[]>("/api/user/update-month-year/" + which, { headers: this.headers });
   }
 
   saveThisEvent(event: Event): Observable<Event> {

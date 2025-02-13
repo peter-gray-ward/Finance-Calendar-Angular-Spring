@@ -5,6 +5,7 @@ import ward.peter.finance_calendar.models.User;
 import ward.peter.finance_calendar.models.Event;
 import ward.peter.finance_calendar.dtos.Calendar;
 import ward.peter.finance_calendar.utils.CalendarUtil;
+import ward.peter.finance_calendar.utils.SessionUtil;
 
 import org.springframework.stereotype.Service;
 
@@ -17,28 +18,25 @@ import java.time.LocalDate;
 public class EventService {
 	private EventRepository eventRepository;
 	private CalendarUtil calendarUtil;
+	private SessionUtil sessionUtil;
 
-	public EventService(EventRepository eventRepository, CalendarUtil calendarUtil) {
+	public EventService(EventRepository eventRepository, CalendarUtil calendarUtil, SessionUtil sessionUtil) {
 		this.eventRepository = eventRepository;
 		this.calendarUtil = calendarUtil;
+		this.sessionUtil = sessionUtil;
 	}
 
 	public Calendar getCalendar(User user, HttpSession session) {
 		String userId = user.getId().toString();
-		Integer month = (Integer) session.getAttribute(userId + ":month");
-		Integer year = (Integer) session.getAttribute(userId + ":year");
-		if (month == null || year == null) {
-			LocalDate today = LocalDate.now();
-			month = today.getMonthValue();
-			year = today.getYear();
-			session.setAttribute(userId + ":month", month);
-			session.setAttribute(userId + ":year", year);
-		}
+		Integer month = sessionUtil.getMonth(userId, session);
+		Integer year = sessionUtil.getYear(userId, session);
 		List<Event> events = eventRepository.findAllByUserIdInRange(user.getId(), month, year);
 		events = calendarUtil.calculateTotals(user, events);
 		return new Calendar()
 			.builder()
 			.months(calendarUtil.getWeeks(user, month, year, events))
+			.month(month)
+			.year(year)
 			.build();
 	}
 }

@@ -18,6 +18,7 @@ export class MainComponent {
   constructor(private data: DataService, private router: Router) {}
   ngOnInit() {
     this.data.sync$.subscribe(sync => {
+      console.log(sync)
       this.sync = sync;
     });
     this.data.account$.subscribe(account => {

@@ -38,16 +38,16 @@ export class DataService {
 
   updateMonthYear(which: string): Observable<any> {
     return this.http.updateMonthYear(which).pipe(
-      tap((events: any) => {
+      tap((calendar: any) => {
         this.syncSubject.next({
           ...this.syncSubject.value,
           account: {
             ...this.syncSubject.value.account,
-            year: events.year,
-            month: events.month
+            year: calendar.year,
+            month: calendar.month
           }
         })
-        return this.eventsSubject.next(events)
+        return this.eventsSubject.next(calendar)
       })
     );
   }
@@ -162,7 +162,7 @@ export class DataService {
           ...this.syncSubject.value,
           account: {
             ...this.syncSubject.value.account,
-            checking_balance: balance
+            checkingBalance: balance
           }
         });
         return this.eventsSubject.next({
@@ -184,4 +184,5 @@ export class DataService {
       })
     ).subscribe();
   }
+
 }

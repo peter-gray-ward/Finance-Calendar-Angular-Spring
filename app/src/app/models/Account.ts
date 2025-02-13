@@ -1,11 +1,10 @@
 import { Debt } from './Debt';
 import { Expense } from './Expense';
+import { User } from './User';
 
 export interface Account {
-	checking_balance: number;
-	debts: Debt[];
 	expenses: Expense[];
-	id: string;
+	user: User;
 	month: number;
 	name: string;
 	year: number;

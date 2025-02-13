@@ -23,10 +23,8 @@ export class CalendarComponent {
   ngOnInit() {
     this.data.sync$.subscribe(sync => {
       this.sync = sync;
-      console.log('sync in calendar', this.sync)
     });
     this.data.events$.subscribe(res => {
-      console.log("events$ subscription change", res)
       this.events = res.events;
       this.months = res.months;
     });
@@ -48,7 +46,6 @@ export class CalendarComponent {
       var weekHeaderHeight = +getComputedStyle(document.getElementById('calendar-week-header')!).height.split('px')[0];
 
       if (fomWeek) {
-        console.log(0, fomWeek.offsetTop - headerHeight - weekHeaderHeight)
         this.calendarContainer.nativeElement.scrollTo(0, fomWeek.offsetTop - headerHeight - weekHeaderHeight);
       }
     }

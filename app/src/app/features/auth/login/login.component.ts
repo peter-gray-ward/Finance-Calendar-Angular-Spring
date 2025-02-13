@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { User } from '../../../models/User';
+import { User, Authentication } from '../../../models/User';
 import { Sync } from '../../../models/Sync';
 import { HttpService } from '../../../core/http.service';
 import { DataService } from '../../../core/data.service';
@@ -14,7 +14,7 @@ import { DataService } from '../../../core/data.service';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-  user: User = {
+  user: Authentication = {
     name: '',
     password: ''
   };

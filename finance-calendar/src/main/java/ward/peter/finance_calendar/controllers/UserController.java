@@ -58,4 +58,11 @@ public class UserController {
 		HttpSession session = request.getSession(true);
 		return ResponseEntity.ok(this.userService.saveCheckingBalance(user, balance, session));
 	}
+
+	@GetMapping("/update-month-year/{which}")
+	public ResponseEntity<Calendar> updateMonthYear(HttpServletRequest request, @PathVariable String which) {
+		User user = authUtil.getRequestUser(request);
+		HttpSession session = request.getSession(true);
+		return ResponseEntity.ok(this.userService.updateMonthYear(user, which, session));
+	}
 }

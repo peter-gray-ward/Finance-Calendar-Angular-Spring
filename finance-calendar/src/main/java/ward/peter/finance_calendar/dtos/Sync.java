@@ -40,11 +40,11 @@ final class Api {
 }
 
 final class Frequency {
-    public String DAILY = "daily";
-    public String WEEKLY = "weekly";
-    public String BIWEEKLY = "biweekly";
-    public String MONTHLY = "monthly";
-    public String YEARLY = "yearly";
+    public static String DAILY = "daily";
+    public static String WEEKLY = "weekly";
+    public static String BIWEEKLY = "biweekly";
+    public static String MONTHLY = "monthly";
+    public static String YEARLY = "yearly";
 }
 
 @Getter
@@ -55,7 +55,12 @@ final class Frequency {
 public class Sync {
     private Page page = new Page();
     private Api api = new Api();
-    private Frequency frequency = new Frequency();
+    private String[] frequencies = new String[]{
+        Frequency.DAILY,
+        Frequency.WEEKLY,
+        Frequency.BIWEEKLY,
+        Frequency.MONTHLY
+    };
     private final String[] dow = new String[]{
         "Monday","Tuesday",
         "Wednesday","Thursday","Friday",

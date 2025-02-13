@@ -19,8 +19,6 @@ export class ExpenseComponent {
   constructor(private data: DataService) {}
 
   formatDate(date: Date | string | null): string {
-    console.log('formatting expense date', date, this.expense)
-
     if (!date) return '';
 
     const d = new Date(date);
@@ -31,11 +29,6 @@ export class ExpenseComponent {
 
     this.expense.startdate = this.formatDate(this.expense.startdate || new Date());
     this.expense.recurrenceenddate = this.formatDate(this.expense.recurrenceenddate || new Date());
-
-    // this.expenseChange.emit({
-    //   ...this.expense,
-    //   [field]: value
-    // });
     this.data.updateExpense({
       ...this.expense,
       [field]: value

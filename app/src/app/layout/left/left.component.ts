@@ -21,7 +21,6 @@ export class LeftComponent {
 
   ngOnInit() {
     this.data.sync$.subscribe(sync => {
-      console.log('left sync', sync)
       this.sync = sync;
     });
   }

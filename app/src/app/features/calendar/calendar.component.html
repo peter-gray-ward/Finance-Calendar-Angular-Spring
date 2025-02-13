@@ -3,7 +3,7 @@
 		<div class="week">
 			@for (day of week; track $index; let j = $index) {
 				@if (day.today) {
-					<app-day [day]="day" [checking_balance]="sync.account.checking_balance" [month]="sync.account.month" [year]="sync.account.year"></app-day>
+					<app-day [day]="day" [checkingBalance]="sync.account.user.checkingBalance" [month]="sync.account.month" [year]="sync.account.year"></app-day>
 				} @else {
 					<app-day [day]="day" [month]="sync.account.month" [year]="sync.account.year"></app-day>
 				}

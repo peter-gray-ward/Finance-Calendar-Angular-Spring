@@ -47,10 +47,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
     
     private static final String[] EXCLUDED_PATHS = {
-        "/login",
-        "/register",
-        "/actuator",
-        "/authentication",
+        "/api/user/login",
+        "/api/user/register",
         "/static"
     };
 

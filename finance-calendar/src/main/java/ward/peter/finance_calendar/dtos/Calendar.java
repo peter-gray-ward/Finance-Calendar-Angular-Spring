@@ -11,4 +11,6 @@ import java.util.List;
 @Builder
 public class Calendar {
 	private List<List<Day>> months;
+	private int month;
+	private int year;
 }
