@@ -32,13 +32,12 @@ public class ExpenseController {
 	}
 
 	@PostMapping
-	public ResponseEntity<Expense> addExpense(HttpServletRequest request) {
-		User user = authUtil.getRequestUser(request);
+	public ResponseEntity<Expense> addExpense(User user) {
 		return ResponseEntity.ok(expenseService.addExpense(user));
 	}
 
 	@PutMapping
-	public ResponseEntity<Expense> updateExpense(HttpServletRequest request, @RequestBody Expense expense) {
+	public ResponseEntity<Expense> updateExpense(@RequestBody Expense expense) {
 		return ResponseEntity.ok(expenseService.updateExpense(expense));
 	}
 

@@ -66,7 +66,7 @@ export class HttpService {
   }
 
   saveThisEvent(event: Event): Observable<Event> {
-    return this.http.put<Event>("/api/event/save-this-event/" + event.id, event, { headers: this.headers });
+    return this.http.put<Event>("/api/event/save-this-event", event, { headers: this.headers });
   }
 
   saveCheckingBalance(balance: number): Observable<any> {

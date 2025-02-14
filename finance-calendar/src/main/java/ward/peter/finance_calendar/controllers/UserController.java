@@ -53,16 +53,12 @@ public class UserController {
 	}
 
 	@PostMapping("/save-checking-balance/{balance}")
-	public ResponseEntity<Calendar> saveCheckingBalance(HttpServletRequest request, @PathVariable Double balance) {
-		User user = authUtil.getRequestUser(request);
-		HttpSession session = request.getSession(true);
+	public ResponseEntity<Calendar> saveCheckingBalance(User user, HttpSession session, @PathVariable Double balance) {
 		return ResponseEntity.ok(this.userService.saveCheckingBalance(user, balance, session));
 	}
 
 	@GetMapping("/update-month-year/{which}")
-	public ResponseEntity<Calendar> updateMonthYear(HttpServletRequest request, @PathVariable String which) {
-		User user = authUtil.getRequestUser(request);
-		HttpSession session = request.getSession(true);
+	public ResponseEntity<Calendar> updateMonthYear(User user, HttpSession session, @PathVariable String which) {
 		return ResponseEntity.ok(this.userService.updateMonthYear(user, which, session));
 	}
 }

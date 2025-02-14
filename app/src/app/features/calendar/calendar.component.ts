@@ -30,8 +30,7 @@ export class CalendarComponent {
 
   ngAfterViewChecked() {
     var fomList = document.querySelectorAll('.first-of-month');
-    console.log(document, fomList);
-
+    
     if (fomList.length > 0) {
       var fom = fomList.length == 3 ? fomList[1] : fomList[0];
       var fomWeek = fom as HTMLElement;

@@ -39,4 +39,9 @@ public class EventService {
 			.year(year)
 			.build();
 	}
+
+	public Calendar saveThisEvent(Event event, User user, HttpSession session) {
+		eventRepository.save(event);
+		return getCalendar(user, session);
+	}
 }

@@ -54,6 +54,7 @@ export class EventComponent implements OnInit {
   }
 
   saveThisEvent() {
+    console.log(this.event)
     this.data.saveThisEvent(this.event).subscribe();
   }
 }
