@@ -14,7 +14,6 @@ import lombok.*;
 @Builder
 public class Expense {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String name;

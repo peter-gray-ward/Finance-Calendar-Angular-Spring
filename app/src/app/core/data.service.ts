@@ -84,12 +84,10 @@ export class DataService {
 
   addExpense(): void {
     this.http.addExpense().pipe(
-      tap(res => {
-        console.log("data service addExpense", res)
+      tap((expense: Expense) => {
         const currentSync = this.syncSubject.value;
         if (!currentSync) return;
 
-        const expense = res.expense;
         const updatedExpenses = [...currentSync.account.expenses, expense];
 
         console.log('added expense', updatedExpenses)

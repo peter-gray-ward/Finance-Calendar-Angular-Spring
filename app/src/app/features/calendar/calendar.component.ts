@@ -14,7 +14,6 @@ import { DayComponent } from '../day/day.component';
 })
 export class CalendarComponent {
   sync?: Sync;
-  events?: Event[];
   months?: any[];
   @ViewChild('calendarContainer') calendarContainer!: ElementRef;
 
@@ -25,7 +24,6 @@ export class CalendarComponent {
       this.sync = sync;
     });
     this.data.events$.subscribe(res => {
-      this.events = res.events;
       this.months = res.months;
     });
   }

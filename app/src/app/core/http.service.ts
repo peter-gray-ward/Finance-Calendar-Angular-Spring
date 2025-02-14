@@ -46,15 +46,15 @@ export class HttpService {
   }
 
   addExpense(): Observable<any> {
-    return this.http.post<any>("/api/expense/add-expense", { headers: this.headers });
+    return this.http.post<any>("/api/expense", { headers: this.headers });
   }
 
   updateExpense(expense: Expense): Observable<Expense> {
-    return this.http.post<Expense>("/api/expense/update-expense", expense, { headers: this.headers });
+    return this.http.put<Expense>("/api/expense", expense, { headers: this.headers });
   }
 
-  deleteExpense(expense: Expense): Observable<Expense> {
-    return this.http.delete<Expense>("/api/expense/delete-expense/" + expense.id, { headers: this.headers });
+  deleteExpense(expense: Expense): Observable<boolean> {
+    return this.http.delete<boolean>("/api/expense/" + expense.id, { headers: this.headers });
   }
 
   getCalendar(): Observable<any[]> {

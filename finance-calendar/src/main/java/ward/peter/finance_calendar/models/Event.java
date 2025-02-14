@@ -13,7 +13,6 @@ import lombok.*;
 @Builder
 public class Event {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private UUID recurrenceid;
