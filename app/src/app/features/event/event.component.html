@@ -1,5 +1,5 @@
 <div class="modal" 
-    [style.left.px]="activity.left" [style.top.px]="activity.top"
+    [style.left.px]="activity().left" [style.top.px]="activity().top"
     (mousedown)="mousedown($event)" (mousemove)="mousemove($event)" (mouseup)="mouseup($event)">    
     <div *ngIf="event" class='id modal-content' [attr.data-name]="event" id="event-edit" >
         <div id="modal-event">

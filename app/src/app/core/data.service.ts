@@ -1,6 +1,4 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, map, distinctUntilChanged } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Injectable, signal } from '@angular/core';
 import { HttpService } from './http.service';
 import { Expense } from '../models/Expense';
 import { Account } from '../models/Account';
@@ -11,176 +9,145 @@ import { Event } from '../models/Event';
   providedIn: 'root'
 })
 export class DataService {
-  private syncSubject = new BehaviorSubject<any | null>(null);
-  private eventsSubject = new BehaviorSubject<any | null>(null);
-  public sync$ = this.syncSubject.asObservable();
-  public events$ = this.eventsSubject.asObservable();
-  public account$ = this.sync$.pipe(
-    map((sync: Sync) => sync?.account),
-    distinctUntilChanged() 
-  );
-  private activitySubject = new BehaviorSubject<any | null>({});
-  public activity$ = this.activitySubject.asObservable();
+  sync = signal<Sync | null>(null);
+  events = signal<any | null>(null);
+  activity = signal<any>({});
 
   constructor(private http: HttpService) {}
 
-  fetchSyncData(): Observable<any> {
-    return this.http.sync().pipe(
-      tap(syncData => this.syncSubject.next(syncData)) // Store sync data
-    );
+  fetchSyncData() {
+    this.http.sync().subscribe(syncData => this.sync.set(syncData));
   }
 
-  fetchEvents(): Observable<any> {
-    return this.http.getCalendar().pipe(
-      tap(events => this.eventsSubject.next(events))
-    );
+  fetchEvents() {
+    this.http.getCalendar().subscribe(events => this.events.set(events));
   }
 
-  updateMonthYear(which: string): Observable<any> {
-    return this.http.updateMonthYear(which).pipe(
-      tap((calendar: any) => {
-        this.syncSubject.next({
-          ...this.syncSubject.value,
-          account: {
-            ...this.syncSubject.value.account,
-            year: calendar.year,
-            month: calendar.month
-          }
-        })
-        return this.eventsSubject.next(calendar)
-      })
-    );
-  }
-
-  fetchEvent(eventId: string): Observable<Event> {
-    const events = this.eventsSubject.value;
-    if (events) {
-      for (var week of events.months) {
-        for (var day of week) {
-          if (day.events) {
-            for (var event of day.events) {
-              if (event.id == eventId) {
-                return of(event);
+  updateMonthYear(which: string) {
+    this.http.updateMonthYear(which).subscribe((calendar: any) => {
+      this.sync.update((sync) =>
+        sync
+          ? {
+              ...sync,
+              account: {
+                ...sync.account,
+                year: calendar.year,
+                month: calendar.month
               }
             }
+          : null
+      );
+      this.events.set(calendar);
+    });
+  }
+
+  fetchEvent(eventId: string): Event {
+    const events = this.events();
+    if (events) {
+      for (const week of events.months) {
+        for (const day of week) {
+          if (day.events) {
+            const foundEvent = day.events.find((event: Event) => event.id === eventId);
+            if (foundEvent) return foundEvent;
           }
         }
       }
     }
-    return of({} as Event);
+    return {} as Event;
   }
 
-  saveThisEvent(event: Event): Observable<any> {
-    return this.http.saveThisEvent(event).pipe(
-      tap((res: any) => {
-        console.log("saved this event", res);
-        return this.eventsSubject.next({
-          ...this.eventsSubject.value,
-          months: res.months
-        });
-      })
-    );
+  saveThisEvent(event: Event) {
+    this.http.saveThisEvent(event).subscribe((res: any) => {
+      console.log('saved this event', res);
+      this.events.update(events => (events ? { ...events, months: res.months } : null));
+    });
   }
 
-  addExpense(): void {
-    this.http.addExpense().pipe(
-      tap((expense: Expense) => {
-        const currentSync = this.syncSubject.value;
-        if (!currentSync) return;
+  addExpense() {
+    this.http.addExpense().subscribe((expense: Expense) => {
+      this.sync.update((sync) =>
+        sync
+          ? {
+              ...sync,
+              account: {
+                ...sync.account,
+                expenses: [...sync.account.expenses, expense]
+              }
+            }
+          : null
+      );
+    });
+  }
 
-        const updatedExpenses = [...currentSync.account.expenses, expense];
-
-        console.log('added expense', updatedExpenses)
-
-        this.syncSubject.next({ 
-          ...currentSync,
-          account: {
-            ...currentSync.account,
-            expenses: updatedExpenses 
+  updateExpense(expense: Expense) {
+    this.sync.update((sync) =>
+      sync
+        ? {
+            ...sync,
+            account: {
+              ...sync.account,
+              expenses: sync.account.expenses.map((e) => (e.id === expense.id ? expense : e))
+            }
           }
-        });
-      })
-    ).subscribe();
-  }
-
-  updateExpense(expense: Expense): void {
-    const currentSync = this.syncSubject.value;
-    if (!currentSync) return;
-
-    const updatedExpenses = currentSync.account.expenses.map((e: Expense) => {
-      return e.id == expense.id ? expense : e
-    });
-
-    // emit update
-    this.syncSubject.next({
-      ...currentSync,
-      expenses: updatedExpenses
-    });
+        : null
+    );
 
     this.http.updateExpense(expense).subscribe();
   }
 
-  deleteExpense(expense: Expense): void {
-    this.http.deleteExpense(expense).subscribe({
-      next: response => {
-        console.log('deleted expense')
-        this.syncSubject.next({
-          ...this.syncSubject.value,
-          account: {
-            ...this.syncSubject.value.account,
-            expenses: this.syncSubject.value.account.expenses.filter((e: Expense) => e.id !== expense.id)
-          }
-        });
-      },
-      error: err => {
-        console.log('error deleting expense', err)
-      }
-    })
-  }
-
-  getCurrentSyncData(): any | null {
-    return this.syncSubject.value;
-  }
-
-  getAccount(): Account {
-    return this.syncSubject.value.account;
-  }
-
-  setActivity(obj: any) {
-    this.activitySubject.next({
-      ...this.activitySubject,
-      ...obj
+  deleteExpense(expense: Expense) {
+    this.http.deleteExpense(expense).subscribe(() => {
+      console.log('deleted expense');
+      this.sync.update((sync) =>
+        sync
+          ? {
+              ...sync,
+              account: {
+                ...sync.account,
+                expenses: sync.account.expenses.filter((e) => e.id !== expense.id)
+              }
+            }
+          : null
+      );
     });
   }
 
+  getCurrentSyncData(): Sync | null {
+    return this.sync();
+  }
+
+  getAccount(): Account | null {
+    return this.sync()?.account ?? null;
+  }
+
+  setActivity(obj: any) {
+    this.activity.update((current) => ({
+      ...current,
+      ...obj
+    }));
+  }
+
   saveCheckingBalance(balance: number) {
-    this.http.saveCheckingBalance(balance).pipe(
-      tap((res: any) => {
-        this.syncSubject.next({
-          ...this.syncSubject.value,
-          account: {
-            ...this.syncSubject.value.account,
-            checkingBalance: balance
-          }
-        });
-        return this.eventsSubject.next({
-          ...this.eventsSubject.value,
-          months: res.months
-        });
-      })
-    ).subscribe();
+    this.http.saveCheckingBalance(balance).subscribe((res: any) => {
+      this.sync.update((sync) =>
+        sync
+          ? {
+              ...sync,
+              account: {
+                ...sync.account,
+                checkingBalance: balance
+              }
+            }
+          : null
+      );
+      this.events.update(events => (events ? { ...events, months: res.months } : null));
+    });
   }
 
   refreshCalendar() {
-    this.http.refreshCalendar().pipe(
-      tap((res: any) => {
-        console.log("saved this event", res);
-        return this.eventsSubject.next({
-          ...this.eventsSubject.value,
-          months: res.months
-        });
-      })
-    ).subscribe();
+    this.http.refreshCalendar().subscribe((res: any) => {
+      console.log('refreshed calendar', res);
+      this.events.update(events => (events ? { ...events, months: res.months } : null));
+    });
   }
-
 }

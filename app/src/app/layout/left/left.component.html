@@ -1,4 +1,4 @@
-<header *ngIf="sync" id="left" style="background:url(/wallpaper01.webp)">
+<header id="left" style="background:url(/wallpaper01.webp)">
 	<button (click)="logout()">logout</button>
 	<h3>
 		<div>Regular Expenses</div>
@@ -11,8 +11,8 @@
 			<div class="th">Start Date</div>
 			<div class="th">End Date</div>
 		</div>
-		@for (expense of sync.account.expenses; track expense.id) {
-			<expense [expense]="expense" [frequencies]="sync.frequencies"></expense>
+		@for (expense of sync().account.expenses; track expense.id) {
+			<expense [expense]="expense" [frequencies]="sync().frequencies"></expense>
 		}
 	</div>
 	<div class="tr button-row-right">

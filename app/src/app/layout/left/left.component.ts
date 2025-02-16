@@ -15,14 +15,13 @@ import { DataService } from '../../core/data.service';
 })
 export class LeftComponent {
   @Input() expanding!: boolean;
-  sync?: Sync;
+  
+  sync!: () => any;
 
   constructor(private http: HttpService, private data: DataService) {}
 
   ngOnInit() {
-    this.data.sync$.subscribe(sync => {
-      this.sync = sync;
-    });
+    this.sync = this.data.sync;
   }
 
   logout() {

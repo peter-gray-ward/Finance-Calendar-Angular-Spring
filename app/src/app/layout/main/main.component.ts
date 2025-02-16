@@ -13,26 +13,26 @@ import { CalendarComponent } from '../../features/calendar/calendar.component';
   styleUrl: './main.component.scss'
 })
 export class MainComponent {
-  sync!: Sync;
+  
   @Input() expanding: boolean = false;
+  sync!: () => any;
+
   constructor(private data: DataService, private router: Router) {}
+
   ngOnInit() {
-    this.data.sync$.subscribe(sync => {
-      console.log(sync)
-      this.sync = sync;
-    });
-    this.data.account$.subscribe(account => {
-      this.sync.account = account;
-    });
+    this.sync = this.data.sync;
+    this.data.fetchSyncData();
+    this.data.fetchEvents();
   }
+
   prevMonth(): void {
-    this.data.updateMonthYear('prev').subscribe();
+    this.data.updateMonthYear('prev');
   }
   nextMonth(): void {
-    this.data.updateMonthYear('next').subscribe();
+    this.data.updateMonthYear('next');
   }
   currentMonth(): void {
-    this.data.updateMonthYear('current').subscribe();
+    this.data.updateMonthYear('current');
   }
   blurEvent(event: any): void {
     let src = event.srcElement;

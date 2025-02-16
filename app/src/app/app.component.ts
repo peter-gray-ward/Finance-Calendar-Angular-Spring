@@ -28,7 +28,8 @@ export class AppComponent {
   title = 'app';
   expanding: boolean = false;
   authenticated: boolean = false;
-  sync!: Sync;
+  
+  sync!: () => any;
 
   constructor(
     private http: HttpService,
@@ -41,6 +42,8 @@ export class AppComponent {
   }
 
   ngOnInit(): void {
+    this.sync = this.data.sync;
+    
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
@@ -62,10 +65,6 @@ export class AppComponent {
           console.log(res)
           if (res) {
             this.authenticated = true;
-            this.data.fetchSyncData().subscribe(sync => {
-              this.sync = sync;
-              this.data.fetchEvents().subscribe();
-            });
           } else {
             this.router.navigate(['/auth/login']);
           }

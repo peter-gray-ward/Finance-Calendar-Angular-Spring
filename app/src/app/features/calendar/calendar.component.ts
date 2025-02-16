@@ -13,19 +13,16 @@ import { DayComponent } from '../day/day.component';
   styleUrl: './calendar.component.scss'
 })
 export class CalendarComponent {
-  sync?: Sync;
-  months?: any[];
   @ViewChild('calendarContainer') calendarContainer!: ElementRef;
+
+  sync!: () => any;
+  events!: () => any;
 
   constructor(private data: DataService,  @Inject(DOCUMENT) private document: Document) {}
 
   ngOnInit() {
-    this.data.sync$.subscribe(sync => {
-      this.sync = sync;
-    });
-    this.data.events$.subscribe(res => {
-      this.months = res.months;
-    });
+    this.sync = this.data.sync;
+    this.events = this.data.events;
   }
 
   ngAfterViewChecked() {

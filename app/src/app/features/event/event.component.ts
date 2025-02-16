@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -15,28 +15,28 @@ import { Event } from '../../models/Event';
 export class EventComponent implements OnInit {
   eventId!: string;
   event!: Event;
-  activity: any = {};
 
-  constructor(private route: ActivatedRoute, private data: DataService) {}
+  activity!: () => any;
 
-  ngOnInit(): void {
-    this.eventId = this.route.snapshot.paramMap.get('id') || '';
-    this.data.fetchEvent(this.eventId).subscribe((event: Event) => {
-      console.log("fetched event", event)
-      this.event = event;
-
-    });
-    this.data.activity$.subscribe(activity => {
-      this.activity = activity;
+  constructor(private route: ActivatedRoute, private data: DataService) {
+    effect(() => {
+      const activity = this.activity();
+      if (!activity) return;
       var modalWidth = window.innerWidth / 2.5;
       var modalHeight = window.innerHeight / 3;
-      if (this.activity.left > window.innerWidth - modalWidth) {
-        this.activity.left -= (this.activity.left + modalWidth) - window.innerWidth
+      if (activity.left > window.innerWidth - modalWidth) {
+        activity.left -= (activity.left + modalWidth) - window.innerWidth
       }
-      if (this.activity.top > window.innerHeight - modalHeight) {
-        this.activity.top -= (this.activity.top + modalHeight) - window.innerHeight
+      if (activity.top > window.innerHeight - modalHeight) {
+        activity.top -= (activity.top + modalHeight) - window.innerHeight
       }
-    });
+    })
+  }
+
+  ngOnInit(): void {
+    this.activity = this.data.activity;
+    this.eventId = this.route.snapshot.paramMap.get('id') || '';
+    this.event = this.data.fetchEvent(this.eventId);
   }
 
   mousedown(event: any) {
@@ -55,6 +55,6 @@ export class EventComponent implements OnInit {
 
   saveThisEvent() {
     console.log(this.event)
-    this.data.saveThisEvent(this.event).subscribe();
+    this.data.saveThisEvent(this.event);
   }
 }
