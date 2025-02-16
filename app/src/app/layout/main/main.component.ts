@@ -21,8 +21,6 @@ export class MainComponent {
 
   ngOnInit() {
     this.sync = this.data.sync;
-    this.data.fetchSyncData();
-    this.data.fetchEvents();
   }
 
   prevMonth(): void {

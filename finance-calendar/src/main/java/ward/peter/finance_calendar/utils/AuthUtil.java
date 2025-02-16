@@ -71,10 +71,13 @@ public class AuthUtil {
 
     public User getRequestUser(HttpServletRequest request) {
         Optional<Cookie> fcTokenCookie = getCookie(request, "fcToken");
-        String fcToken = fcTokenCookie.get().getValue();
-        Claims claims = validateToken(fcToken);
-        String username = claims.getSubject();
-        User user = userRepository.findByName(username);
-        return user;
+        if (fcTokenCookie.isPresent()) {
+            String fcToken = fcTokenCookie.get().getValue();
+            Claims claims = validateToken(fcToken);
+            String username = claims.getSubject();
+            User user = userRepository.findByName(username);
+            return user;
+        }
+        return null;
     }
 }

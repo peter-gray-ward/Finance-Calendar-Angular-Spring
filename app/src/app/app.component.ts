@@ -1,6 +1,6 @@
 import { Component, Inject, Renderer2 } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
-import { DOCUMENT } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { 
   LeftComponent
@@ -19,7 +19,8 @@ import { DataService } from './core/data.service';
   imports: [
     RouterOutlet, 
     LeftComponent,
-    MainComponent
+    MainComponent,
+    CommonModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -65,6 +66,8 @@ export class AppComponent {
           console.log(res)
           if (res) {
             this.authenticated = true;
+            this.data.fetchSyncData();
+            this.data.fetchEvents();
           } else {
             this.router.navigate(['/auth/login']);
           }

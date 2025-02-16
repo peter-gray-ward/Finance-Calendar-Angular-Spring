@@ -1,4 +1,4 @@
-<div id="main" class="authenticated" (click)="blurEvent($event)">
+<div *ngIf="sync()" id="main" class="authenticated" (click)="blurEvent($event)">
 	<div id="calendar-month-header" [attr.data-year]="sync().account.year" [attr.data-month]="sync().account.month">
         <div>
           <h1 id="month-name">{{ sync().months[sync().account.month - 1] }}</h1>&nbsp;&nbsp;

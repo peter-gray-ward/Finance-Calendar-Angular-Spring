@@ -1,13 +1,14 @@
-import { Component, OnInit, effect } from '@angular/core';
+import { Component, OnInit, effect, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { RouterOutlet, ActivatedRoute, RouterLink } from '@angular/router';
 import { DataService } from '../../core/data.service';
 import { Event } from '../../models/Event';
+import { EventDetailsComponent } from './details/details.component';
 
 @Component({
   selector: 'app-event',
-  imports: [CommonModule, FormsModule],
+  imports: [RouterOutlet, CommonModule, FormsModule, RouterLink, EventDetailsComponent],
   standalone: true,
   templateUrl: './event.component.html',
   styleUrls: ['./event.component.scss']
@@ -15,7 +16,6 @@ import { Event } from '../../models/Event';
 export class EventComponent implements OnInit {
   eventId!: string;
   event!: Event;
-
   activity!: () => any;
 
   constructor(private route: ActivatedRoute, private data: DataService) {
@@ -54,10 +54,5 @@ export class EventComponent implements OnInit {
   }
   mouseup(event: any) {
     
-  }
-
-  saveThisEvent() {
-    console.log(this.event)
-    this.data.saveThisEvent(this.event);
   }
 }

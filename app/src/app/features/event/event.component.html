@@ -1,51 +1,11 @@
 <div class="modal" 
     [style.left.px]="activity().left" [style.top.px]="activity().top"
     (mousedown)="mousedown($event)" (mousemove)="mousemove($event)" (mouseup)="mouseup($event)">    
-    <div *ngIf="event" class='id modal-content' [attr.data-name]="event" id="event-edit" >
-        <div id="modal-event">
-            <div class="upper-div-collection">
-                <div id="summary-div">
-                    <label>Summary</label>
-                    <div contenteditable class="this focusable" 
-                        [style.font-size.rem]="1.75" name="summary" type="text">{{ event.summary }}</div>
-                </div>
-                <div id="amount-div">
-                    <label>Amount</label>
-                    <input class="this focusable" type="number" id="event-amount" name="amount" [(ngModel)]="event.amount" />
-                </div>
-            </div>
-            <div id="time-container">
-                <div id="frequency-container">
-                    <label>Frequency</label>
-                    <div class="td select-container focusable">
-                        <input name="frequency" 
-                                [(ngModel)]="event.frequency"
-                                class="select focusable" 
-                                type="text" 
-                                placeholder="frequency" >
-                    </div>
-                </div>
-                <div id="date-container">
-                    <div>
-                        <label style="color: #053147">Date</label>
-                        <input name="date" class="td focusable" type="date" 
-                            [(ngModel)]="event.date">
-                    </div>
-                    <div>
-                        <label>End Date</label>
-                        <input name="recurrenceenddate" class="td focusable" type="date" 
-                            [(ngModel)]="event.recurrenceenddate">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="button-footer">
-            <button id="save-this-event" class="focusable" (click)="saveThisEvent()">save</button>
-            <button id="save-this-and-future-events" class="focusable">save all</button>
-            <button id="clude-this-event" class="focusable">{{ event.exclude == 0 ? 'exclude' : 'include' }}</button>
-            <button id="clude-all-these-events" class="focusable">{{ event.exclude == 0 ? 'exclude' : 'include' }} all</button>
-            <button id="delete-this-event" class="focusable">delete</button>
-            <button id="delete-all-these-events" class="focusable">delete all</button>
-        </div>
+    
+    <div class="navigation" *ngIf="event">
+        <button [routerLink]="['/event', eventId]" [state]="{ event: event }">Edit Event</button>
+        <button [routerLink]="['/event', eventId, 'news']">View News</button>
     </div>
+
+    <router-outlet></router-outlet>
 </div>

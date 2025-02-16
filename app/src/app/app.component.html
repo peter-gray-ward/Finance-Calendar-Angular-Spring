@@ -1,6 +1,6 @@
 <button id="expand-to-budget" (click)="expandToBudget()">☰</button>
 
-<app-left [expanding]="expanding"></app-left>
-<app-main [expanding]="expanding"></app-main>
+<app-left *ngIf="sync()" [expanding]="expanding"></app-left>
+<app-main *ngIf="sync()" [expanding]="expanding"></app-main>
 
 <router-outlet></router-outlet>

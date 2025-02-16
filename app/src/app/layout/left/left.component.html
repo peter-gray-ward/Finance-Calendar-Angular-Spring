@@ -1,4 +1,4 @@
-<header id="left" style="background:url(/wallpaper01.webp)">
+<header *ngIf="sync()" id="left" style="background:url(/wallpaper01.webp)">
 	<button (click)="logout()">logout</button>
 	<h3>
 		<div>Regular Expenses</div>
