@@ -42,6 +42,11 @@ public class UserController {
 		return ResponseEntity.ok(this.userService.login(user, response, session));
 	}
 
+	@GetMapping("/logout")
+	public ResponseEntity<Boolean> logout(User user, HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+		return ResponseEntity.ok(this.userService.logout(user, request, response, session));
+	}
+
 	@GetMapping("/check-auth")
 	public ResponseEntity<Authentication> checkAuth(HttpServletRequest request) {
 		return ResponseEntity.ok(new Authentication().builder().status("success").build());

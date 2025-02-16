@@ -30,6 +30,9 @@ export class EventComponent implements OnInit {
       if (activity.top > window.innerHeight - modalHeight) {
         activity.top -= (activity.top + modalHeight) - window.innerHeight
       }
+    });
+    effect(() => {
+      this.event = this.data.fetchEvent(this.eventId);
     })
   }
 

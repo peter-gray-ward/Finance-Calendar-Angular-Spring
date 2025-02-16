@@ -122,6 +122,27 @@ public class UserService {
         }
 	}
 
+	public Boolean logout(User user, HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+		System.out.println("logging out");
+
+		Optional<Cookie> jwtCookie = authUtil.getCookie(request, JwtAuthFilter.COOKIE_NAME);
+
+		if (jwtCookie.isPresent()) {
+			Cookie cookie = jwtCookie.get();
+			cookie.setMaxAge(0);
+			cookie.setPath("/");
+			cookie.setHttpOnly(true);
+			response.addCookie(cookie);
+		}
+
+		session.removeAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+
+		session.removeAttribute("userId");
+		session.removeAttribute("role");
+
+		return true;
+	}
+
 	public Sync sync(HttpServletRequest request) {
 		User user = authUtil.getRequestUser(request);
 		String userId = user.getId().toString();
