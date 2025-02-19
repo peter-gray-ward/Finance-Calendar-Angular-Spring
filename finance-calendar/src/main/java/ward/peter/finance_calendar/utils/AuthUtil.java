@@ -78,6 +78,6 @@ public class AuthUtil {
             User user = userRepository.findByName(username);
             return user;
         }
-        return null;
+        return new User();
     }
 }

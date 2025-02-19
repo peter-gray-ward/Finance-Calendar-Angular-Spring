@@ -13,11 +13,12 @@ import { DataService } from '../../../core/data.service';
 })
 export class NewsComponent implements OnInit {
   event!: Event;
-
+  outlets: string[] = [];
 
   constructor(private route: ActivatedRoute, private data: DataService) {
     effect(() => {
       console.log("NEWS event: ", this.event);
+      this.outlets = Array.from(new Set(this.event.news.articles.map((a: any) => a.source.name)))
     })
   }
 

@@ -1,4 +1,20 @@
 <div *ngIf="event" class="news modal-content">
-	<h1>{{ event.summary }}</h1>
-	<h2>{{ event.date }}</h2>
+	<div class="event-title">
+		<h1>{{ event.summary }}</h1>
+		<h2>{{ event.date }}</h2>
+
+		<section>
+			@for (outlet of outlets; track outlet) {
+				<a>{{ outlet }}</a>
+			}
+		</section>
+	</div>
+
+	<div id="news-viewer">
+		@for (article of event.news.articles; track article.title) {
+			<h2>{{ article.title }}</h2>
+			<h3>({{ article.source.name }})</h3>
+			<p>{{ article.content }}</p>
+		}
+	</div>
 </div>
