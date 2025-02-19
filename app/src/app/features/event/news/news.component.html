@@ -1,1 +1,4 @@
-<p>news works!</p>
+<div *ngIf="event" class="news modal-content">
+	<h1>{{ event.summary }}</h1>
+	<h2>{{ event.date }}</h2>
+</div>

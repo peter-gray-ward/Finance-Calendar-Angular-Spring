@@ -10,4 +10,5 @@ export interface Event {
     exclude: number;
     frequency: string;
     user_id: string;
+    news?: any;
 }

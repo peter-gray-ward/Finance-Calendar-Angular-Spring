@@ -3,8 +3,10 @@
         <div class="upper-div-collection">
             <div id="summary-div">
                 <label>Summary</label>
-                <div contenteditable class="this focusable" 
-                    [style.font-size.rem]="1.75" name="summary" type="text">{{ event.summary }}</div>
+                <input type="text" class="this focusable"
+                    [(ngModel)]="event.summary" 
+                    (ngModelChange)="editSummary($event)"
+                    [style.font-size.rem]="1.75" name="summary" />
             </div>
             <div id="amount-div">
                 <label>Amount</label>

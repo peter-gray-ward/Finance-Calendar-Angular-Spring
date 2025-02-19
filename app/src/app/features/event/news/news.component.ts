@@ -1,12 +1,33 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { Event } from '../../../models/Event';
+import { DataService } from '../../../core/data.service';
 
 @Component({
   selector: 'app-news',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './news.component.html',
-  styleUrl: './news.component.scss'
+  styleUrls: ['./news.component.scss']
 })
-export class NewsComponent {
+export class NewsComponent implements OnInit {
+  event!: Event;
 
+
+  constructor(private route: ActivatedRoute, private data: DataService) {
+    effect(() => {
+      console.log("NEWS event: ", this.event);
+    })
+  }
+
+  ngOnInit(): void {
+    this.route.paramMap.subscribe(params => {
+      const eventId = params.get('id') || this.route.snapshot.queryParamMap.get('id') || '';
+      if (eventId) {
+        this.event = this.data.fetchEvent(eventId);
+        this.data.fetchEventNews(this.event)
+      }
+    });
+  }
 }

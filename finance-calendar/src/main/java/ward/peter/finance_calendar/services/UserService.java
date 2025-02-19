@@ -85,7 +85,10 @@ public class UserService {
 		System.out.println("Logging in");
 
 		if (dbuser == null) {
-			return null;
+			return new Authentication().builder()
+				.status("failure")
+				.message("Unknown user")
+				.build();
 		}
 
         if (passwordEncoder.matches(user.getPassword(), dbuser.getPassword())) {

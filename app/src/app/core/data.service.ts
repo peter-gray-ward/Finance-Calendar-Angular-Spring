@@ -56,6 +56,28 @@ export class DataService {
     return {} as Event;
   }
 
+  fetchEventNews(event: Event): any {
+    this.http.getEventNews(event.summary, event.date).subscribe((res: any) => {
+      console.log("news...", res);
+      const events = this.events();
+      if (events) {
+        for (const week of events.months) {
+          for (const day of week) {
+            if (day.events) {
+              const foundEvent = day.events.find((e: Event) => e.id === event.id);
+              if (foundEvent) {
+
+                foundEvent.news = res;
+
+                console.log(foundEvent);
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
   saveThisEvent(event: Event) {
     this.http.saveThisEvent(event).subscribe((res: any) => {
       console.log('saved this event', res);

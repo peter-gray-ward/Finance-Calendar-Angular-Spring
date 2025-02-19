@@ -77,4 +77,8 @@ export class HttpService {
     return this.http.get<any>("/api/event/refresh-calendar", { headers: this.headers });
   }
 
+  getEventNews(keyword: String, date: String): Observable<any> {
+    return this.http.get<any>(`/api/event/get-event-news/${keyword}/${date}`, { headers: this.headers });
+  }
+
 }

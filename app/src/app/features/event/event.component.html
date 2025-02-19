@@ -3,8 +3,8 @@
     (mousedown)="mousedown($event)" (mousemove)="mousemove($event)" (mouseup)="mouseup($event)">    
     
     <div class="navigation" *ngIf="event">
-        <button [routerLink]="['/event', eventId]" [state]="{ event: event }">Edit Event</button>
-        <button [routerLink]="['/event', eventId, 'news']">View News</button>
+        <button [routerLink]="['/event', eventId]">Edit Event</button>
+        <button [routerLink]="['/event', eventId, 'news']" [queryParams]="{id: eventId}">View News</button>
     </div>
 
     <router-outlet></router-outlet>
