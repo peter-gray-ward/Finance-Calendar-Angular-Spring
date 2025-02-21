@@ -4,7 +4,7 @@
     
     <div class="navigation" *ngIf="event">
         <button [routerLink]="['/event', eventId]">Edit Event</button>
-        <button [routerLink]="['/event', eventId, 'news']" [queryParams]="{id: eventId}">View News</button>
+        <button [routerLink]="['/event', eventId, 'news']">View News</button>
     </div>
 
     <router-outlet></router-outlet>

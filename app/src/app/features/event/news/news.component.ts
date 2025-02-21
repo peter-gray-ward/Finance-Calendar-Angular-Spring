@@ -23,12 +23,10 @@ export class NewsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const eventId = params.get('id') || this.route.snapshot.queryParamMap.get('id') || '';
-      if (eventId) {
-        this.event = this.data.fetchEvent(eventId);
-        this.data.fetchEventNews(this.event)
-      }
-    });
+    const eventId = window.location.pathname.split('/')[2]
+    if (eventId) {
+      this.event = this.data.fetchEvent(eventId);
+      this.data.fetchEventNews(this.event)
+    }
   }
 }
