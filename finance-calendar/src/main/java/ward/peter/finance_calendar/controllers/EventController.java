@@ -45,7 +45,12 @@ public class EventController {
 		return ResponseEntity.ok(eventService.getCalendar(user, session));
 	}
 
-	@PutMapping("/save-this-event")
+	@PostMapping
+	public ResponseEntity<Calendar> createEvent(@RequestBody Event event, HttpSession session, User user) {
+		return ResponseEntity.ok(eventService.createEvent(event, user, session));
+	}
+ 
+	@PutMapping
 	public ResponseEntity<Calendar> saveThisEvent(@RequestBody Event event, HttpSession session, User user) {
 		return ResponseEntity.ok(eventService.saveThisEvent(event, user, session));
 	}

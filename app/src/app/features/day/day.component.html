@@ -1,4 +1,5 @@
 <div class="day-block"
+  (dblclick)="createEvent(day)"
 	[class.weekend]="day.day == 'Sunday' || day.day == 'Saturday'"
 	[class.first-of-month]="day.date == 1 && day.month == month"
 	[attr.data-date]="day.date" 

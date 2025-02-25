@@ -65,8 +65,12 @@ export class HttpService {
     return this.http.get<any[]>("/api/user/update-month-year/" + which, { headers: this.headers });
   }
 
+  createEvent(event: Event): Observable<Event> {
+    return this.http.post<Event>("/api/event", event, { headers: this.headers });
+  }
+
   saveThisEvent(event: Event): Observable<Event> {
-    return this.http.put<Event>("/api/event/save-this-event", event, { headers: this.headers });
+    return this.http.put<Event>("/api/event", event, { headers: this.headers });
   }
 
   saveCheckingBalance(balance: number): Observable<any> {

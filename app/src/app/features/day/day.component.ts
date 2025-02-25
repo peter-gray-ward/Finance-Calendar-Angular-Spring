@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Event } from '../../models/Event';
-import { DataService } from '../../core/data.service'
+import { DataService } from '../../core/data.service';
 
 @Component({
   selector: 'app-day',
@@ -38,4 +38,18 @@ export class DayComponent {
       this.data.saveCheckingBalance(this.checkingBalance);
   }
 
+  createEvent(day: any) {
+    const date = new Date().toISOString().split("T")[0];
+    const event: any = {
+        summary: 'string',
+        date: date,
+        recurrenceenddate: date,
+        amount: 0,
+        total: 0,
+        balance: 0,
+        exclude: 0,
+        frequency: 'monthly'
+    };
+    this.data.createEvent(event);
+  }
 }

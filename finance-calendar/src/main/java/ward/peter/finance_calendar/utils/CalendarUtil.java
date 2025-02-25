@@ -83,7 +83,42 @@ public class CalendarUtil {
         return weeks;
     }
 
-    public List<Event> generateEvents(User user, List<Expense> expenses) {
+    public List<Event> generateEvents(User user, Event event) {
+        if (event.getId() == null) {
+            event.setId(UUID.randomUUID());
+        }
+
+        if (event.getUserId() == null) {
+            event.setUserId(user.getId());
+        }
+
+        List<Event> events = new ArrayList<>();
+
+        String frequency = event.getFrequency();
+        LocalDate start = event.getDate();
+        LocalDate end = event.getRecurrenceenddate();
+        UUID userId = user.getId();
+        UUID recurrenceid = UUID.randomUUID();
+
+        while (!start.isAfter(end)) {
+            event.setDate(start);
+            event.setRecurrenceenddate(end);
+            
+            events.add(event);
+
+            switch (frequency) {
+                case "daily" -> start = start.plusDays(1);
+                case "weekly" -> start = start.plusWeeks(1);
+                case "biweekly" -> start = start.plusWeeks(2);
+                case "monthly" -> start = start.plusMonths(1);
+                case "yearly" -> start = start.plusYears(1);
+            }
+        }
+
+        return events;
+    }
+
+    public List<Event> generateEventsFromExpenses(User user, List<Expense> expenses) {
         List<Event> events = new ArrayList<>();
 
         for (Expense expense : expenses) {

@@ -146,10 +146,8 @@ public class UserService {
 		return true;
 	}
 
-	public Sync sync(HttpServletRequest request) {
-		User user = authUtil.getRequestUser(request);
+	public Sync sync(User user, HttpSession session) {
 		String userId = user.getId().toString();
-		HttpSession session = request.getSession(true);
 		List<Expense> expenses = expenseRepository.findAllByUserId(user.getId());
 		int year = sessionUtil.getYear(userId, session);
 		int month = sessionUtil.getMonth(userId, session);

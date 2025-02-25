@@ -1,9 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpService } from './http.service';
 import { Expense } from '../models/Expense';
+import { Event } from '../models/Event';
 import { Account } from '../models/Account';
 import { Sync } from '../models/Sync';
-import { Event } from '../models/Event';
 
 @Injectable({
   providedIn: 'root'
@@ -38,6 +38,12 @@ export class DataService {
           : null
       );
       this.events.set(calendar);
+    });
+  }
+
+  createEvent(event: Event) {
+    this.http.createEvent(event).subscribe((calendar: any) => {
+      this.events.update(events => (events ? { ...events, months: calendar.months } : null));
     });
   }
 

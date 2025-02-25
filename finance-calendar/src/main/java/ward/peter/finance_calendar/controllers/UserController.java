@@ -53,8 +53,8 @@ public class UserController {
 	}
 
 	@GetMapping("/sync")
-	public ResponseEntity<Sync> sync(HttpServletRequest request) {
-		return ResponseEntity.ok(this.userService.sync(request));
+	public ResponseEntity<Sync> sync(User user, HttpSession session) {
+		return ResponseEntity.ok(this.userService.sync(user, session));
 	}
 
 	@PostMapping("/save-checking-balance/{balance}")

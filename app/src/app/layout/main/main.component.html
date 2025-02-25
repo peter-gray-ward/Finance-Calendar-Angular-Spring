@@ -1,11 +1,16 @@
-<div *ngIf="sync()" id="main" class="authenticated" (click)="blurEvent($event)">
+<div *ngIf="sync()" id="main" class="authenticated" (click)="blurMain($event)">
 	<div id="calendar-month-header" [attr.data-year]="sync().account.year" [attr.data-month]="sync().account.month">
         <div>
           <h1 id="month-name">{{ sync().months[sync().account.month - 1] }}</h1>&nbsp;&nbsp;
           <h1 id="year-name" style="font-weight:100">{{ sync().account.year }}</h1>
         </div>
 		<div id="data" class="search">
-			<input style="display:none;" type="test" placeholder="Go for it!" />
+			<input #searchbar type="text" placeholder="Search" [class.searching]="searching()" applyfocus />
+			<ul *ngIf="beans">
+				@for (bean of beans; track bean.name) {
+					<li>{{ bean.name }}</li>
+				}
+			</ul>
 		</div>
 		<div>
 			<button id="prev-month" (click)="prevMonth()">
@@ -36,3 +41,4 @@
 
 	<app-calendar></app-calendar>
 </div>
+

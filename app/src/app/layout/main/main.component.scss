@@ -1,0 +1,36 @@
+.search {
+
+	.focused {
+		border: 2px solid green;
+		outline: none;
+		background: lightgreen;
+	} 
+
+	input {
+		height: 1.5rem
+	}
+
+	ul {
+	    background: aliceblue;
+	    border: 2px solid;
+	    outline: 10px solid aliceblue;
+	    position: absolute;
+	    width: 10vw;
+	    height: 30vh;
+	    overflow: auto;
+	    top: 1.75rem;
+	    padding: 0;
+	    z-index: 3;
+
+	    li {
+	    	overflow: hidden;
+	    	text-overflow: ellipsis;
+
+	    	&:hover {
+	    		cursor: pointer;
+	    		background: blue;
+	    		color: white;
+	    	}
+	    }
+	}
+}

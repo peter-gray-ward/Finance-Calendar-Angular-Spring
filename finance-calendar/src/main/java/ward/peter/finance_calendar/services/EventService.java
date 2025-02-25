@@ -40,6 +40,12 @@ public class EventService {
 			.build();
 	}
 
+	public Calendar createEvent(Event event, User user, HttpSession session) {
+		List<Event> events = calendarUtil.generateEvents(user, event);
+		eventRepository.saveAllAndFlush(events);
+		return getCalendar(user, session);
+	}
+
 	public Calendar saveThisEvent(Event event, User user, HttpSession session) {
 		eventRepository.save(event);
 		return getCalendar(user, session);
