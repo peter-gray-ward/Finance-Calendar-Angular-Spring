@@ -3,11 +3,12 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Event } from '../../models/Event';
 import { DataService } from '../../core/data.service';
+import { HighlightDirective } from '../../core/highlight.directive';
 
 @Component({
   selector: 'app-day',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, HighlightDirective],
   templateUrl: './day.component.html',
   styleUrl: './day.component.scss'
 })

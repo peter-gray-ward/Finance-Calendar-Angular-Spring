@@ -13,7 +13,7 @@ import { CalendarComponent } from '../../features/calendar/calendar.component';
 import { ApplyFocus } from '../../core/applyfocus.directive';
 import { fromEvent, switchMap, debounceTime } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
-
+import { ResizeService } from '../../core/resize.service';
 
 @Component({
   selector: 'app-main',
@@ -30,15 +30,20 @@ export class MainComponent {
   searching = signal(false);
   beans: any = null;
   blurTargets: string[] = ["event", "search"];
+  searchWidth: string = '';
 
-  constructor(private data: DataService, private router: Router) {}
+  constructor(private data: DataService, private router: Router, private resizer: ResizeService) {}
 
   ngOnInit() {
     this.sync = this.data.sync;
   }
 
   ngAfterViewInit() {
-    this.initSearch()
+    this.initSearch();
+
+    this.resizer.screenWidth$.subscribe(innerWidth => {
+      this.searchWidth = getComputedStyle(this.searchBar.nativeElement).width.replace('px','');
+    });
   }
 
   prevMonth(): void {

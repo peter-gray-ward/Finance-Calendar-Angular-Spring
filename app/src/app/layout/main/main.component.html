@@ -6,7 +6,7 @@
         </div>
 		<div id="data" class="search">
 			<input #searchbar type="text" placeholder="Search" [class.searching]="searching()" applyfocus />
-			<ul *ngIf="beans">
+			<ul *ngIf="beans" [style.width.px]="searchWidth">
 				@for (bean of beans; track bean.name) {
 					<li>{{ bean.name }}</li>
 				}

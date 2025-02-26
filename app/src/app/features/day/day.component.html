@@ -35,6 +35,7 @@
        <div class="event" 
           [class.exclude]="event.exclude == 1"
           [attr.data-id]="event.id" 
+          highlight
           id="{{ event.id }}"
           (click)="editEvent($event, event)">
         <span>•</span> 
