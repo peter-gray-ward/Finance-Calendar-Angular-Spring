@@ -4,13 +4,15 @@ import { Expense } from '../models/Expense';
 import { Event } from '../models/Event';
 import { Account } from '../models/Account';
 import { Sync } from '../models/Sync';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
-  sync = signal<Sync | null>(null);
-  events = signal<any | null>(null);
+  sync = signal<any | null>(null);
+  eventsSubject = new BehaviorSubject<any | null>(null);
+  events$ = this.eventsSubject.asObservable();
   activity = signal<any>({});
 
   constructor(private http: HttpService) {}
@@ -20,35 +22,31 @@ export class DataService {
   }
 
   fetchEvents() {
-    this.http.getCalendar().subscribe(events => this.events.set(events));
+    this.http.getCalendar().subscribe((events: any) => this.eventsSubject.next(events));
   }
 
-  updateMonthYear(which: string) {
-    this.http.updateMonthYear(which).subscribe((calendar: any) => {
-      this.sync.update((sync) =>
-        sync
-          ? {
-              ...sync,
-              account: {
-                ...sync.account,
-                year: calendar.year,
-                month: calendar.month
-              }
-            }
-          : null
-      );
-      this.events.set(calendar);
+  updateMonthYear(which: string): void {
+    this.http.updateMonthYear(which).subscribe((events: any) => {
+      this.sync.set({
+        ...this.sync(),
+        account: {
+          ...this.sync().account,
+          year: events.year,
+          month: events.month
+        }
+      });
+      this.eventsSubject.next(events)
     });
   }
 
   createEvent(event: Event) {
-    this.http.createEvent(event).subscribe((calendar: any) => {
-      this.events.update(events => (events ? { ...events, months: calendar.months } : null));
+    this.http.createEvent(event).subscribe((events: any) => {
+      this.eventsSubject.next({ ...this.eventsSubject.value, months: events.months });
     });
   }
 
   fetchEvent(eventId: string): Event {
-    const events = this.events();
+    const events = this.eventsSubject.value;
     if (events) {
       for (const week of events.months) {
         for (const day of week) {
@@ -65,7 +63,7 @@ export class DataService {
   fetchEventNews(event: Event): any {
     this.http.getEventNews(event.summary, event.date).subscribe((res: any) => {
       console.log("news...", res);
-      const events = this.events();
+      const events = this.eventsSubject.value;
       if (events) {
         for (const week of events.months) {
           for (const day of week) {
@@ -74,8 +72,6 @@ export class DataService {
               if (foundEvent) {
 
                 foundEvent.news = res;
-
-                console.log(foundEvent);
               }
             }
           }
@@ -87,7 +83,7 @@ export class DataService {
   saveThisEvent(event: Event) {
     this.http.saveThisEvent(event).subscribe((res: any) => {
       console.log('saved this event', res);
-      this.events.update(events => (events ? { ...events, months: res.months } : null));
+      this.eventsSubject.next({ ...this.eventsSubject.value, months: res.months });
     });
   }
 
@@ -114,7 +110,7 @@ export class DataService {
             ...sync,
             account: {
               ...sync.account,
-              expenses: sync.account.expenses.map((e) => (e.id === expense.id ? expense : e))
+              expenses: sync.account.expenses.map((e: any) => (e.id === expense.id ? expense : e))
             }
           }
         : null
@@ -132,7 +128,7 @@ export class DataService {
               ...sync,
               account: {
                 ...sync.account,
-                expenses: sync.account.expenses.filter((e) => e.id !== expense.id)
+                expenses: sync.account.expenses.filter((e: any) => e.id !== expense.id)
               }
             }
           : null
@@ -168,14 +164,14 @@ export class DataService {
             }
           : null
       );
-      this.events.update(events => (events ? { ...events, months: res.months } : null));
+      this.eventsSubject.next({ ...this.eventsSubject.value, months: res.months });
     });
   }
 
   refreshCalendar() {
     this.http.refreshCalendar().subscribe((res: any) => {
       console.log('refreshed calendar', res);
-      this.events.update(events => (events ? { ...events, months: res.months } : null));
+      this.eventsSubject.next({ ...this.eventsSubject.value, months: res.months });
     });
   }
 }

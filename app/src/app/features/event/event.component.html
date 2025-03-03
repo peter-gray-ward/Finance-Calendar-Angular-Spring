@@ -1,4 +1,4 @@
-<div class="modal" 
+<div *ngIf="event" class="modal" 
     [style.left.px]="activity().left" [style.top.px]="activity().top"
     (mousedown)="mousedown($event)" (mousemove)="mousemove($event)" (mouseup)="mouseup($event)">    
     

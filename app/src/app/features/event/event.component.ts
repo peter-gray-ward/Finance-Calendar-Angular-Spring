@@ -15,7 +15,7 @@ import { EventDetailsComponent } from './details/details.component';
 })
 export class EventComponent implements OnInit {
   eventId!: string;
-  event!: Event;
+  event: Event | null = null;
   activity!: () => any;
 
   constructor(private route: ActivatedRoute, private data: DataService) {
@@ -31,15 +31,15 @@ export class EventComponent implements OnInit {
         activity.top -= (activity.top + modalHeight) - window.innerHeight
       }
     });
-    effect(() => {
-      this.event = this.data.fetchEvent(this.eventId);
-    })
   }
 
   ngOnInit(): void {
     this.activity = this.data.activity;
     this.eventId = this.route.snapshot.paramMap.get('id') || '';
-    this.event = this.data.fetchEvent(this.eventId);
+    this.data.events$.subscribe(events => {
+      this.event = this.data.fetchEvent(this.eventId);
+    });
+    
   }
 
   mousedown(event: any) {

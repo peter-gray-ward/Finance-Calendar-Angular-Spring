@@ -1,5 +1,5 @@
-<div id="calendar" #calendarContainer>
-	@for (week of events().months; track $index; let i = $index) {
+<div *ngIf="events" id="calendar" #calendarContainer>
+	@for (week of events.months; track $index; let i = $index) {
 		<div class="week">
 			@for (day of week; track $index; let j = $index) {
 				@if (day.today) {

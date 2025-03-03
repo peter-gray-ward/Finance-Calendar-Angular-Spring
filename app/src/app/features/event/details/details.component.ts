@@ -21,7 +21,9 @@ export class EventDetailsComponent {
   ngOnInit() {
     console.log('details: ', this.route.snapshot.paramMap)
     const eventId = this.route.snapshot.paramMap.get('id') || '';
-    this.event = this.data.fetchEvent(eventId);
+    this.data.events$.subscribe(events => {
+      this.event = this.data.fetchEvent(eventId);
+    });
   }
 
   saveThisEvent() {

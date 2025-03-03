@@ -4,6 +4,7 @@ import { DataService } from '../../core/data.service';
 import { Sync } from '../../models/Sync';
 import { Event } from '../../models/Event';
 import { DayComponent } from '../day/day.component';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-calendar',
@@ -16,13 +17,16 @@ export class CalendarComponent {
   @ViewChild('calendarContainer') calendarContainer!: ElementRef;
 
   sync!: () => any;
-  events!: () => any;
+  events!: any;
 
   constructor(private data: DataService,  @Inject(DOCUMENT) private document: Document) {}
 
   ngOnInit() {
     this.sync = this.data.sync;
-    this.events = this.data.events;
+
+    this.data.events$.subscribe(events => {
+      this.events = events;
+    });
   }
 
   ngAfterViewChecked() {
