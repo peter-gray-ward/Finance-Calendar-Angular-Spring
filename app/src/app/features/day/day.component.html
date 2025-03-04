@@ -1,4 +1,5 @@
-<div class="day-block"
+<div #dayBlock
+  class="day-block"
   (dblclick)="createEvent(day)"
 	[class.weekend]="day.day == 'Sunday' || day.day == 'Saturday'"
 	[class.first-of-month]="day.date == 1 && day.month == month"
@@ -36,7 +37,7 @@
           [class.exclude]="event.exclude == 1"
           [attr.data-id]="event.id" 
           highlight
-          id="{{ event.id }}"
+          id="event-{{ event.id }}"
           (click)="editEvent($event, event)">
         <span>•</span> 
         <span class="summary">{{ event.summary.replace('&nbsp;', '').replace('   ', '') }}</span> 

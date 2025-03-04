@@ -125,7 +125,7 @@ public class UserService {
         }
 	}
 
-	public Boolean logout(User user, HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+	public Boolean logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
 		System.out.println("logging out");
 
 		Optional<Cookie> jwtCookie = authUtil.getCookie(request, JwtAuthFilter.COOKIE_NAME);

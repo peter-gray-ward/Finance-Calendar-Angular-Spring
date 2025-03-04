@@ -13,7 +13,10 @@ export class DataService {
   sync = signal<any | null>(null);
   eventsSubject = new BehaviorSubject<any | null>(null);
   events$ = this.eventsSubject.asObservable();
-  activity = signal<any>({});
+  activitySubject = new BehaviorSubject<any | null>({
+    left: 0, top: 0
+  });
+  activity$ = this.activitySubject.asObservable();
 
   constructor(private http: HttpService) {}
 
@@ -144,11 +147,11 @@ export class DataService {
     return this.sync()?.account ?? null;
   }
 
-  setActivity(obj: any) {
-    this.activity.update((current) => ({
-      ...current,
+  setActivity(obj: Object) {
+    this.activitySubject.next({
+      ...this.activitySubject.value,
       ...obj
-    }));
+    });
   }
 
   saveCheckingBalance(balance: number) {

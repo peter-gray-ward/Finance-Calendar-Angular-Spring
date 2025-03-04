@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, Input, ViewChild, ElementRef, effect } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Event } from '../../models/Event';
 import { DataService } from '../../core/data.service';
@@ -13,6 +13,8 @@ import { HighlightDirective } from '../../core/highlight.directive';
   styleUrl: './day.component.scss'
 })
 export class DayComponent {
+  @ViewChild("dayBlock") dayBlock!: ElementRef;
+
   @Input() day: any;
   @Input() month!: number;
   @Input() year!: number;
@@ -20,7 +22,21 @@ export class DayComponent {
 
   saveCheckingBalanceTimeout: number = 0;
 
-  constructor(private router: Router, private data: DataService) {}
+  constructor(private router: Router, private data: DataService, private route: ActivatedRoute) {}
+
+  ngOnInit() {}
+
+  ngAfterViewInit() {
+    let eventId: string | undefined = window.location.pathname.split('/').pop();
+    if (eventId && this.day.events.find((e: Event) => e.id == eventId)) {
+      let position = this.dayBlock.nativeElement.querySelector('#event-' + eventId).getBoundingClientRect();
+      console.log("found position ", position); 
+      this.data.setActivity({
+        left: position.left,
+        top: position.top
+      });
+    }
+  }
 
   editEvent($event: any, event: Event) {
     this.data.setActivity({ left: $event.clientX, top: $event.clientY });

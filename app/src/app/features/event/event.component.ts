@@ -16,25 +16,28 @@ import { EventDetailsComponent } from './details/details.component';
 export class EventComponent implements OnInit {
   eventId!: string;
   event: Event | null = null;
-  activity!: () => any;
+  activity!: any;
 
   constructor(private route: ActivatedRoute, private data: DataService) {
-    effect(() => {
-      const activity = this.activity();
-      if (!activity) return;
-      var modalWidth = window.innerWidth / 2.5;
-      var modalHeight = window.innerHeight / 3;
-      if (activity.left > window.innerWidth - modalWidth) {
-        activity.left -= (activity.left + modalWidth) - window.innerWidth
-      }
-      if (activity.top > window.innerHeight - modalHeight) {
-        activity.top -= (activity.top + modalHeight) - window.innerHeight
-      }
-    });
+    // effect(() => {
+    //   const activity = this.activity();
+    //   if (!activity) return;
+    //   var modalWidth = window.innerWidth / 2.5;
+    //   var modalHeight = window.innerHeight / 3;
+    //   if (activity.left > window.innerWidth - modalWidth) {
+    //     activity.left -= (activity.left + modalWidth) - window.innerWidth
+    //   }
+    //   if (activity.top > window.innerHeight - modalHeight) {
+    //     activity.top -= (activity.top + modalHeight) - window.innerHeight
+    //   }
+    // });
   }
 
   ngOnInit(): void {
-    this.activity = this.data.activity;
+    this.data.activity$.subscribe(activity => {
+      console.log("-- new activity in event", activity)
+      this.activity = activity;
+    });
     this.eventId = this.route.snapshot.paramMap.get('id') || '';
     this.data.events$.subscribe(events => {
       this.event = this.data.fetchEvent(this.eventId);
