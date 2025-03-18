@@ -4,14 +4,14 @@
 		<h2>{{ event.date }}</h2>
 
 		<section>
-			@for (outlet of outlets; track outlet) {
+			@for (outlet of outlets; track $index) {
 				<a>{{ outlet }}</a>
 			}
 		</section>
 	</div>
 
-	<div id="news-viewer">
-		@for (article of event.news.articles; track article.title) {
+	<div *ngIf="event.news" id="news-viewer">
+		@for (article of event.news.articles; track $index) {
 			<h2>{{ article.title }}</h2>
 			<h3>({{ article.source.name }})</h3>
 			<p>{{ article.content }}</p>

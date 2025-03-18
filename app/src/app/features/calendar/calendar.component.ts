@@ -22,10 +22,15 @@ export class CalendarComponent {
   constructor(private data: DataService,  @Inject(DOCUMENT) private document: Document) {}
 
   ngOnInit() {
+    console.log('CalendarComponent')
     this.sync = this.data.sync;
 
     this.data.events$.subscribe(events => {
       this.events = events;
+    });
+
+    this.data.activity$.subscribe(activity => {
+      console.log("-- new activity in calendar", activity);
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, Inject, Renderer2 } from '@angular/core';
+import { Component, Inject, Renderer2, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -37,7 +37,8 @@ export class AppComponent {
     private data: DataService,
     private renderer: Renderer2, 
     @Inject(DOCUMENT) private document: Document,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     console.log('AppComponent.constructor')
   }
@@ -50,6 +51,7 @@ export class AppComponent {
     ).subscribe((event: NavigationEnd) => {
       console.log('Route change detected:', event.url);
       this.checkAuthentication();
+      this.cdr.detectChanges();
     });
   }
 

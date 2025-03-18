@@ -19,10 +19,14 @@ export class EventDetailsComponent {
   constructor(private route: ActivatedRoute, private router: Router, private data: DataService) {}
 
   ngOnInit() {
-    console.log('details: ', this.route.snapshot.paramMap)
     const eventId = this.route.snapshot.paramMap.get('id') || '';
     this.data.events$.subscribe(events => {
       this.event = this.data.fetchEvent(eventId);
+    });
+    this.data.activity$.subscribe(activity => {
+      if (activity.eventId !== this.event.id) {
+        this.event = this.data.fetchEvent(activity.eventId);
+      }
     });
   }
 

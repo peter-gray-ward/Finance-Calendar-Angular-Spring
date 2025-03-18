@@ -2,7 +2,9 @@ import { Component, Input, ViewChild, ElementRef, effect } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Event } from '../../models/Event';
+import { fromEvent } from 'rxjs';
 import { DataService } from '../../core/data.service';
+import { ResizeService } from '../../core/resize.service';
 import { HighlightDirective } from '../../core/highlight.directive';
 
 @Component({
@@ -22,25 +24,29 @@ export class DayComponent {
 
   saveCheckingBalanceTimeout: number = 0;
 
-  constructor(private router: Router, private data: DataService, private route: ActivatedRoute) {}
-
-  ngOnInit() {}
+  constructor(private router: Router, private data: DataService, private route: ActivatedRoute, private resize: ResizeService) {}
 
   ngAfterViewInit() {
+    console.log('DayComponent')
+    this.getActiveEventLocation();
+    this.resize.resizeCallbacks.push(this.getActiveEventLocation.bind(this));
+  }
+
+  getActiveEventLocation() {
     let eventId: string | undefined = window.location.pathname.split('/').pop();
     if (eventId && this.day.events.find((e: Event) => e.id == eventId)) {
       let position = this.dayBlock.nativeElement.querySelector('#event-' + eventId).getBoundingClientRect();
-      console.log("found position ", position); 
       this.data.setActivity({
         left: position.left,
-        top: position.top
+        top: position.top,
+        eventId
       });
     }
   }
 
   editEvent($event: any, event: Event) {
-    this.data.setActivity({ left: $event.clientX, top: $event.clientY });
-    this.router.navigate([`/event/${event.id}`])
+    this.data.setActivity({ left: $event.clientX, top: $event.clientY, eventId: event.id });
+    this.router.navigate([`/event/${event.id}`]);
   }
 
   updateCheckingBalance() {
@@ -51,7 +57,6 @@ export class DayComponent {
   }
 
   saveCheckingBalance() {
-      console.log("Saving:", this.checkingBalance);
       this.data.saveCheckingBalance(this.checkingBalance);
   }
 
