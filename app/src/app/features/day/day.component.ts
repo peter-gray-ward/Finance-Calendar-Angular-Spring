@@ -61,7 +61,7 @@ export class DayComponent {
   }
 
   createEvent(day: any) {
-    const date = new Date().toISOString().split("T")[0];
+    const date = new Date(day.year, day.month - 1, day.date).toISOString().split("T")[0];
     const event: any = {
         summary: 'string',
         date: date,

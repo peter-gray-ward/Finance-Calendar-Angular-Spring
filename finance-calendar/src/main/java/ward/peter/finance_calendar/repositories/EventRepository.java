@@ -3,6 +3,7 @@ package ward.peter.finance_calendar.repositories;
 import ward.peter.finance_calendar.models.Event;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,4 +19,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     List<Event> findAllByUserIdInRange(@Param("userId") UUID userId,
                                        @Param("month") int month,
                                        @Param("year") int year);
+
+    @Transactional
+    void deleteByRecurrenceid(UUID recurrenceId);
 }

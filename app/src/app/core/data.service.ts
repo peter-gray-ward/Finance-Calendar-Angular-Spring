@@ -4,7 +4,7 @@ import { Expense } from '../models/Expense';
 import { Event } from '../models/Event';
 import { Account } from '../models/Account';
 import { Sync } from '../models/Sync';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -160,5 +160,21 @@ export class DataService {
       console.log('refreshed calendar', res);
       this.eventsSubject.next({ ...this.eventsSubject.value, months: res.months });
     });
+  }
+
+  deleteThisEvent(event: Event): Observable<any> {
+    return this.http.deleteThisEvent(event).pipe(
+      tap(cal => {
+        this.eventsSubject.next({ ...this.eventsSubject.value, months: cal.months })
+      })
+    );
+  }
+
+  deleteAllTheseEvents(event: Event): Observable<any> {
+    return this.http.deleteThisEvent(event).pipe(
+      tap(cal => {
+        this.eventsSubject.next({ ...this.eventsSubject.value, months: cal.months })
+      })
+    );
   }
 }

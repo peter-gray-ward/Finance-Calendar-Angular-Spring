@@ -50,4 +50,14 @@ public class EventService {
 		eventRepository.save(event);
 		return getCalendar(user, session);
 	}
+
+	public Calendar deleteThisEvent(UUID eventId, HttpSession session, User user) {
+		eventRepository.deleteById(eventId);
+		return getCalendar(user, session);
+	}
+
+	public Calendar deleteAllTheseEvents(UUID eventRecurrenceid, HttpSession session, User user) {
+		eventRepository.deleteByRecurrenceid(eventRecurrenceid);
+		return getCalendar(user, session);
+	}
 }

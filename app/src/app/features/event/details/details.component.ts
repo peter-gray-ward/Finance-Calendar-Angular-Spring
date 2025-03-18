@@ -36,4 +36,16 @@ export class EventDetailsComponent {
 
   editSummary(newTitle: string) {
   }
+
+  deleteThisEvent() {
+    this.data.deleteThisEvent(this.event).subscribe(res => {
+      this.router.navigate([`/`]);
+    })
+  }
+
+  deleteAllTheseEvents() {
+    this.data.deleteAllTheseEvents(this.event).subscribe(res => {
+      this.router.navigate([`/`]);
+    })
+  }
 }

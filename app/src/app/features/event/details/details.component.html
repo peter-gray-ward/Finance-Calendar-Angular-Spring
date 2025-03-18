@@ -43,7 +43,7 @@
         <button id="save-this-and-future-events" class="focusable">save all</button>
         <button id="clude-this-event" class="focusable">{{ event.exclude == 0 ? 'exclude' : 'include' }}</button>
         <button id="clude-all-these-events" class="focusable">{{ event.exclude == 0 ? 'exclude' : 'include' }} all</button>
-        <button id="delete-this-event" class="focusable">delete</button>
-        <button id="delete-all-these-events" class="focusable">delete all</button>
+        <button id="delete-this-event" class="focusable" (click)="deleteThisEvent()">delete</button>
+        <button id="delete-all-these-events" class="focusable" (click)="deleteAllTheseEvents()">delete all</button>
     </div>
 </div>

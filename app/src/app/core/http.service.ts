@@ -85,4 +85,12 @@ export class HttpService {
     return this.http.get<any>(`/api/event/get-event-news/${keyword}/${date}`, { headers: this.headers });
   }
 
+  deleteThisEvent(event: Event): Observable<any> {
+    return this.http.delete<any>("/api/event/" + event.id, { headers: this.headers });
+  }
+
+  deleteAllTheseEvents(event: Event): Observable<any> {
+    return this.http.delete<any>("/api/event/all/" + event.recurrenceid, { headers: this.headers });
+  }
+
 }
