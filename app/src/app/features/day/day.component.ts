@@ -33,7 +33,7 @@ export class DayComponent {
   }
 
   getActiveEventLocation() {
-    let eventId: string | undefined = window.location.pathname.split('/').pop();
+    let eventId: string | undefined = window.location.pathname.split('/')[2];
     if (eventId && this.day.events.find((e: Event) => e.id == eventId)) {
       let position = this.dayBlock.nativeElement.querySelector('#event-' + eventId).getBoundingClientRect();
       this.data.setActivity({
