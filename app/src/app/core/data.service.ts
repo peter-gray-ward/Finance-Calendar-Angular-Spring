@@ -178,7 +178,7 @@ export class DataService {
   }
 
   deleteAllTheseEvents(event: Event): Observable<any> {
-    return this.http.deleteThisEvent(event).pipe(
+    return this.http.deleteAllTheseEvents(event).pipe(
       tap(cal => {
         this.eventsSubject.next({ ...this.eventsSubject.value, months: cal.months })
       })

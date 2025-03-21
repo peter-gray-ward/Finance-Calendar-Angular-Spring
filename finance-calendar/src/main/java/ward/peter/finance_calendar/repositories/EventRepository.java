@@ -21,7 +21,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
                                        @Param("year") int year);
 
     @Transactional
-    void deleteByRecurrenceid(UUID recurrenceid);
+    void deleteAllByRecurrenceid(UUID recurrenceid);
 
     List<Event> findAllByRecurrenceid(UUID recurrenceid);
 }

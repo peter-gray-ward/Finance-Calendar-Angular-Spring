@@ -125,7 +125,7 @@ public class EventService {
     }
 
     public Calendar deleteAllTheseEvents(UUID eventRecurrenceid, HttpSession session, User user) {
-        eventRepository.deleteByRecurrenceid(eventRecurrenceid);
+        eventRepository.deleteAllByRecurrenceid(eventRecurrenceid);
         return getCalendar(user, session);
     }
 }
