@@ -14,6 +14,7 @@ import { DataService } from '../../../core/data.service';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
+  tab: string = 'login';
   user: Authentication = {
     name: '',
     password: ''

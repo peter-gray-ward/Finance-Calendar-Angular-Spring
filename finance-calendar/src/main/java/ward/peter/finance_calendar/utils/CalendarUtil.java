@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.lang.reflect.*;
 
 import org.springframework.stereotype.Component;
 
@@ -83,6 +85,23 @@ public class CalendarUtil {
         return weeks;
     }
 
+    public Event cloneEvent(Event fromEvent) {
+        Event newEvent = new Event();
+        for (Field field : Arrays.stream(fromEvent.getClass().getDeclaredFields())
+                .filter(f -> !f.getName().equals("id"))
+                .toArray(Field[]::new)) {
+            field.setAccessible(true);
+            try {
+                Object value = field.get(fromEvent);
+                field.set(newEvent, value);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        newEvent.setId(UUID.randomUUID());
+        return newEvent;
+    }
+
     public List<Event> generateEvents(User user, Event event) {
         if (event.getId() == null) {
             event.setId(UUID.randomUUID());
@@ -99,6 +118,7 @@ public class CalendarUtil {
         LocalDate end = event.getRecurrenceenddate();
         UUID userId = user.getId();
         UUID recurrenceid = UUID.randomUUID();
+        event.setRecurrenceid(recurrenceid);
 
         while (!start.isAfter(end)) {
             event.setDate(start);

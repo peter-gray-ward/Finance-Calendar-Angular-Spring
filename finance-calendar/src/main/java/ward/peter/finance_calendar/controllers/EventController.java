@@ -52,9 +52,15 @@ public class EventController {
 		return ResponseEntity.ok(eventService.createEvent(event, user, session));
 	}
  
-	@PutMapping
+	@PutMapping("/{id}")
 	public ResponseEntity<Calendar> saveThisEvent(@RequestBody Event event, HttpSession session, User user) {
 		return ResponseEntity.ok(eventService.saveThisEvent(event, user, session));
+	}
+
+	@PutMapping("/{id}/{recurrenceid}")
+	public ResponseEntity<Calendar> saveAllTheseEvents(@RequestBody Event event, HttpSession session, User user) {
+		System.out.println("\tsaveAllTheseEvents");
+		return ResponseEntity.ok(eventService.saveAllTheseEvents(event, user, session));
 	}
 
 	@GetMapping("/get-event-news/{keyword}/{dateStr}")

@@ -22,4 +22,9 @@ public class User {
     private Double checkingBalance = 0.0;
 
     private String role = "USER";
+
+    @Override
+    public String toString() {
+        return "User(\n" + "\n" + this.id.toString() + "\n\t" + this.name + ":" + this.password + "\n\t" + this.checkingBalance.toString() + "\n\t" + this.role + "\n)";
+    }
 }

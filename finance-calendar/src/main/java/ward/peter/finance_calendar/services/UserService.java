@@ -66,6 +66,8 @@ public class UserService {
 				.build();
 		}
 
+		user.setId(UUID.randomUUID());
+
 		String hashedPassword = this.passwordEncoder.encode(user.getPassword());
 
 		user.setPassword(hashedPassword);

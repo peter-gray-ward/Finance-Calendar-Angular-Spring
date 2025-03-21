@@ -34,6 +34,10 @@ export class EventDetailsComponent {
     this.data.saveThisEvent(this.event);
   }
 
+  saveAllTheseEvents() {
+    this.data.saveAllTheseEvents(this.event);
+  }
+
   editSummary(newTitle: string) {
   }
 

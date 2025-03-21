@@ -74,6 +74,13 @@ export class DataService {
     });
   }
 
+  saveAllTheseEvents(event: Event) {
+    this.http.saveAllTheseEvents(event).subscribe((res: any) => {
+      console.log('saved these events', res);
+      this.eventsSubject.next({ ...this.eventsSubject.value, months: res.months });
+    });
+  }
+
   addExpense() {
     this.http.addExpense().subscribe((expense: Expense) => {
       this.sync.update((sync) =>

@@ -1,31 +1,21 @@
-<main id="login">
-	<section>
-		<h1>Log In</h1>
-		<section>
-			<label for="name">Username</label>
-			<input [(ngModel)]="user.name" name="name" id="username" required>
-			<label for="password">Password</label>
-			<input [(ngModel)]="user.password" type="password" name="password" id="password" required>
-			<button (click)="login()">Log In</button>
-		</section>
-		@if (error) {
-			<p>{{ error }}</p>
-		}
-	</section>
-	<section>
-		<h1>Register</h1>
-		<section>
-			<label for="name">Username</label>
-			<input [(ngModel)]="user.name" name="name" id="username" required>
-			<label for="password">Password</label>
-			<input [(ngModel)]="user.password" type="password" name="password" id="password" required>
-			<button (click)="register()">Register</button>
-		</section>
-		@if (error) {
-			<p>{{ error }}</p>
-		}
-		@if (message) {
-			<p>{{ message }}</p>
-		}
-	</section>
-</main>
+<div id="Login">
+  <h1>FINANCE<br/>CALENDAR</h1>
+  <div class="Tab-Container">
+    <div class="Tabs">
+      <button (click)="tab = 'login'" [class.active]="tab == 'login'">Login</button>
+      <button (click)="tab = 'register'" [class.active]="tab == 'register'">Register</button>
+    </div>
+    <div class="Tab-Content">
+      @if (tab == 'login') {
+          <input [(ngModel)]="user.name" name="name" id="username" required>
+          <input [(ngModel)]="user.password" type="password" name="password" id="password" required>
+          <button (click)="login()">Login</button>
+      } @else if (tab == 'register') {
+          <input [(ngModel)]="user.name" name="name" id="username" required>
+          <input [(ngModel)]="user.password" type="password" name="password" id="password" required>
+          <button (click)="register()">Register</button>
+      }
+    </div>
+    <p [style.color]="error ? 'red' : 'green'">{{ error ? error : message}}</p>
+  </div>
+</div>

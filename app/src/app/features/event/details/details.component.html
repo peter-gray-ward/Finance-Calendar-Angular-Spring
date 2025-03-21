@@ -17,11 +17,12 @@
             <div id="frequency-container">
                 <label>Frequency</label>
                 <div class="td select-container focusable">
-                    <input name="frequency" 
-                            [(ngModel)]="event.frequency"
-                            class="select focusable" 
-                            type="text" 
-                            placeholder="frequency" >
+                    <select [(ngModel)]="event.frequency">
+                        <option value="monthly">Monthly</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="biweekly">BiWeekly</option>
+                        <option value="daily">Daily</option>
+                    </select>
                 </div>
             </div>
             <div id="date-container">
@@ -40,7 +41,7 @@
     </div>
     <div class="button-footer">
         <button id="save-this-event" class="focusable" (click)="saveThisEvent()">save</button>
-        <button id="save-this-and-future-events" class="focusable">save all</button>
+        <button id="save-this-and-future-events" class="focusable" (click)="saveAllTheseEvents()">save all</button>
         <button id="clude-this-event" class="focusable">{{ event.exclude == 0 ? 'exclude' : 'include' }}</button>
         <button id="clude-all-these-events" class="focusable">{{ event.exclude == 0 ? 'exclude' : 'include' }} all</button>
         <button id="delete-this-event" class="focusable" (click)="deleteThisEvent()">delete</button>
